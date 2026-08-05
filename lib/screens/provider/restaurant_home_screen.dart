@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../widgets/feature_tile.dart';
+import 'lounge_selection_for_sale_screen.dart';
+import 'restaurant_my_page_screen.dart';
+import 'sale_history_screen.dart';
 
 class RestaurantHomeScreen extends StatelessWidget {
   const RestaurantHomeScreen({super.key});
@@ -15,26 +18,55 @@ class RestaurantHomeScreen extends StatelessWidget {
       title: '사장님 홈',
       userName: user.name,
       roleLabel: '음식점 사장님',
-      accentColor: const Color(0xFF1565C0),
+      accentColor: Colors.orange.shade700,
       onLogout: () => context.read<AuthProvider>().signOut(),
-      features: const [
-        FeatureTile(
-          icon: Icons.restaurant_menu,
-          title: '메뉴 등록 · 관리',
-          subtitle: '냉장고에 등록할 음식 관리',
-        ),
-        FeatureTile(
-          icon: Icons.inventory_2_outlined,
-          title: '재고 현황',
-        ),
+      features: [
         FeatureTile(
           icon: Icons.local_shipping_outlined,
           title: '당일 수거 신청',
-          subtitle: '21:00~21:30 수거 신청',
+          subtitle: '잉여 식품 등록 및 매매 신청',
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LoungeSelectionForSaleScreen()),
+            );
+          },
+        ),
+        FeatureTile(
+          icon: Icons.history_rounded,
+          title: '매매 신청 내역',
+          subtitle: '수거 현황 및 과거 신청 이력',
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SaleHistoryScreen()),
+            );
+          },
+        ),
+        FeatureTile(
+          icon: Icons.account_balance_wallet_outlined,
+          title: '정산 내역 확인',
+          subtitle: '이번 달 매매 대금 및 정산 현황',
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RestaurantMyPageScreen()),
+            );
+          },
         ),
         FeatureTile(
           icon: Icons.person_outline,
           title: '마이페이지',
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RestaurantMyPageScreen()),
+            );
+          },
         ),
       ],
     );
