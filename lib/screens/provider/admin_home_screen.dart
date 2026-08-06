@@ -5,6 +5,9 @@ import '../../providers/auth_provider.dart';
 import '../../providers/inventory_provider.dart';
 import '../../widgets/feature_tile.dart';
 
+import 'admin_report_manage_screen.dart';
+import 'admin_stocking_manage_screen.dart';
+
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
 
@@ -48,17 +51,36 @@ class AdminHomeScreen extends StatelessWidget {
           comingSoon: false,
           onTap: () => _confirmReset(context, inventory),
         ),
-        const FeatureTile(
+        FeatureTile(
+          icon: Icons.data_saver_on_rounded,
+          title: '데모 데이터 생성 (1호점)',
+          subtitle: '식당 5곳 및 메뉴 5종 자동 추가',
+          comingSoon: false,
+          onTap: () => _confirmSeed(context, inventory),
+        ),
+        FeatureTile(
           icon: Icons.edit_note_rounded,
           title: '판매 수량 업데이트 (00:30)',
-          subtitle: '신규 입고된 식품 수량 입력',
-          comingSoon: true, // TODO: 재고 편집 화면
+          subtitle: '수거된 식품 냉장고 재고로 등록',
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AdminStockingManageScreen()),
+            );
+          },
         ),
-        const FeatureTile(
+        FeatureTile(
           icon: Icons.report_outlined,
           title: '신고 접수 내역',
           subtitle: '위생/시설 신고 확인 및 패널티 부여',
-          comingSoon: true,
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AdminReportManageScreen()),
+            );
+          },
         ),
         const FeatureTile(
           icon: Icons.history_rounded,
@@ -67,6 +89,31 @@ class AdminHomeScreen extends StatelessWidget {
           comingSoon: true,
         ),
       ],
+    );
+  }
+
+  void _confirmSeed(BuildContext context, InventoryProvider inventory) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('데모 데이터 생성'),
+        content: const Text('늘찬 라운지 1호점에 테스트용 식당 5곳과 메뉴 5종을 추가하시겠습니까?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('취소')),
+          ElevatedButton(
+            onPressed: () async {
+              await inventory.seedDemoData();
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('데모 데이터가 생성되었습니다!')),
+                );
+              }
+            },
+            child: const Text('생성하기'),
+          ),
+        ],
+      ),
     );
   }
 

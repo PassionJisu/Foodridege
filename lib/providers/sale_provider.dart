@@ -6,10 +6,41 @@ import '../models/product.dart';
 class SaleProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<SaleRequest> _mySaleRequests = [];
+  List<SaleRequest> _allSaleRequests = [];
   bool _isLoading = false;
 
   List<SaleRequest> get mySaleRequests => _mySaleRequests;
+  List<SaleRequest> get allSaleRequests => _allSaleRequests;
   bool get isLoading => _isLoading;
+
+  /// [Driver/Admin 전용] 모든 신청 내역 가져오기
+  Future<void> fetchAllSaleRequests() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final snapshot = await _firestore.collection('sale_requests').get();
+      _allSaleRequests = snapshot.docs.map((doc) => SaleRequest.fromFirestore(doc)).toList();
+      _allSaleRequests.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (e) {
+      debugPrint('Error fetching all sale requests: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 상태 업데이트 로직
+  Future<bool> updateSaleRequestStatus(String requestId, SaleRequestStatus status) async {
+    try {
+      await _firestore.collection('sale_requests').doc(requestId).update({
+        'status': status.name,
+      });
+      return true;
+    } catch (e) {
+      debugPrint('Error updating sale request status: $e');
+      return false;
+    }
+  }
 
   Future<void> fetchMySaleRequests(String restaurantId) async {
     _isLoading = true;

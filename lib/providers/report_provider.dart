@@ -5,9 +5,11 @@ import '../models/report.dart';
 class ReportProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Report> _myReports = [];
+  List<Report> _allReports = [];
   bool _isLoading = false;
 
   List<Report> get myReports => _myReports;
+  List<Report> get allReports => _allReports;
   bool get isLoading => _isLoading;
 
   Future<void> fetchMyReports(String userId) async {
@@ -29,8 +31,26 @@ class ReportProvider with ChangeNotifier {
       debugPrint('Fetched ${_myReports.length} reports for user: $userId');
     } catch (e) {
       debugPrint('Error fetching reports: $e');
-      // 만약 로그에 "The query requires an index. You can create it here: https://..." 
-      // 라는 메시지가 뜬다면 해당 링크를 클릭하여 인덱스를 생성해야 합니다.
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// [Admin 전용] 모든 신고 내역 가져오기
+  Future<void> fetchAllReports() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final snapshot = await _firestore.collection('reports').get();
+      _allReports = snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
+      
+      // 최신순 정렬
+      _allReports.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      
+      debugPrint('Fetched ${_allReports.length} total reports for admin.');
+    } catch (e) {
+      debugPrint('Error fetching all reports: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

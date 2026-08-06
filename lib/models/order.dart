@@ -43,20 +43,34 @@ class OrderModel {
   final DateTime? paidAt;
 
   factory OrderModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
-    return OrderModel(
-      id: doc.id,
-      userId: data['userId'] as String? ?? '',
-      productId: data['productId'] as String? ?? '',
-      productName: data['productName'] as String? ?? '',
-      price: data['price'] as int? ?? 0,
-      branchName: data['branchName'] as String? ?? '',
-      restaurantName: data['restaurantName'] as String? ?? '',
-      quantity: data['quantity'] as int? ?? 1,
-      status: OrderStatus.fromValue(data['status'] as String? ?? 'reserved'),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      paidAt: (data['paidAt'] as Timestamp?)?.toDate(),
-    );
+    try {
+      final data = doc.data();
+      if (data == null) throw Exception('문서 데이터가 비어있습니다.');
+
+      int parseNum(dynamic value) {
+        if (value == null) return 0;
+        if (value is num) return value.toInt();
+        if (value is String) return int.tryParse(value) ?? 0;
+        return 0;
+      }
+
+      return OrderModel(
+        id: doc.id,
+        userId: data['userId'] as String? ?? '',
+        productId: data['productId'] as String? ?? '',
+        productName: data['productName'] as String? ?? '',
+        price: parseNum(data['price']),
+        branchName: data['branchName'] as String? ?? '',
+        restaurantName: data['restaurantName'] as String? ?? '',
+        quantity: parseNum(data['quantity']),
+        status: OrderStatus.fromValue(data['status'] as String? ?? 'reserved'),
+        createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        paidAt: (data['paidAt'] as Timestamp?)?.toDate(),
+      );
+    } catch (e) {
+      debugPrint('Error parsing order (ID: ${doc.id}): $e');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toFirestore() {

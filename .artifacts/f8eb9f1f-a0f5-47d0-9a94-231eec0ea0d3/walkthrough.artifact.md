@@ -1,47 +1,50 @@
-# 다중 품목 일괄 매매 신청 기능 구현 보고서
+# 수거 및 재고 입고 자동화 시스템 구축 완료 보고서
 
-음식점 사장님이 여러 종류의 식품을 한 번에 리스트에 담아 효율적으로 매매 신청을 할 수 있도록 시스템을 고도화했습니다.
+음식점 사장님이 신청한 물품을 운송 요원이 수거하고, 관리자가 최종 검수하여 실제 냉장고 재고로 등록하는 전체 비즈니스 프로세스를 구현 완료했습니다.
 
-## 🛠 주요 개선 사항
+## 🛠 주요 구현 기능
 
-### 1. 장바구니 방식의 다중 등록 UI
-- **품목 추가 시스템**: 카테고리와 수량을 입력하고 '추가하기' 버튼을 눌러 임시 리스트에 담을 수 있습니다.
-- **실시간 리스트 확인**: 신청 전 어떤 품목들을 담았는지 카드로 확인할 수 있으며, 잘못 담은 항목은 개별 삭제가 가능합니다.
-- **일괄 신청**: 리스트에 담긴 모든 항목을 '매매 신청하기' 버튼 한 번으로 동시에 전송합니다.
+### 1. 운송 요원: 수거 관리 (Driver Pickup)
+- **수거 대상 목록**: 사장님들이 신청한 `pending` 상태의 물품들을 실시간으로 확인합니다.
+- **수거 완료 처리**: 실제 수거가 이루어지면 버튼 클릭으로 상태를 `collected`(수거됨)로 변경하여 관리자에게 전달합니다.
 
-### 2. 기술적 일괄 처리 (Atomic Batch)
-- **Firestore WriteBatch 도입**: 여러 개의 품목을 전송할 때 네트워크 오류 등으로 일부만 저장되는 현상을 방지하기 위해 `Batch` 처리를 적용했습니다. 모든 항목이 성공적으로 저장되거나, 실패 시 모두 취소되어 데이터 정합성을 보장합니다.
+### 2. 운영 관리자: 입고 및 재고 반영 (Admin Stocking)
+- **최종 검수**: 수거된 물품 목록을 확인하고 상태를 체크합니다.
+- **자동 재고 등록**: '입고 확정' 클릭 시, 신청된 물품 데이터가 실제 판매 가능한 **상품(`Product`) 데이터로 자동 변환**되어 `products` 컬렉션에 추가됩니다.
+- **실시간 연동**: 입고 완료 시 청년 이용자들의 '음식 예약하기' 화면에 즉시 해당 물품이 나타납니다.
 
-### 3. 사용자 경험(UX) 최적화
-- **반복 입력 간소화**: 품목 추가 시 지점 정보 등 공통 정보는 유지되므로, 여러 품목을 연속해서 등록하기 편리해졌습니다.
-- **신청 건수 요약**: 버튼 내에 '총 N건 신청하기'와 같이 요약 정보를 표시하여 최종 확인을 돕습니다.
+### 3. 데이터 무결성 보장
+- **3단계 상태 관리**: `신청 완료(pending)` → `수거 완료(collected)` → `입고 완료(stocked)`의 엄격한 상태 관리를 통해 데이터 누락을 방지합니다.
 
-## 📸 개선된 신청 흐름
+## 📸 프로세스 흐름 요약
 
 ````carousel
 ```markdown
-### 1단계: 품목 담기
-식품 정보를 입력하고 '리스트에 추가'를 누릅니다.
-여러 카테고리를 자유롭게 섞어서 담을 수 있습니다.
+### Step 1: 기사님 수거
+운송 관리 홈에서 '수거 대상 목록'을 누릅니다.
+수거할 식당과 품목을 확인하고 '수거 완료'를 처리합니다.
 ```
 <!-- slide -->
 ```markdown
-### 2단계: 목록 확인 및 편집
-화면 하단에 쌓인 품목 리스트를 확인합니다.
-수정이 필요한 경우 삭제 아이콘으로 바로 제거합니다.
+### Step 2: 관리자 입고
+관리자 홈에서 '판매 수량 업데이트'를 누릅니다.
+기사님이 수거해온 물품 리스트를 확인하고 '입고 확정'을 누릅니다.
 ```
 <!-- slide -->
 ```markdown
-### 3단계: 일괄 매매 신청
-모든 준비가 끝나면 하단의 주황색 버튼을 눌러
-모든 품목을 한꺼번에 수거 신청합니다.
+### Step 3: 재고 자동 반영
+입고된 물품은 별도의 입력 없이도
+자동으로 냉장고 현황(청년 예약 화면)에 업데이트됩니다.
 ```
 ````
 
 ## 📂 업데이트된 파일
 
-- [SaleProvider](file:///C:/Users/nolga/OneDrive/바탕 화면/Flutter/lib/providers/sale_provider.dart): `submitMultipleSaleRequests` (Batch 처리 로직) 추가.
-- [SaleRegistrationScreen](file:///C:/Users/nolga/OneDrive/바탕 화면/Flutter/lib/screens/provider/sale_registration_screen.dart): 다중 품목 관리 UI 및 로직 구현.
+- **Providers**: [SaleProvider](file:///C:/Users/nolga/OneDrive/바탕 화면/Flutter/lib/providers/sale_provider.dart), [InventoryProvider](file:///C:/Users/nolga/OneDrive/바탕 화면/Flutter/lib/providers/inventory_provider.dart)
+- **Screens**:
+    - [DriverPickupListScreen](file:///C:/Users/nolga/OneDrive/바탕 화면/Flutter/lib/screens/provider/driver_pickup_list_screen.dart) [NEW]
+    - [AdminStockingManageScreen](file:///C:/Users/nolga/OneDrive/바탕 화면/Flutter/lib/screens/provider/admin_stocking_manage_screen.dart) [NEW]
+- **Models**: [SaleRequest](file:///C:/Users/nolga/OneDrive/바탕 화면/Flutter/lib/models/sale_request.dart) (`stocked` 상태 추가)
 
 > [!TIP]
-> 이제 사장님은 '반찬 5개, 국 3개, 베이커리 2개'를 각각 따로 신청할 필요 없이 한 화면에서 한 번에 처리하실 수 있습니다.
+> 이제 사장님 앱에서 음식을 등록하고, 기사님 앱에서 수거하고, 관리자 앱에서 입고를 누르는 **완전한 자원 선순환 시나리오**를 테스트할 수 있습니다.

@@ -4,6 +4,7 @@ import 'product.dart';
 enum SaleRequestStatus {
   pending('신청 완료'),
   collected('수거 완료'),
+  stocked('입고 완료'),
   cancelled('취소됨');
 
   final String label;
@@ -43,18 +44,32 @@ class SaleRequest {
   int get totalPrice => quantity * pricePerUnit;
 
   factory SaleRequest.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
-    return SaleRequest(
-      id: doc.id,
-      restaurantId: data['restaurantId'] as String? ?? '',
-      restaurantName: data['restaurantName'] as String? ?? '',
-      branchName: data['branchName'] as String? ?? '',
-      category: ProductCategory.fromValue(data['category'] as String? ?? 'processed'),
-      quantity: data['quantity'] as int? ?? 0,
-      pricePerUnit: data['pricePerUnit'] as int? ?? 0,
-      status: SaleRequestStatus.fromValue(data['status'] as String? ?? 'pending'),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-    );
+    try {
+      final data = doc.data();
+      if (data == null) throw Exception('문서 데이터가 비어있습니다.');
+
+      int parseNum(dynamic value) {
+        if (value == null) return 0;
+        if (value is num) return value.toInt();
+        if (value is String) return int.tryParse(value) ?? 0;
+        return 0;
+      }
+
+      return SaleRequest(
+        id: doc.id,
+        restaurantId: data['restaurantId'] as String? ?? '',
+        restaurantName: data['restaurantName'] as String? ?? '',
+        branchName: data['branchName'] as String? ?? '',
+        category: ProductCategory.fromValue(data['category'] as String? ?? 'processed'),
+        quantity: parseNum(data['quantity']),
+        pricePerUnit: parseNum(data['pricePerUnit']),
+        status: SaleRequestStatus.fromValue(data['status'] as String? ?? 'pending'),
+        createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      );
+    } catch (e) {
+      debugPrint('Error parsing sale request (ID: ${doc.id}): $e');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toFirestore() {

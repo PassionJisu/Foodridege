@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 enum ProductCategory {
   bakery('베이커리'),
@@ -10,7 +11,7 @@ enum ProductCategory {
   final String label;
   const ProductCategory(this.label);
 
-  factory ProductCategory.fromValue(String value) {
+  static ProductCategory fromValue(String value) {
     return ProductCategory.values.firstWhere(
       (e) => e.name == value,
       orElse: () => ProductCategory.processed,
@@ -45,17 +46,32 @@ class Product {
   }
 
   factory Product.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
-    return Product(
-      id: doc.id,
-      name: data['name'] as String? ?? '',
-      category: ProductCategory.fromValue(data['category'] as String? ?? 'processed'),
-      quantity: data['quantity'] as int? ?? 0,
-      price: data['price'] as int? ?? 0,
-      donorName: data['donorName'] as String? ?? '',
-      branchName: data['branchName'] as String? ?? '늘찬 라운지 1호점',
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-    );
+    try {
+      final data = doc.data();
+      if (data == null) throw Exception('문서 데이터가 비어있습니다.');
+
+      // 더 안전한 타입 변환 로직
+      int parseNum(dynamic value) {
+        if (value == null) return 0;
+        if (value is num) return value.toInt();
+        if (value is String) return int.tryParse(value) ?? 0;
+        return 0;
+      }
+
+      return Product(
+        id: doc.id,
+        name: data['name'] as String? ?? '이름 없음',
+        category: ProductCategory.fromValue(data['category'] as String? ?? 'processed'),
+        quantity: parseNum(data['quantity']),
+        price: parseNum(data['price']),
+        donorName: data['donorName'] as String? ?? '익명',
+        branchName: data['branchName'] as String? ?? '늘찬 라운지 1호점',
+        createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      );
+    } catch (e) {
+      debugPrint('Error parsing product (ID: ${doc.id}): $e');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toFirestore() {

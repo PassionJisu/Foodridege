@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/feature_tile.dart';
 
+import 'driver_pickup_list_screen.dart';
+
 class DriverHomeScreen extends StatelessWidget {
   const DriverHomeScreen({super.key});
 
@@ -45,11 +47,17 @@ class DriverHomeScreen extends StatelessWidget {
           subtitle: '신청 업체 정차 지점 확인',
           comingSoon: true,
         ),
-        const FeatureTile(
+        FeatureTile(
           icon: Icons.checklist_rtl_rounded,
           title: '수거 대상 목록 (21:30 확정)',
           subtitle: '당일 수거 신청 업체 리스트',
-          comingSoon: true,
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DriverPickupListScreen()),
+            );
+          },
         ),
         const FeatureTile(
           icon: Icons.stars_rounded,
