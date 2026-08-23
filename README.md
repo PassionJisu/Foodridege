@@ -1,17 +1,71 @@
-# flutter_app
+# Foodridge
 
-A new Flutter project.
+지역 식자재 순환과 조리학과 외식 대전을 연결하는 Flutter 앱입니다.  
+할매키친 컨셉은 제거하고, **친구카세 · 자판기 · 외국인 유학생용 맵** 중심으로 재구성했습니다.
 
-## Getting Started
+로그인 화면 라벨은 `login` / `password` / `register`입니다. 로그인 후 기본 화면은 **마이 페이지**입니다.
 
-This project is a starting point for a Flutter application.
+## 이용자 탭
 
-A few resources to get you started if this is your first Flutter project:
+| 순서 | 탭 | 내용 |
+|------|----|------|
+| 1 | 친구카세 | 지역 조리학과 외식 대전 |
+| 2 | 자판기 | 당일 반찬 재고 조회 |
+| 3 | 마이 | 인사, 기여 g, 이용 횟수 |
+| 4 | Foodridge | 외국인 가게 맵 (영어) |
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+음식 구경·나누기, 커뮤니티, 스탬프, 칭호, 검수 과정은 없습니다.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 마이 페이지
+
+- 인사: 반갑습니다, `{이름}`님. 끼니 거르지 마세요. 광주시가 지원합니다.
+- 기여 무게: **자판기 이용 횟수 × 200g**
+- 자판기 이용 횟수, 친구카세 이용 횟수, 이용 일수, 쌓인 리워드, 외식 쿠폰
+
+## 친구카세
+
+광주·전남 조리학과와 대전 조리학과가 한 팀씩 돌아가며 겨루는 외식 대전입니다.  
+흑백 요리사 톤의 포스터 위에 현황·식권 버튼이 있고, 오른쪽 위에 외식 쿠폰 수와 응원하기가 있습니다.
+
+- 식권: 경기당 1인 1매, 경기 3일 전까지 취소 가능
+- 현장 키오스크에서 보증금 제외 **1,000원** 발권 (앱 표시가 1,500원)
+- 별점·피드백은 **발권한 사람만** 가능하며, 평가해야 리워드 스택이 1 증가합니다
+- 응원하기: 팀 랭킹 대시보드
+
+## 자판기
+
+무인 자판기 재고를 앱에서 조회합니다. 앱 안 예약·결제는 하지 않습니다.
+
+- 지점 선택, 슬롯 최대 **20**
+- 당일 반찬만 적재, 사진과 반찬명만 표시
+- **1,000원 / 200g** 균일
+- 사용자·기사에게 보이는 번호는 항상 **1–20**, 지점마다 내부 번호는 다릅니다
+- 기사: 사진·수량 입력 → 번호 부여 → **입고 마무리** (이후 24시간 전량 폐기)
+- 점심 이후 수거 출발 전 **전량 폐기** 시 재고 초기화, 폐기 확인 표를 자판기에 부착
+- 학생식당 잔반이 부족하면 B급 농산물로 식자재를 보충합니다
+- 기여 무게 배너는 자판기 이용 기준이며, CO2 등 부가 지표는 넣지 않습니다
+
+## Foodridge 맵
+
+공공기관 서비스와 겹치지 않도록, 배민·쿠팡이츠에 잘 안 나오는 **외국인 운영 가게**만 다룹니다. UI는 영어입니다.
+
+- 전남대 근처 임의 가게 5곳 (할랄 1, 비건 1, 채식 1 포함)
+- 할랄 / 비건 / VEG 인증 마크
+- 제휴 가게는 Too Good To Go처럼 당일 잉여 박스를 싸게 안내
+- 리뷰는 해당 식당 페이지에서만 확인·작성 (별도 리뷰 탭 없음)
+
+## 역할
+
+- **이용자**: 마이, 친구카세, 자판기 조회, Foodridge 맵
+- **학생식당 담당자**: 잔반·B급 농산물 수거 신청
+- **운송 기사님**: 수거, 자판기 번호 부여 입고, 폐기
+- **관리자**: 자판기 입고·폐기 현황, 신고 관리 (검수 없음)
+
+## 실행
+
+Firebase Authentication(이메일/비밀번호)과 Firestore가 연결되어 있어야 로그인할 수 있습니다.
+
+```bash
+flutter pub get
+flutter run
+```
