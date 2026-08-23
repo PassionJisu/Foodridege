@@ -36,6 +36,18 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          if (shop.photoAsset != null) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.asset(
+                shop.photoAsset!,
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           Row(
             children: [
               Expanded(

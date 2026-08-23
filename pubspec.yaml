@@ -66,9 +66,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/chingu_poster.png
-    - assets/images/vending_banner.png
-    - assets/images/foodridge_logo.png
+    - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

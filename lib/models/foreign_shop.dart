@@ -13,6 +13,7 @@ class ForeignShop {
     this.partnerSurplus = false,
     this.surplusLabel,
     this.surplusPrice,
+    this.photoAsset,
   });
 
   final String id;
@@ -26,6 +27,7 @@ class ForeignShop {
   final bool partnerSurplus;
   final String? surplusLabel;
   final int? surplusPrice;
+  final String? photoAsset;
 }
 
 class ShopReview {

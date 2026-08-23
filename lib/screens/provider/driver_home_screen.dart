@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/feature_tile.dart';
 import 'driver_pickup_list_screen.dart';
+import 'driver_pickup_route_screen.dart';
 import 'driver_stocking_screen.dart';
 
 class DriverHomeScreen extends StatelessWidget {
@@ -39,6 +40,18 @@ class DriverHomeScreen extends StatelessWidget {
               ],
             ),
           ),
+        ),
+        FeatureTile(
+          icon: Icons.route_outlined,
+          title: '수거 동선 확인',
+          subtitle: '오늘 광주 01구역 정차 지점',
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const DriverPickupRouteScreen()),
+            );
+          },
         ),
         FeatureTile(
           icon: Icons.kitchen_outlined,

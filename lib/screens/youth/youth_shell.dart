@@ -67,7 +67,7 @@ class _YouthShellState extends State<YouthShell> {
             ? AppColors.chinguBlack
             : isVending
                 ? AppColors.vendingBg
-                : Colors.white,
+                : AppColors.canvas,
         indicatorColor: isChingu
             ? AppColors.gold.withValues(alpha: 0.25)
             : isVending

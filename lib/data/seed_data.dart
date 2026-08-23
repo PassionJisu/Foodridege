@@ -130,6 +130,7 @@ class SeedData {
       partnerSurplus: true,
       surplusLabel: "Today's lamb biryani box",
       surplusPrice: 4500,
+      photoAsset: 'assets/images/shop_biryani.png',
     ),
     ForeignShop(
       id: 'green-leaf',
@@ -140,6 +141,7 @@ class SeedData {
       lat: 35.1751,
       lng: 126.9104,
       badge: DietBadge.vegan,
+      photoAsset: 'assets/images/shop_vegan.png',
     ),
     ForeignShop(
       id: 'sprout-house',
@@ -150,6 +152,7 @@ class SeedData {
       lat: 35.1742,
       lng: 126.9038,
       badge: DietBadge.vegetarian,
+      photoAsset: 'assets/images/shop_bibimbap.png',
     ),
     ForeignShop(
       id: 'warung',
@@ -163,6 +166,7 @@ class SeedData {
       partnerSurplus: true,
       surplusLabel: 'Nasi goreng surprise bag',
       surplusPrice: 3900,
+      photoAsset: 'assets/images/shop_nasi.png',
     ),
     ForeignShop(
       id: 'samarkand',
@@ -173,6 +177,7 @@ class SeedData {
       lat: 35.1768,
       lng: 126.9121,
       badge: DietBadge.none,
+      photoAsset: 'assets/images/shop_plov.png',
     ),
     ForeignShop(
       id: 'golden-dragon',
@@ -187,6 +192,7 @@ class SeedData {
       partnerSurplus: true,
       surplusLabel: "Today's dumpling & fried rice box",
       surplusPrice: 4200,
+      photoAsset: 'assets/images/shop_chinese.png',
     ),
   ];
 

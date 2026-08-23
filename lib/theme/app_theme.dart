@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color canvas = Color(0xFFF6F7F2);
-  static const Color primary = Color(0xFF2E7D32);
-  static const Color secondary = Color(0xFF66BB6A);
-  static const Color providerPrimary = Color(0xFF1565C0);
+  /// Warm cream from the Foodridge illustration wallpaper.
+  static const Color canvas = Color(0xFFFDF6E9);
+  static const Color ink = Color(0xFF3C2A21);
+  static const Color sage = Color(0xFF5E734C);
+  static const Color primary = Color(0xFF5E734C);
+  static const Color secondary = Color(0xFFC9844A);
+  static const Color providerPrimary = Color(0xFF5B6E4E);
 
   static const Color gold = Color(0xFFC5A059);
   static const Color goldBright = Color(0xFFD4AF37);
-  static const Color chinguBlack = Color(0xFF050505);
+  static const Color chinguBlack = Color(0xFF0B0B0B);
   static const Color chinguCard = Color(0xFF141414);
   static const Color chinguBorder = Color(0xFF333333);
   static const Color liveRed = Color(0xFFE53935);
@@ -29,21 +32,26 @@ class AppTheme {
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.canvas,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primary,
+        seedColor: AppColors.sage,
         brightness: Brightness.light,
         surface: AppColors.canvas,
+        primary: AppColors.sage,
       ),
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         elevation: 0,
+        backgroundColor: AppColors.canvas,
+        foregroundColor: AppColors.ink,
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: const Color(0xFFFFFBF3),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.sage,
+          foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
