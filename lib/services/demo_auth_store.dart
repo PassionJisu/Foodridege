@@ -32,23 +32,7 @@ class DemoAuthStore {
         chinguUsageCount: 2,
         rewardStack: 2,
         mealCouponCount: 1,
-      ),
-    ),
-    _DemoCredential(
-      email: 'resident@foodridge.kr',
-      user: AppUser(
-        uid: 'demo-resident',
-        email: 'resident@foodridge.kr',
-        role: UserRole.resident,
-        name: '박지역',
-        birthDate: DateTime(1994, 7, 8),
-        rrnLastDigit: '2',
-        phone: '010-2000-0002',
-        address: '광주 북구 용봉동',
-        createdAt: DateTime(2026, 4, 11),
-        vendingUsageCount: 5,
-        chinguUsageCount: 1,
-        rewardStack: 1,
+        reviewCount: 2,
       ),
     ),
     _DemoCredential(
@@ -63,6 +47,7 @@ class DemoAuthStore {
         phone: '010-2000-0003',
         businessRegistrationNumber: '123-45-67890',
         createdAt: DateTime(2026, 2, 18),
+        helpedYouthCount: 128,
       ),
     ),
     _DemoCredential(
@@ -103,13 +88,16 @@ class DemoAuthStore {
         rrnLastDigit: '1',
         phone: '010-2000-0006',
         createdAt: DateTime(2026, 1, 5),
+        vendingUsageCount: 3,
+        chinguUsageCount: 1,
+        mealCouponCount: 2,
+        helpedYouthCount: 0,
       ),
     ),
   ];
 
   static List<({String role, String email})> get directory => [
         (role: '대학생', email: 'student@foodridge.kr'),
-        (role: '지역민', email: 'resident@foodridge.kr'),
         (role: '점주', email: 'owner@foodridge.kr'),
         (role: '기관', email: 'org@foodridge.kr'),
         (role: '운송기사', email: 'driver@foodridge.kr'),

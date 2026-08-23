@@ -115,6 +115,33 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 리뷰 1회 적립. 5회마다 식권(mealCoupon) +1 (Foodridge2 리워드 규칙).
+  Future<String> recordReviewReward() async {
+    final user = _appUser;
+    if (user == null) return '로그인이 필요합니다.';
+    final nextCount = user.reviewCount + 1;
+    var coupons = user.mealCouponCount;
+    var message = '리뷰가 등록되었습니다. ($nextCount회)';
+    if (nextCount % AppUser.reviewsPerCoupon == 0) {
+      coupons += 1;
+      message =
+          '리뷰 $nextCount회 달성! 식권 1장이 발급되었습니다. (보유 $coupons장)';
+    } else {
+      final left = AppUser.reviewsPerCoupon - (nextCount % AppUser.reviewsPerCoupon);
+      message =
+          '리뷰가 등록되었습니다. 식권까지 $left회 남았어요. ($nextCount회)';
+    }
+    final next = user.copyWith(
+      reviewCount: nextCount,
+      mealCouponCount: coupons,
+      rewardStack: user.rewardStack + 1,
+    );
+    _appUser = next;
+    DemoAuthStore.replaceUser(next);
+    notifyListeners();
+    return message;
+  }
+
   void clearError() {
     _errorMessage = null;
     notifyListeners();

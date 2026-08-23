@@ -7,6 +7,7 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/chingu_provider.dart';
 import '../../../theme/app_theme.dart';
 import 'chingu_ranking_screen.dart';
+import 'ticket_deposit_payment_screen.dart';
 import 'ticket_history_screen.dart';
 
 class ChinguHubScreen extends StatefulWidget {
@@ -476,7 +477,15 @@ class _MatchCard extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: ticket != null
                     ? null
-                    : () {
+                    : () async {
+                        final paid = await Navigator.of(context).push<bool>(
+                          MaterialPageRoute(
+                            builder: (_) => TicketDepositPaymentScreen(
+                              matchTitle: chingu.vsTitle(match),
+                            ),
+                          ),
+                        );
+                        if (paid != true || !context.mounted) return;
                         final error = chingu.reserveTicket(
                           userId: user.uid,
                           matchId: match.id,
@@ -484,7 +493,7 @@ class _MatchCard extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              error ?? '식권이 예약되었습니다. 현장에서 1,000원으로 발권하세요.',
+                              error ?? '보증금 결제 후 식권이 예약되었습니다. 현장에서 1,000원으로 발권하세요.',
                             ),
                           ),
                         );

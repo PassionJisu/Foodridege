@@ -130,9 +130,10 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
           ),
           const SizedBox(height: 12),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (_comment.text.trim().isEmpty) return;
-              final name = context.read<AuthProvider>().appUser?.name ?? 'Guest';
+              final auth = context.read<AuthProvider>();
+              final name = auth.appUser?.name ?? 'Guest';
               provider.addReview(
                 shopId: shop.id,
                 author: name,
@@ -140,8 +141,10 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                 comment: _comment.text,
               );
               _comment.clear();
+              final rewardMessage = await auth.recordReviewReward();
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Review posted on this restaurant only.')),
+                SnackBar(content: Text(rewardMessage)),
               );
             },
             child: const Text('Post review'),

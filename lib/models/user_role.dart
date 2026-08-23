@@ -1,6 +1,5 @@
 enum UserRole {
   student('student', '대학생', isProvider: false),
-  resident('resident', '지역민', isProvider: false),
   owner('owner', '점주', isProvider: true),
   org('org', '기관', isProvider: true),
   driver('driver', '운송기사', isProvider: true),
@@ -12,12 +11,43 @@ enum UserRole {
   final String label;
   final bool isProvider;
 
-  bool get isConsumer => this == student || this == resident;
+  bool get isConsumer => this == student;
+
+  /// 친구카세(식권/응원) 접근
+  bool get canAccessChingu => this == student || this == admin;
+
+  /// 자판기 조회
+  bool get canAccessVending =>
+      this == student || this == org || this == driver || this == admin;
+
+  /// Foodridge(외국인 가게 맵) 접근
+  bool get canAccessFoodridge =>
+      this == student || this == owner || this == admin;
+
+  /// 홈 배너에 이용 카운트(기여 무게·자판기/친구카세 횟수) 표시
+  bool get showsUsageStats => this == student || this == admin;
+
+  /// 점주 가게/잔반 등록
+  bool get canManageStore => this == owner || this == admin;
+
+  /// 기관 입고 신청 (지점 선택 없음)
+  bool get canSubmitSupply => this == org || this == admin;
+
+  /// 자판기 입고·재고 관리
+  bool get canManageVending => this == driver || this == admin;
+
+  /// 네이버맵 수거 동선
+  bool get canViewPickupRoute => this == driver || this == admin;
+
+  /// 문의/신고
+  bool get canUseSupport => this == student || this == admin;
+
+  /// 신고 관리
+  bool get canManageReports => this == admin;
 
   static UserRole fromValue(String value) {
     return switch (value) {
-      'youth' || 'student' => UserRole.student,
-      'resident' => UserRole.resident,
+      'youth' || 'student' || 'resident' => UserRole.student,
       'restaurant_owner' || 'owner' => UserRole.owner,
       'org' => UserRole.org,
       'driver' => UserRole.driver,

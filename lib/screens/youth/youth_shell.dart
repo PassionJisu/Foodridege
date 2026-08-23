@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/app_user.dart';
+import '../../models/user_role.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/access_gate.dart';
 import 'chingu/chingu_poster_screen.dart';
 import 'foodridge/foodridge_map_screen.dart';
-import 'my_page_screen.dart';
+import 'home_screen.dart';
 import 'vending/vending_home_screen.dart';
 
+/// Same shell for all roles; destinations are gated by [UserRole] permissions.
 class YouthShell extends StatefulWidget {
   const YouthShell({super.key});
 
@@ -17,7 +20,30 @@ class YouthShell extends StatefulWidget {
 }
 
 class _YouthShellState extends State<YouthShell> {
-  int _index = 2;
+  int _index = 0;
+
+  static const _pages = [
+    HomeScreen(),
+    ChinguPosterScreen(),
+    VendingHomeScreen(),
+    FoodridgeMapScreen(),
+  ];
+
+  Future<void> _onSelect(int value, UserRole role) async {
+    if (value == 1 && !role.canAccessChingu) {
+      await showAccessDenied(context, '친구카세는 대학생·관리자만 이용할 수 있어요.');
+      return;
+    }
+    if (value == 2 && !role.canAccessVending) {
+      await showAccessDenied(context, '자판기 메뉴에 대한 권한이 없습니다.');
+      return;
+    }
+    if (value == 3 && !role.canAccessFoodridge) {
+      await showAccessDenied(context, 'Foodridge는 현재 역할에서 이용할 수 없어요.');
+      return;
+    }
+    setState(() => _index = value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,20 +54,14 @@ class _YouthShellState extends State<YouthShell> {
       return _SuspendedView(user: user, onLogout: auth.signOut);
     }
 
-    const pages = [
-      ChinguPosterScreen(),
-      VendingHomeScreen(),
-      MyPageScreen(),
-      FoodridgeMapScreen(),
-    ];
-
-    final isChingu = _index == 0;
-    final isVending = _index == 1;
+    final role = user.role;
+    final isChingu = _index == 1;
+    final isVending = _index == 2;
     final isFoodridge = _index == 3;
     final darkNav = isChingu || isVending;
 
     return Scaffold(
-      body: IndexedStack(index: _index, children: pages),
+      body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
           labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -61,51 +81,54 @@ class _YouthShellState extends State<YouthShell> {
           }),
         ),
         child: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (value) => setState(() => _index = value),
-        backgroundColor: isChingu
-            ? AppColors.chinguBlack
-            : isVending
-                ? AppColors.vendingBg
-                : AppColors.canvas,
-        indicatorColor: isChingu
-            ? AppColors.gold.withValues(alpha: 0.25)
-            : isVending
-                ? AppColors.vendingLeaf.withValues(alpha: 0.35)
-                : AppColors.primary.withValues(alpha: 0.15),
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.restaurant_menu, color: darkNav ? Colors.white54 : null),
-            selectedIcon: Icon(
-              Icons.restaurant_menu,
-              color: isChingu ? AppColors.gold : AppColors.primary,
+          selectedIndex: _index,
+          onDestinationSelected: (value) => _onSelect(value, role),
+          backgroundColor: isChingu
+              ? AppColors.chinguBlack
+              : isVending
+                  ? AppColors.vendingBg
+                  : AppColors.canvas,
+          indicatorColor: isChingu
+              ? AppColors.gold.withValues(alpha: 0.25)
+              : isVending
+                  ? AppColors.vendingLeaf.withValues(alpha: 0.35)
+                  : AppColors.primary.withValues(alpha: 0.15),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined, color: darkNav ? Colors.white54 : null),
+              selectedIcon: Icon(
+                Icons.home,
+                color: darkNav ? Colors.white : AppColors.primary,
+              ),
+              label: '홈',
             ),
-            label: '친구카세',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.kitchen_outlined, color: darkNav ? Colors.white54 : null),
-            selectedIcon: Icon(
-              Icons.kitchen,
-              color: isVending ? AppColors.vendingAccent : AppColors.primary,
+            NavigationDestination(
+              icon: Icon(Icons.restaurant_menu, color: darkNav ? Colors.white54 : null),
+              selectedIcon: Icon(
+                Icons.restaurant_menu,
+                color: isChingu ? AppColors.gold : AppColors.primary,
+              ),
+              label: '친구카세',
             ),
-            label: '자판기',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline, color: darkNav ? Colors.white54 : null),
-            selectedIcon: const Icon(Icons.person),
-            label: '마이',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.map_outlined, color: darkNav ? Colors.white54 : null),
-            selectedIcon: Icon(
-              Icons.map,
-              color: isFoodridge ? AppColors.primary : null,
+            NavigationDestination(
+              icon: Icon(Icons.kitchen_outlined, color: darkNav ? Colors.white54 : null),
+              selectedIcon: Icon(
+                Icons.kitchen,
+                color: isVending ? AppColors.vendingAccent : AppColors.primary,
+              ),
+              label: '자판기',
             ),
-            label: 'Foodridge',
-          ),
-        ],
-      ),
+            NavigationDestination(
+              icon: Icon(Icons.map_outlined, color: darkNav ? Colors.white54 : null),
+              selectedIcon: Icon(
+                Icons.map,
+                color: isFoodridge ? AppColors.primary : null,
+              ),
+              label: 'Foodridge',
+            ),
+          ],
+        ),
       ),
     );
   }

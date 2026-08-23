@@ -26,6 +26,8 @@ class AppUser {
     this.chinguUsageCount = 0,
     this.rewardStack = 0,
     this.mealCouponCount = 0,
+    this.helpedYouthCount = 0,
+    this.reviewCount = 0,
   });
 
   final String uid;
@@ -50,6 +52,17 @@ class AppUser {
   final int chinguUsageCount;
   final int rewardStack;
   final int mealCouponCount;
+  /// 점주 데모용: 배려를 받은 청년 수
+  final int helpedYouthCount;
+  /// 리뷰 작성 횟수 (5회마다 식권 리워드)
+  final int reviewCount;
+
+  static const reviewsPerCoupon = 5;
+
+  int get reviewsToNextCoupon {
+    final rem = reviewCount % reviewsPerCoupon;
+    return rem == 0 && reviewCount > 0 ? reviewsPerCoupon : reviewsPerCoupon - rem;
+  }
 
   int get contributedGrams => vendingUsageCount * 200;
 
@@ -72,6 +85,8 @@ class AppUser {
     int? mealCouponCount,
     int? freeMealCount,
     int? totalUsageCount,
+    int? helpedYouthCount,
+    int? reviewCount,
     DateTime? createdAt,
   }) {
     return AppUser(
@@ -97,6 +112,8 @@ class AppUser {
       chinguUsageCount: chinguUsageCount ?? this.chinguUsageCount,
       rewardStack: rewardStack ?? this.rewardStack,
       mealCouponCount: mealCouponCount ?? this.mealCouponCount,
+      helpedYouthCount: helpedYouthCount ?? this.helpedYouthCount,
+      reviewCount: reviewCount ?? this.reviewCount,
     );
   }
 
@@ -125,6 +142,8 @@ class AppUser {
       chinguUsageCount: data['chinguUsageCount'] as int? ?? 0,
       rewardStack: data['rewardStack'] as int? ?? 0,
       mealCouponCount: data['mealCouponCount'] as int? ?? data['freeMealCount'] as int? ?? 0,
+      helpedYouthCount: data['helpedYouthCount'] as int? ?? 0,
+      reviewCount: data['reviewCount'] as int? ?? 0,
     );
   }
 
@@ -152,6 +171,8 @@ class AppUser {
       'chinguUsageCount': chinguUsageCount,
       'rewardStack': rewardStack,
       'mealCouponCount': mealCouponCount,
+      'helpedYouthCount': helpedYouthCount,
+      'reviewCount': reviewCount,
     };
   }
 }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class AppColors {
   /// Warm cream from the Foodridge illustration wallpaper.
   static const Color canvas = Color(0xFFFDF6E9);
+  /// Slightly deeper cream for stat chips (contrast without going gray).
+  static const Color canvasDeep = Color(0xFFE6DCC8);
   static const Color ink = Color(0xFF3C2A21);
   static const Color sage = Color(0xFF5E734C);
   static const Color primary = Color(0xFF5E734C);

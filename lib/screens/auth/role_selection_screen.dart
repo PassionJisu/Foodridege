@@ -40,18 +40,11 @@ class RoleSelectionScreen extends StatelessWidget {
             description: '자판기, 친구카세, Foodridge 맵',
             onTap: () => _goToSignup(context, UserRole.student),
           ),
-          const SizedBox(height: 12),
-          RoleCard(
-            role: UserRole.resident,
-            icon: Icons.home_outlined,
-            description: '자판기, 친구카세, 지역 순환 참여',
-            onTap: () => _goToSignup(context, UserRole.resident),
-          ),
           const SizedBox(height: 24),
           Text(
             '공급자 / 운영',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppThemeColors.provider,
+                  color: const Color(0xFF1565C0),
                   fontWeight: FontWeight.bold,
                 ),
           ),
@@ -59,28 +52,28 @@ class RoleSelectionScreen extends StatelessWidget {
           RoleCard(
             role: UserRole.owner,
             icon: Icons.storefront_outlined,
-            description: '잔반 · B급 농산물 수거 신청',
+            description: 'Foodridge 잔반 · 가게 등록',
             onTap: () => _goToSignup(context, UserRole.owner),
           ),
           const SizedBox(height: 12),
           RoleCard(
             role: UserRole.org,
             icon: Icons.account_balance_outlined,
-            description: '순환 현황 확인 및 지역 지원',
+            description: '자판기 입고 신청 (지점 선택 없음)',
             onTap: () => _goToSignup(context, UserRole.org),
           ),
           const SizedBox(height: 12),
           RoleCard(
             role: UserRole.driver,
             icon: Icons.local_shipping_outlined,
-            description: '수거, 자판기 번호 부여 입고, 폐기',
+            description: '네이버맵 수거 동선, 자판기 입고',
             onTap: () => _goToSignup(context, UserRole.driver),
           ),
           const SizedBox(height: 12),
           RoleCard(
             role: UserRole.admin,
             icon: Icons.admin_panel_settings_outlined,
-            description: '자판기 운영, 폐기 및 신고 관리',
+            description: '모든 기능 이용 · 신고 관리',
             onTap: () => _goToSignup(context, UserRole.admin),
           ),
         ],
@@ -95,8 +88,4 @@ class RoleSelectionScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class AppThemeColors {
-  static const Color provider = Color(0xFF1565C0);
 }
