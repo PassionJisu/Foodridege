@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/report_provider.dart';
-import '../../providers/auth_provider.dart';
+import '../../models/app_user.dart';
 import '../../models/report.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/report_provider.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -59,7 +60,8 @@ class _ReportScreenState extends State<ReportScreen> {
                 const Text('신고 카테고리', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<ReportType>(
-                  value: _selectedType,
+                  key: ValueKey(_selectedType),
+                  initialValue: _selectedType,
                   decoration: const InputDecoration(border: OutlineInputBorder()),
                   items: ReportType.values.map((type) {
                     return DropdownMenuItem(
@@ -76,7 +78,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   controller: _contentController,
                   maxLines: 5,
                   decoration: const InputDecoration(
-                    hintText: '내용을 구체적으로 적어주세요. (예: 냉장고 청결 상태, 기물 파손 등)',
+                    hintText: '내용을 구체적으로 적어주세요. (예: 자판기 청결 상태, 기물 파손 등)',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -144,7 +146,7 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  void _handleSubmit(var user) async {
+  void _handleSubmit(AppUser user) async {
     if (_contentController.text.trim().isEmpty) return;
 
     final success = await context.read<ReportProvider>().submitReport(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
@@ -122,6 +123,36 @@ class AuthProvider extends ChangeNotifier {
     _appUser = null;
     _status = AuthStatus.unauthenticated;
     notifyListeners();
+  }
+
+  Future<void> incrementChinguUsage() async {
+    final user = _appUser;
+    if (user == null) return;
+    final next = user.copyWith(chinguUsageCount: user.chinguUsageCount + 1);
+    await _persistStats(next);
+  }
+
+  Future<void> addRewardStack() async {
+    final user = _appUser;
+    if (user == null) return;
+    final next = user.copyWith(rewardStack: user.rewardStack + 1);
+    await _persistStats(next);
+  }
+
+  Future<void> _persistStats(AppUser next) async {
+    _appUser = next;
+    notifyListeners();
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(next.uid).update({
+        'vendingUsageCount': next.vendingUsageCount,
+        'chinguUsageCount': next.chinguUsageCount,
+        'rewardStack': next.rewardStack,
+        'mealCouponCount': next.mealCouponCount,
+        'freeMealCount': next.freeMealCount,
+      });
+    } catch (e) {
+      debugPrint('Failed to persist user stats: $e');
+    }
   }
 
   void clearError() {

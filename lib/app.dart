@@ -5,15 +5,15 @@ import 'screens/auth/auth_gate.dart';
 import 'screens/setup/firebase_setup_screen.dart';
 import 'theme/app_theme.dart';
 
-class ItdaApp extends StatelessWidget {
-  const ItdaApp({super.key, this.firebaseConfigured = true});
+class FoodridgeApp extends StatelessWidget {
+  const FoodridgeApp({super.key, this.firebaseConfigured = true});
 
   final bool firebaseConfigured;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '잇:다',
+      title: 'Foodridge',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       locale: const Locale('ko'),

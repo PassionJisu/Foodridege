@@ -145,6 +145,7 @@ class _SaleRequestCard extends StatelessWidget {
     switch (status) {
       case SaleRequestStatus.pending: return Colors.orange;
       case SaleRequestStatus.collected: return Colors.green;
+      case SaleRequestStatus.stocked: return Colors.blue;
       case SaleRequestStatus.cancelled: return Colors.red;
     }
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/app_user.dart';
 import '../../models/product.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sale_provider.dart';
@@ -75,7 +76,7 @@ class _SaleRegistrationScreenState extends State<SaleRegistrationScreen> {
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
                 ),
                 const SizedBox(height: 8),
-                const Text('매매할 식품 정보를 리스트에 추가해 주세요.'),
+                const Text('학생식당 잔반이 조리할 만큼 부족하면 B급 농산물로 식자재를 보충해 주세요.'),
                 const SizedBox(height: 32),
                 
                 // 입력 영역
@@ -92,7 +93,8 @@ class _SaleRegistrationScreenState extends State<SaleRegistrationScreen> {
                       const Text('식품 카테고리', style: TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<ProductCategory>(
-                        value: _selectedCategory,
+                        key: ValueKey(_selectedCategory),
+                        initialValue: _selectedCategory,
                         decoration: const InputDecoration(filled: true, fillColor: Colors.white),
                         items: ProductCategory.values.map((cat) {
                           return DropdownMenuItem(value: cat, child: Text(cat.label));
@@ -225,7 +227,7 @@ class _SaleRegistrationScreenState extends State<SaleRegistrationScreen> {
     );
   }
 
-  void _handleSubmit(var user) async {
+  void _handleSubmit(AppUser user) async {
     final success = await context.read<SaleProvider>().submitMultipleSaleRequests(
           restaurantId: user.uid,
           restaurantName: user.name,

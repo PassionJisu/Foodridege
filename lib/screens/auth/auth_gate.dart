@@ -6,7 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../provider/admin_home_screen.dart';
 import '../provider/driver_home_screen.dart';
 import '../provider/restaurant_home_screen.dart';
-import '../youth/youth_home_screen.dart';
+import '../youth/youth_shell.dart';
 import 'login_screen.dart';
 
 class AuthGate extends StatelessWidget {
@@ -39,7 +39,7 @@ class _HomeByRole extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (role) {
       case UserRole.youth:
-        return const YouthHomeScreen();
+        return const YouthShell();
       case UserRole.restaurantOwner:
         return const RestaurantHomeScreen();
       case UserRole.driver:

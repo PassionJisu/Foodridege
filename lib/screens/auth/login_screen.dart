@@ -59,13 +59,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Icon(
-                      Icons.kitchen,
+                      Icons.eco,
                       size: 72,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '잇:다',
+                      'Foodridge',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                             fontWeight: FontWeight.bold,
@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '냉장고 음식 공유 플랫폼',
+                      'Local food circulation for students',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Colors.grey.shade600,
@@ -84,15 +84,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
-                        labelText: '이메일',
+                        labelText: 'login',
                         prefixIcon: Icon(Icons.email_outlined),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return '이메일을 입력해 주세요';
+                          return 'Enter your email';
                         }
                         if (!value.contains('@')) {
-                          return '올바른 이메일 형식이 아닙니다';
+                          return 'Invalid email';
                         }
                         return null;
                       },
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                        labelText: '비밀번호',
+                        labelText: 'password',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -117,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return '비밀번호를 입력해 주세요';
+                          return 'Enter your password';
                         }
                         return null;
                       },
@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('로그인'),
+                          : const Text('login'),
                     ),
                     const SizedBox(height: 16),
                     OutlinedButton(
@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               );
                             },
-                      child: const Text('회원가입'),
+                      child: const Text('register'),
                     ),
                   ],
                 ),

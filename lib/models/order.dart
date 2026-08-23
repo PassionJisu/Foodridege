@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 enum OrderStatus {
   reserved('예약됨(장바구니)'),

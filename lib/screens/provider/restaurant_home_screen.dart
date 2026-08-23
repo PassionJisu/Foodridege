@@ -23,8 +23,8 @@ class RestaurantHomeScreen extends StatelessWidget {
       features: [
         FeatureTile(
           icon: Icons.local_shipping_outlined,
-          title: '당일 수거 신청',
-          subtitle: '잉여 식품 등록 및 매매 신청',
+          title: '잔반 · B급 농산물 수거 신청',
+          subtitle: '학생식당 잔반이 부족하면 B급 농산물로 보충',
           comingSoon: false,
           onTap: () {
             Navigator.push(

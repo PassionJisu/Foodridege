@@ -18,7 +18,7 @@ class InventoryProvider with ChangeNotifier {
 
   /// 특정 지점의 전체 음식 개수 (재고 합계)
   int getTotalCountByBranch(String branchName) {
-    return getProductsByBranch(branchName).fold(0, (sum, p) => sum + p.quantity);
+    return getProductsByBranch(branchName).fold(0, (total, p) => total + p.quantity);
   }
 
   /// 특정 지점 내의 식당 목록 및 해당 식당의 상품 개수
@@ -136,7 +136,7 @@ class InventoryProvider with ChangeNotifier {
           'category': ProductCategory.sidedish.name,
           'quantity': 10,
           'price': 3000,
-          'donorName': '할매김밥',
+          'donorName': '학생식당',
           'branchName': '늘찬 라운지 1호점',
           'createdAt': FieldValue.serverTimestamp(),
         },

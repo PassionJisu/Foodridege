@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../widgets/feature_tile.dart';
-
 import 'driver_pickup_list_screen.dart';
+import 'driver_stocking_screen.dart';
 
 class DriverHomeScreen extends StatelessWidget {
   const DriverHomeScreen({super.key});
@@ -16,11 +16,10 @@ class DriverHomeScreen extends StatelessWidget {
     return HomeScaffold(
       title: '운송 관리',
       userName: user.name,
-      roleLabel: '수거 전문 요원 (소셜 세이버)',
+      roleLabel: '자판기 입고 기사님',
       accentColor: Colors.teal.shade700,
       onLogout: () => context.read<AuthProvider>().signOut(),
       features: [
-        // 수거 노선 요약 정보
         Card(
           margin: const EdgeInsets.only(bottom: 16),
           color: Colors.teal.shade50,
@@ -30,40 +29,40 @@ class DriverHomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '오늘의 수거 노선: [광주 01구역]',
+                  '점심 이후 1회 수거 · 출발 전 전날 재고 전량 폐기',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '수거 시작: 22:00 | 목표 시간: 90분 이내',
+                  '검수 과정 없이 사진·수량 입력 후 번호를 부여해 입고합니다.',
                   style: TextStyle(fontSize: 12),
                 ),
               ],
             ),
           ),
         ),
-        const FeatureTile(
-          icon: Icons.map_outlined,
-          title: '수거 노선도 확인',
-          subtitle: '신청 업체 정차 지점 확인',
-          comingSoon: true,
-        ),
         FeatureTile(
-          icon: Icons.checklist_rtl_rounded,
-          title: '수거 대상 목록 (21:30 확정)',
-          subtitle: '당일 수거 신청 업체 리스트',
+          icon: Icons.kitchen_outlined,
+          title: '자판기 입고 · 번호 부여',
+          subtitle: '사진/반찬명 입력, 1–20 번호, 입고 마무리',
           comingSoon: false,
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const DriverPickupListScreen()),
+              MaterialPageRoute(builder: (_) => const DriverStockingScreen()),
             );
           },
         ),
-        const FeatureTile(
-          icon: Icons.stars_rounded,
-          title: '활동 보상 내역',
-          subtitle: '지급 예정 식사 포인트 확인',
-          comingSoon: true,
+        FeatureTile(
+          icon: Icons.checklist_rtl_rounded,
+          title: '수거 대상 목록',
+          subtitle: '학생식당 잔반 · B급 농산물 보충분',
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const DriverPickupListScreen()),
+            );
+          },
         ),
       ],
     );

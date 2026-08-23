@@ -22,6 +22,10 @@ class AppUser {
     this.suspendedUntil,
     this.purchaseDayCount = 0,
     this.totalUsageCount = 0,
+    this.vendingUsageCount = 0,
+    this.chinguUsageCount = 0,
+    this.rewardStack = 0,
+    this.mealCouponCount = 0,
   });
 
   final String uid;
@@ -42,10 +46,58 @@ class AppUser {
   final DateTime? suspendedUntil;
   final int purchaseDayCount;
   final int totalUsageCount;
+  final int vendingUsageCount;
+  final int chinguUsageCount;
+  final int rewardStack;
+  final int mealCouponCount;
+
+  int get contributedGrams => vendingUsageCount * 200;
+
+  int get usageDays {
+    final start = createdAt ?? DateTime.now();
+    return DateTime.now().difference(start).inDays.clamp(0, 36500) + 1;
+  }
+
+  int get displayCouponCount => mealCouponCount > 0 ? mealCouponCount : freeMealCount;
 
   bool get isSuspended {
     if (suspendedUntil == null) return false;
     return suspendedUntil!.isAfter(DateTime.now());
+  }
+
+  AppUser copyWith({
+    int? vendingUsageCount,
+    int? chinguUsageCount,
+    int? rewardStack,
+    int? mealCouponCount,
+    int? freeMealCount,
+    int? totalUsageCount,
+    DateTime? createdAt,
+  }) {
+    return AppUser(
+      uid: uid,
+      email: email,
+      role: role,
+      name: name,
+      birthDate: birthDate,
+      rrnLastDigit: rrnLastDigit,
+      phone: phone,
+      address: address,
+      schoolInfo: schoolInfo,
+      businessRegistrationNumber: businessRegistrationNumber,
+      createdAt: createdAt ?? this.createdAt,
+      streakCount: streakCount,
+      lastOrderDate: lastOrderDate,
+      freeMealCount: freeMealCount ?? this.freeMealCount,
+      penaltyPoints: penaltyPoints,
+      suspendedUntil: suspendedUntil,
+      purchaseDayCount: purchaseDayCount,
+      totalUsageCount: totalUsageCount ?? this.totalUsageCount,
+      vendingUsageCount: vendingUsageCount ?? this.vendingUsageCount,
+      chinguUsageCount: chinguUsageCount ?? this.chinguUsageCount,
+      rewardStack: rewardStack ?? this.rewardStack,
+      mealCouponCount: mealCouponCount ?? this.mealCouponCount,
+    );
   }
 
   factory AppUser.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -69,6 +121,10 @@ class AppUser {
       suspendedUntil: (data['suspendedUntil'] as Timestamp?)?.toDate(),
       purchaseDayCount: data['purchaseDayCount'] as int? ?? 0,
       totalUsageCount: data['totalUsageCount'] as int? ?? 0,
+      vendingUsageCount: data['vendingUsageCount'] as int? ?? 0,
+      chinguUsageCount: data['chinguUsageCount'] as int? ?? 0,
+      rewardStack: data['rewardStack'] as int? ?? 0,
+      mealCouponCount: data['mealCouponCount'] as int? ?? data['freeMealCount'] as int? ?? 0,
     );
   }
 
@@ -92,6 +148,10 @@ class AppUser {
       if (suspendedUntil != null) 'suspendedUntil': Timestamp.fromDate(suspendedUntil!),
       'purchaseDayCount': purchaseDayCount,
       'totalUsageCount': totalUsageCount,
+      'vendingUsageCount': vendingUsageCount,
+      'chinguUsageCount': chinguUsageCount,
+      'rewardStack': rewardStack,
+      'mealCouponCount': mealCouponCount,
     };
   }
 }

@@ -5,9 +5,9 @@ class LoungeSelectionForSaleScreen extends StatelessWidget {
   const LoungeSelectionForSaleScreen({super.key});
 
   final List<String> lounges = const [
-    '늘찬 라운지 1호점',
-    '늘찬 라운지 2호점',
-    '늘찬 라운지 3호점',
+    '전남대 자판기',
+    '광주여대 자판기',
+    '순천대 자판기',
   ];
 
   @override
@@ -38,7 +38,7 @@ class LoungeSelectionForSaleScreen extends StatelessWidget {
                 lounge,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              subtitle: const Text('당일 잉여 식품 수거 신청하기'),
+              subtitle: const Text('잔반 · B급 농산물 보충분 수거 신청'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.push(

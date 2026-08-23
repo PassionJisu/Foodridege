@@ -137,6 +137,6 @@ class SaleProvider with ChangeNotifier {
             req.status == SaleRequestStatus.collected &&
             req.createdAt.year == year && 
             req.createdAt.month == month)
-        .fold(0, (sum, req) => sum + req.totalPrice);
+        .fold(0, (total, req) => total + req.totalPrice);
   }
 }

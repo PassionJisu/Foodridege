@@ -72,7 +72,7 @@ class ReportProvider with ChangeNotifier {
         'content': content,
         'status': ReportStatus.pending.name,
         'createdAt': FieldValue.serverTimestamp(),
-        if (offenderId != null) 'offenderId': offenderId,
+        'offenderId': ?offenderId,
       });
       await fetchMyReports(userId);
       return true;

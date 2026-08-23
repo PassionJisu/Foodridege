@@ -79,7 +79,7 @@ class _CartScreenState extends State<CartScreen> {
                             children: [
                               const Text('총 결제 금액', style: TextStyle(fontSize: 16)),
                               Text(
-                                '${totalPrice}원',
+                                '$totalPrice원',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,

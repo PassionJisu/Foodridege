@@ -81,7 +81,7 @@ class _RestaurantMyPageScreenState extends State<RestaurantMyPageScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _StatItem(label: '이번 달 매매 건수', value: '${saleProvider.mySaleRequests.length}건'),
-                    _StatItem(label: '정산 예정 금액', value: '${monthlyTotal}원', color: Colors.orange),
+                    _StatItem(label: '정산 예정 금액', value: '$monthlyTotal원', color: Colors.orange),
                   ],
                 ),
               ],
@@ -171,6 +171,7 @@ class _SaleRequestTile extends StatelessWidget {
     switch (status) {
       case SaleRequestStatus.pending: return Colors.orange;
       case SaleRequestStatus.collected: return Colors.green;
+      case SaleRequestStatus.stocked: return Colors.blue;
       case SaleRequestStatus.cancelled: return Colors.red;
     }
   }

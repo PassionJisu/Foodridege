@@ -37,7 +37,7 @@ class RoleSelectionScreen extends StatelessWidget {
           RoleCard(
             role: UserRole.youth,
             icon: Icons.person_outline,
-            description: '냉장고 출입, 음식 예약 및 결제',
+            description: '자판기 이용, 친구카세 식권, Foodridge map',
             onTap: () => _goToSignup(context, UserRole.youth),
           ),
           const SizedBox(height: 24),
@@ -52,21 +52,21 @@ class RoleSelectionScreen extends StatelessWidget {
           RoleCard(
             role: UserRole.restaurantOwner,
             icon: Icons.storefront_outlined,
-            description: '음식 등록, 당일 수거 신청',
+            description: '학생식당 잔반 · B급 농산물 수거 신청',
             onTap: () => _goToSignup(context, UserRole.restaurantOwner),
           ),
           const SizedBox(height: 12),
           RoleCard(
             role: UserRole.driver,
             icon: Icons.local_shipping_outlined,
-            description: '수거 경로 확인, 지도 내비게이션',
+            description: '수거, 자판기 번호 부여 입고, 폐기',
             onTap: () => _goToSignup(context, UserRole.driver),
           ),
           const SizedBox(height: 12),
           RoleCard(
             role: UserRole.admin,
             icon: Icons.admin_panel_settings_outlined,
-            description: '지점 운영, 재고 및 신고 관리',
+            description: '자판기 운영, 폐기 및 신고 관리',
             onTap: () => _goToSignup(context, UserRole.admin),
           ),
         ],

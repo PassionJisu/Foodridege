@@ -1,6 +1,6 @@
 enum UserRole {
-  youth('youth', '청년', isProvider: false),
-  restaurantOwner('restaurant_owner', '음식점 사장님', isProvider: true),
+  youth('youth', '이용자', isProvider: false),
+  restaurantOwner('restaurant_owner', '학생식당 담당자', isProvider: true),
   driver('driver', '운송 기사님', isProvider: true),
   admin('admin', '관리자', isProvider: true);
 
