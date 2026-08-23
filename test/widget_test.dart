@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 
 import 'package:flutter_app/app.dart';
 import 'package:flutter_app/providers/auth_provider.dart';
-import 'package:flutter_app/screens/setup/firebase_setup_screen.dart';
+import 'package:flutter_app/screens/auth/login_screen.dart';
 
 void main() {
-  testWidgets('Firebase 미설정 시 설정 안내 화면 표시', (WidgetTester tester) async {
+  testWidgets('Firebase 없이도 데모 로그인 화면 표시', (WidgetTester tester) async {
     await tester.pumpWidget(
       ChangeNotifierProvider(
         create: (_) => AuthProvider(),
@@ -14,7 +14,8 @@ void main() {
       ),
     );
 
-    expect(find.byType(FirebaseSetupScreen), findsOneWidget);
-    expect(find.text('Firebase 설정 필요'), findsOneWidget);
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.text('login'), findsWidgets);
+    expect(find.text('register'), findsOneWidget);
   });
 }

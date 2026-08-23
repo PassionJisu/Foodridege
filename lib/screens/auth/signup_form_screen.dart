@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/user_role.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/demo_auth_store.dart';
 
 class SignupFormScreen extends StatefulWidget {
   const SignupFormScreen({super.key, required this.role});
@@ -24,11 +25,12 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
   final _phoneController = TextEditingController();
   final _rrnLastDigitController = TextEditingController();
   final _addressController = TextEditingController();
-  final _schoolController = TextEditingController();
   final _businessNumberController = TextEditingController();
+  final _adminSecretController = TextEditingController();
 
   DateTime? _birthDate;
   bool _obscurePassword = true;
+  String? _school = DemoAuthStore.universities.first;
 
   @override
   void dispose() {
@@ -39,8 +41,8 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
     _phoneController.dispose();
     _rrnLastDigitController.dispose();
     _addressController.dispose();
-    _schoolController.dispose();
     _businessNumberController.dispose();
+    _adminSecretController.dispose();
     super.dispose();
   }
 
@@ -79,10 +81,11 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
       rrnLastDigit: _rrnLastDigitController.text,
       phone: _phoneController.text,
       address: _addressController.text,
-      schoolInfo: widget.role == UserRole.youth ? _schoolController.text : null,
-      businessRegistrationNumber: widget.role == UserRole.restaurantOwner
+      schoolInfo: widget.role == UserRole.student ? _school : null,
+      businessRegistrationNumber: widget.role == UserRole.owner
           ? _businessNumberController.text
           : null,
+      adminSecret: widget.role == UserRole.admin ? _adminSecretController.text : null,
     );
 
     if (!mounted) return;
@@ -211,7 +214,7 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
               validator: (v) =>
                   v == null || v.trim().length < 10 ? '연락처를 입력해 주세요' : null,
             ),
-            if (widget.role == UserRole.restaurantOwner) ...[
+            if (widget.role == UserRole.owner) ...[
               const SizedBox(height: 12),
               TextFormField(
                 controller: _businessNumberController,
@@ -226,6 +229,18 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                     : null,
               ),
             ],
+            if (widget.role == UserRole.admin) ...[
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _adminSecretController,
+                decoration: const InputDecoration(
+                  labelText: '관리자 시크릿 키 *',
+                  prefixIcon: Icon(Icons.key_outlined),
+                ),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? '시크릿 키를 입력해 주세요' : null,
+              ),
+            ],
             const SizedBox(height: 24),
             _SectionTitle(title: '선택 정보'),
             const SizedBox(height: 12),
@@ -236,14 +251,20 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                 prefixIcon: Icon(Icons.location_on_outlined),
               ),
             ),
-            if (widget.role == UserRole.youth) ...[
+            if (widget.role == UserRole.student) ...[
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _schoolController,
+              DropdownButtonFormField<String>(
+                key: ValueKey(_school),
+                initialValue: _school,
                 decoration: const InputDecoration(
-                  labelText: '학교 정보',
+                  labelText: '대학 *',
                   prefixIcon: Icon(Icons.school_outlined),
                 ),
+                items: DemoAuthStore.universities
+                    .map((name) => DropdownMenuItem(value: name, child: Text(name)))
+                    .toList(),
+                onChanged: (value) => setState(() => _school = value),
+                validator: (v) => v == null || v.isEmpty ? '대학을 선택해 주세요' : null,
               ),
             ],
             const SizedBox(height: 32),

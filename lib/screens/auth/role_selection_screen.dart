@@ -20,7 +20,7 @@ class RoleSelectionScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '유형에 따라 수집되는 정보와 이용 가능한 기능이 달라집니다.',
+            '유형에 따라 이용 가능한 기능이 달라집니다. 관리자 가입에는 시크릿 키가 필요합니다.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey.shade600,
                 ),
@@ -35,10 +35,17 @@ class RoleSelectionScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           RoleCard(
-            role: UserRole.youth,
-            icon: Icons.person_outline,
-            description: '자판기 이용, 친구카세 식권, Foodridge map',
-            onTap: () => _goToSignup(context, UserRole.youth),
+            role: UserRole.student,
+            icon: Icons.school_outlined,
+            description: '자판기, 친구카세, Foodridge 맵',
+            onTap: () => _goToSignup(context, UserRole.student),
+          ),
+          const SizedBox(height: 12),
+          RoleCard(
+            role: UserRole.resident,
+            icon: Icons.home_outlined,
+            description: '자판기, 친구카세, 지역 순환 참여',
+            onTap: () => _goToSignup(context, UserRole.resident),
           ),
           const SizedBox(height: 24),
           Text(
@@ -50,10 +57,17 @@ class RoleSelectionScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           RoleCard(
-            role: UserRole.restaurantOwner,
+            role: UserRole.owner,
             icon: Icons.storefront_outlined,
-            description: '학생식당 잔반 · B급 농산물 수거 신청',
-            onTap: () => _goToSignup(context, UserRole.restaurantOwner),
+            description: '잔반 · B급 농산물 수거 신청',
+            onTap: () => _goToSignup(context, UserRole.owner),
+          ),
+          const SizedBox(height: 12),
+          RoleCard(
+            role: UserRole.org,
+            icon: Icons.account_balance_outlined,
+            description: '순환 현황 확인 및 지역 지원',
+            onTap: () => _goToSignup(context, UserRole.org),
           ),
           const SizedBox(height: 12),
           RoleCard(

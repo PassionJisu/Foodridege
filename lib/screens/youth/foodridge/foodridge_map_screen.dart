@@ -19,7 +19,7 @@ class FoodridgeMapScreen extends StatelessWidget {
     final shops = context.watch<FoodridgeProvider>().shops;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F1EC),
+      backgroundColor: AppColors.canvas,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

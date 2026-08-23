@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'screens/auth/auth_gate.dart';
-import 'screens/setup/firebase_setup_screen.dart';
 import 'theme/app_theme.dart';
 
 class FoodridgeApp extends StatelessWidget {
@@ -23,9 +22,7 @@ class FoodridgeApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: firebaseConfigured
-          ? const AuthGate()
-          : const FirebaseSetupScreen(),
+      home: const AuthGate(),
     );
   }
 }

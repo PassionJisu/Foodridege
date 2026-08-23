@@ -36,9 +36,7 @@ Future<void> main() async {
         ChangeNotifierProvider(
           create: (_) {
             final provider = AuthProvider();
-            if (firebaseConfigured) {
-              provider.initialize();
-            }
+            provider.initialize();
             return provider;
           },
         ),

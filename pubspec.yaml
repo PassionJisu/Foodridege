@@ -68,6 +68,7 @@ flutter:
   assets:
     - assets/images/chingu_poster.png
     - assets/images/vending_banner.png
+    - assets/images/foodridge_logo.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -174,6 +174,20 @@ class SeedData {
       lng: 126.9121,
       badge: DietBadge.none,
     ),
+    ForeignShop(
+      id: 'golden-dragon',
+      name: 'Yongbong Dragon',
+      cuisine: 'Chinese · Shandong',
+      description:
+          'Family-run Chinese kitchen near CNU. Hand-pulled noodles and mapo tofu, not listed on Baemin.',
+      address: 'Yongbong-ro 112, Buk-gu, Gwangju',
+      lat: 35.1761,
+      lng: 126.9086,
+      badge: DietBadge.none,
+      partnerSurplus: true,
+      surplusLabel: "Today's dumpling & fried rice box",
+      surplusPrice: 4200,
+    ),
   ];
 
   static final shopReviews = [
@@ -200,6 +214,14 @@ class SeedData {
       stars: 4,
       comment: 'Good vegetarian bibimbap. Eggs are optional — ask if you are vegan.',
       createdAt: DateTime(2026, 8, 12),
+    ),
+    ShopReview(
+      id: 'sr4',
+      shopId: 'golden-dragon',
+      author: 'Wei L.',
+      stars: 5,
+      comment: 'Tastes like home. The lunch surplus box is a fair price for students.',
+      createdAt: DateTime(2026, 8, 14),
     ),
   ];
 }

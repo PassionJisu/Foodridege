@@ -5,6 +5,7 @@ import '../../models/user_role.dart';
 import '../../providers/auth_provider.dart';
 import '../provider/admin_home_screen.dart';
 import '../provider/driver_home_screen.dart';
+import '../provider/org_home_screen.dart';
 import '../provider/restaurant_home_screen.dart';
 import '../youth/youth_shell.dart';
 import 'login_screen.dart';
@@ -38,10 +39,13 @@ class _HomeByRole extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (role) {
-      case UserRole.youth:
+      case UserRole.student:
+      case UserRole.resident:
         return const YouthShell();
-      case UserRole.restaurantOwner:
+      case UserRole.owner:
         return const RestaurantHomeScreen();
+      case UserRole.org:
+        return const OrgHomeScreen();
       case UserRole.driver:
         return const DriverHomeScreen();
       case UserRole.admin:

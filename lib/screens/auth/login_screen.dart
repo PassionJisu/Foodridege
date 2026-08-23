@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../services/demo_auth_store.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/foodridge_logo.dart';
 import 'role_selection_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,11 +45,17 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _fillDemo(String email) {
+    _emailController.text = email;
+    _passwordController.text = DemoAuthStore.password;
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
+      backgroundColor: AppColors.canvas,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -58,28 +67,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(
-                      Icons.eco,
-                      size: 72,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Foodridge',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Local food circulation for students',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
-                    ),
-                    const SizedBox(height: 40),
+                    const FoodridgeLogo(height: 120),
+                    const SizedBox(height: 32),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -145,6 +134,36 @@ class _LoginScreenState extends State<LoginScreen> {
                               );
                             },
                       child: const Text('register'),
+                    ),
+                    const SizedBox(height: 28),
+                    Text(
+                      '데모 계정  ·  비밀번호 ${DemoAuthStore.password}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '탭하면 로그인 칸이 채워집니다',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: DemoAuthStore.directory
+                          .map(
+                            (item) => ActionChip(
+                              label: Text(item.role),
+                              tooltip: item.email,
+                              onPressed: () => _fillDemo(item.email),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ],
                 ),

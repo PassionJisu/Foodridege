@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/foodridge_logo.dart';
 import '../youth/report_screen.dart';
 
 class MyPageScreen extends StatelessWidget {
@@ -15,32 +16,14 @@ class MyPageScreen extends StatelessWidget {
     final grams = user.contributedGrams;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7F4),
+      backgroundColor: AppColors.canvas,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.eco, color: Colors.white),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  'Foodridge',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.4,
-                  ),
-                ),
-              ],
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: FoodridgeLogo(height: 40),
             ),
             const SizedBox(height: 28),
             Text(

@@ -17,7 +17,7 @@ class RestaurantHomeScreen extends StatelessWidget {
     return HomeScaffold(
       title: '사장님 홈',
       userName: user.name,
-      roleLabel: '음식점 사장님',
+      roleLabel: '점주',
       accentColor: Colors.orange.shade700,
       onLogout: () => context.read<AuthProvider>().signOut(),
       features: [

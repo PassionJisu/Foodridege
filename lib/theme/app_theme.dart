@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  static const Color canvas = Color(0xFFF6F7F2);
   static const Color primary = Color(0xFF2E7D32);
   static const Color secondary = Color(0xFF66BB6A);
   static const Color providerPrimary = Color(0xFF1565C0);
@@ -26,9 +27,11 @@ class AppTheme {
   static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: AppColors.canvas,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primary,
         brightness: Brightness.light,
+        surface: AppColors.canvas,
       ),
       appBarTheme: const AppBarTheme(
         centerTitle: true,

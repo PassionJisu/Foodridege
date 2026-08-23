@@ -1,7 +1,9 @@
 enum UserRole {
-  youth('youth', '이용자', isProvider: false),
-  restaurantOwner('restaurant_owner', '학생식당 담당자', isProvider: true),
-  driver('driver', '운송 기사님', isProvider: true),
+  student('student', '대학생', isProvider: false),
+  resident('resident', '지역민', isProvider: false),
+  owner('owner', '점주', isProvider: true),
+  org('org', '기관', isProvider: true),
+  driver('driver', '운송기사', isProvider: true),
   admin('admin', '관리자', isProvider: true);
 
   const UserRole(this.value, this.label, {required this.isProvider});
@@ -10,10 +12,17 @@ enum UserRole {
   final String label;
   final bool isProvider;
 
+  bool get isConsumer => this == student || this == resident;
+
   static UserRole fromValue(String value) {
-    return UserRole.values.firstWhere(
-      (role) => role.value == value,
-      orElse: () => UserRole.youth,
-    );
+    return switch (value) {
+      'youth' || 'student' => UserRole.student,
+      'resident' => UserRole.resident,
+      'restaurant_owner' || 'owner' => UserRole.owner,
+      'org' => UserRole.org,
+      'driver' => UserRole.driver,
+      'admin' => UserRole.admin,
+      _ => UserRole.student,
+    };
   }
 }

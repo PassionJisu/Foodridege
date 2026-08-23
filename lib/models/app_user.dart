@@ -105,7 +105,7 @@ class AppUser {
     return AppUser(
       uid: doc.id,
       email: data['email'] as String? ?? '',
-      role: UserRole.fromValue(data['role'] as String? ?? 'youth'),
+      role: UserRole.fromValue(data['role'] as String? ?? 'student'),
       name: data['name'] as String? ?? '',
       birthDate: (data['birthDate'] as Timestamp?)?.toDate() ?? DateTime(2000),
       rrnLastDigit: data['rrnLastDigit'] as String? ?? '',
