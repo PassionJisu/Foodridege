@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/foodridge_provider.dart';
 import '../../../theme/app_theme.dart';
-import 'foodridge_map_screen.dart';
 import 'foodridge_reservations_screen.dart';
 import 'review_write_screen.dart';
+import 'foodridge_map_screen.dart';
 
 class ShopDetailScreen extends StatelessWidget {
   const ShopDetailScreen({super.key, required this.shopId});
@@ -37,7 +37,7 @@ class ShopDetailScreen extends StatelessWidget {
                 ),
               );
             },
-            child: const Text('내 예약'),
+            child: const Text('My bookings'),
           ),
         ],
       ),
@@ -59,7 +59,10 @@ class ShopDetailScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(shop.cuisine, style: const TextStyle(color: Color(0xFF8A7466))),
+                child: Text(
+                  shop.cuisine,
+                  style: const TextStyle(color: Color(0xFF8A7466)),
+                ),
               ),
               DietMark(badge: shop.badge),
             ],
@@ -80,13 +83,13 @@ class ShopDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '오늘의 서플러스 박스',
+                    "Today's surplus box",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(shop.surplusLabel ?? 'Surprise bag'),
                   Text(
-                    '₩${shop.surplusPrice}  ·  매장 픽업',
+                    '₩${shop.surplusPrice}  ·  in-store pickup',
                     style: const TextStyle(color: Color(0xFF8A7466)),
                   ),
                   const SizedBox(height: 12),
@@ -101,13 +104,13 @@ class ShopDetailScreen extends StatelessWidget {
                         SnackBar(
                           content: Text(
                             r == null
-                                ? '이 가게는 서플러스 예약이 없습니다.'
-                                : '예약되었습니다. 내 예약에서 GPS 도착 확인 후 리뷰를 작성하세요.',
+                                ? 'No surplus booking available for this kitchen.'
+                                : 'Booked! Confirm arrival with GPS, then leave a review.',
                           ),
                           action: r == null
                               ? null
                               : SnackBarAction(
-                                  label: '내 예약',
+                                  label: 'My bookings',
                                   onPressed: () {
                                     Navigator.push(
                                       context,
@@ -121,7 +124,7 @@ class ShopDetailScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text('서플러스 예약하기'),
+                    child: const Text('Book surplus box'),
                   ),
                 ],
               ),
@@ -129,17 +132,17 @@ class ShopDetailScreen extends StatelessWidget {
           ],
           const SizedBox(height: 24),
           Text(
-            reviews.isEmpty ? '리뷰' : '리뷰  ·  ${avg.toStringAsFixed(1)} / 5',
+            reviews.isEmpty ? 'Reviews' : 'Reviews  ·  ${avg.toStringAsFixed(1)} / 5',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 8),
           const Text(
-            '예약 + GPS 도착 확인 후에만 리뷰를 작성할 수 있습니다.',
+            'You can write a review only after booking and GPS check-in.',
             style: TextStyle(color: Color(0xFF8A7466), fontSize: 12),
           ),
           const SizedBox(height: 12),
           if (reviews.isEmpty)
-            const Text('아직 리뷰가 없습니다.', style: TextStyle(color: Color(0xFF8A7466))),
+            const Text('No reviews yet.', style: TextStyle(color: Color(0xFF8A7466))),
           ...reviews.map(
             (review) => ListTile(
               contentPadding: EdgeInsets.zero,
@@ -161,7 +164,7 @@ class ShopDetailScreen extends StatelessWidget {
                   }
                 : null,
             child: Text(
-              canReview ? '리뷰 작성' : '도착 확인 후 리뷰 가능',
+              canReview ? 'Write a review' : 'Available after check-in',
             ),
           ),
           if (!canReview)

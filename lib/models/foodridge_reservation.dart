@@ -2,10 +2,10 @@ enum FoodridgeReservationStatus { reserved, arrived, completed, cancelled }
 
 extension FoodridgeReservationStatusX on FoodridgeReservationStatus {
   String get label => switch (this) {
-        FoodridgeReservationStatus.reserved => '예약 완료',
-        FoodridgeReservationStatus.arrived => '도착 확인',
-        FoodridgeReservationStatus.completed => '이용 완료',
-        FoodridgeReservationStatus.cancelled => '취소',
+        FoodridgeReservationStatus.reserved => 'Booked',
+        FoodridgeReservationStatus.arrived => 'Checked in',
+        FoodridgeReservationStatus.completed => 'Completed',
+        FoodridgeReservationStatus.cancelled => 'Cancelled',
       };
 }
 

@@ -68,13 +68,12 @@ class CulinaryMatch {
     return isCompleted || DateTime.now().isAfter(date);
   }
 
-  /// 오늘 기준 3일 이내 일정만 예약 목록에 노출.
+  /// 데모: 9월 키친 일정 등 다가오는(미완료) 일정을 예약 목록에 노출.
   bool get isWithinBookingWindow {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(date.year, date.month, date.day);
-    final diff = day.difference(today).inDays;
-    return diff >= 0 && diff <= 3 && !isCompleted;
+    return !isCompleted && !day.isBefore(today);
   }
 }
 

@@ -72,19 +72,22 @@ class FoodridgeProvider with ChangeNotifier {
   }) async {
     final idx = _reservations.indexWhere((r) => r.id == reservationId);
     if (idx < 0) {
-      return const ArrivalResult(success: false, message: '예약을 찾을 수 없어요.');
+      return const ArrivalResult(success: false, message: 'Booking not found.');
     }
     final reservation = _reservations[idx];
     final shop = shopById(reservation.shopId);
     if (reservation.status != FoodridgeReservationStatus.reserved) {
-      return const ArrivalResult(success: false, message: '이미 도착 확인된 예약이에요.');
+      return const ArrivalResult(
+        success: false,
+        message: 'This booking is already checked in.',
+      );
     }
 
     final ArrivalResult result;
     if (bypassGps) {
       result = const ArrivalResult(
         success: true,
-        message: '데모 도착 처리되었습니다. 이제 리뷰를 작성할 수 있어요.',
+        message: 'Demo check-in complete. You can write a review now.',
         distanceMeters: 0,
       );
     } else {
@@ -121,9 +124,9 @@ class FoodridgeProvider with ChangeNotifier {
           r.status == FoodridgeReservationStatus.reserved,
     );
     if (hasReserved) {
-      return '가게에 도착한 뒤 GPS 도착 확인을 완료하면 리뷰를 작성할 수 있어요.';
+      return 'Complete GPS check-in at the kitchen to unlock reviews.';
     }
-    return '서플러스 박스를 예약한 뒤, 현장에서 도착 확인을 해야 리뷰를 쓸 수 있어요.';
+    return 'Book a surplus box first, then check in on-site to leave a review.';
   }
 
   String? addReview({
@@ -138,7 +141,7 @@ class FoodridgeProvider with ChangeNotifier {
     if (reservation == null) {
       return reviewBlockReason(userId, shopId);
     }
-    if (comment.trim().isEmpty) return '리뷰 내용을 입력해 주세요.';
+    if (comment.trim().isEmpty) return 'Please enter a review.';
     _reviews.add(
       ShopReview(
         id: 'sr-${DateTime.now().millisecondsSinceEpoch}',

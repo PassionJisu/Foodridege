@@ -6,6 +6,7 @@ import '../../../models/chingu.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chingu_provider.dart';
 import '../../../theme/app_theme.dart';
+import 'chingu_review_write_screen.dart';
 
 class TicketHistoryScreen extends StatelessWidget {
   const TicketHistoryScreen({super.key});
@@ -111,6 +112,31 @@ class TicketHistoryScreen extends StatelessWidget {
                                 ),
                               ),
                             ],
+                          ),
+                        ],
+                        if (ticket.status == TicketStatus.issued &&
+                            !ticket.reviewed) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.goldBright,
+                                foregroundColor: Colors.black,
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ChinguReviewWriteScreen(
+                                      initialTeamId: match.teamId,
+                                      initialMatchId: match.id,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text('리뷰 작성'),
+                            ),
                           ),
                         ],
                       ],

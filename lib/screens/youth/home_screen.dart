@@ -81,9 +81,9 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: MediaQuery.sizeOf(context).height * 0.14),
+                SizedBox(height: MediaQuery.sizeOf(context).height * 0.18),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: user.role.showsUsageStats
                       ? _StudentBanner(user: user)
                       : _RoleWelcomeBanner(user: user),
@@ -108,15 +108,15 @@ class _StudentBanner extends StatelessWidget {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
           decoration: BoxDecoration(
             color: AppColors.sage.withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -127,27 +127,27 @@ class _StudentBanner extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   height: 1.35,
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
               const Text(
                 '내가 환경에 기여한 무게',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 user.contributedKgLabel,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 40,
+                  fontSize: 32,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -1,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -156,7 +156,7 @@ class _StudentBanner extends StatelessWidget {
                       value: '${user.vendingUsageCount}회',
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _Chip(
                       label: '친구카세 이용',
@@ -168,7 +168,7 @@ class _StudentBanner extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
@@ -178,7 +178,7 @@ class _StudentBanner extends StatelessWidget {
                 label: '이용 일수',
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Expanded(
               child: _Stat(
                 icon: Icons.confirmation_number_outlined,
@@ -213,15 +213,15 @@ class _RoleWelcomeBanner extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(22, 24, 22, 24),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -230,7 +230,7 @@ class _RoleWelcomeBanner extends StatelessWidget {
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: AppColors.ink,
-          fontSize: 17,
+          fontSize: 15,
           fontWeight: FontWeight.w700,
           height: 1.45,
         ),
@@ -248,21 +248,21 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+          const SizedBox(height: 2),
           Text(
             value,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 14,
             ),
           ),
         ],
@@ -285,16 +285,16 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
         color: AppColors.canvasDeep.withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFD4C8B4)),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 18, color: AppColors.sage),
-          const SizedBox(height: 8),
+          Icon(icon, size: 16, color: AppColors.sage),
+          const SizedBox(height: 6),
           Text(
             value,
             style: const TextStyle(

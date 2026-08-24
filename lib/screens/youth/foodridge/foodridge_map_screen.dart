@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/foreign_shop.dart';
@@ -7,327 +9,449 @@ import '../../../theme/app_theme.dart';
 import 'foodridge_reservations_screen.dart';
 import 'shop_detail_screen.dart';
 
-class FoodridgeMapScreen extends StatelessWidget {
-  const FoodridgeMapScreen({super.key});
+/// Naver Map explore screen (Foodridge2 pattern) with Final shop dummy data.
+class FoodridgeMapScreen extends StatefulWidget {
+  const FoodridgeMapScreen({super.key, this.focusShopId});
 
-  static const _minLat = 35.1728;
-  static const _maxLat = 35.1802;
-  static const _minLng = 126.9018;
-  static const _maxLng = 126.9142;
+  final String? focusShopId;
+
+  @override
+  State<FoodridgeMapScreen> createState() => _FoodridgeMapScreenState();
+}
+
+class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
+  NaverMapController? _controller;
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+  ForeignShop? _selected;
+  bool _drawing = false;
+  final Map<String, NOverlayImage> _iconCache = {};
+
+  static const _defaultLat = 35.1595;
+  static const _defaultLng = 126.8526;
+
+  static const _markerSize = Size(
+    _ShopMarker.diameter,
+    _ShopMarker.diameter + _ShopMarker.tailHeight,
+  );
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  List<ForeignShop> _filtered(List<ForeignShop> shops) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return shops;
+    return shops.where((s) {
+      return s.name.toLowerCase().contains(q) ||
+          s.address.toLowerCase().contains(q) ||
+          s.cuisine.toLowerCase().contains(q) ||
+          (s.surplusLabel?.toLowerCase().contains(q) ?? false);
+    }).toList();
+  }
+
+  Future<NOverlayImage> _iconFor(ForeignShop shop) async {
+    final cached = _iconCache[shop.id];
+    if (cached != null) return cached;
+    final icon = await NOverlayImage.fromWidget(
+      widget: _ShopMarker(shop: shop),
+      size: _markerSize,
+      context: context,
+    );
+    _iconCache[shop.id] = icon;
+    return icon;
+  }
+
+  Future<void> _drawMarkers(
+    List<ForeignShop> all, {
+    bool moveCamera = true,
+  }) async {
+    final controller = _controller;
+    if (controller == null || _drawing) return;
+    _drawing = true;
+    try {
+      final shops = _filtered(all);
+      await controller.clearOverlays(type: NOverlayType.marker);
+      if (shops.isEmpty) return;
+
+      final markers = <NMarker>{};
+      for (final shop in shops) {
+        final marker = NMarker(
+          id: shop.id,
+          position: NLatLng(shop.lat, shop.lng),
+          icon: await _iconFor(shop),
+          size: _markerSize,
+          caption: NOverlayCaption(
+            text: shop.name,
+            textSize: 11,
+            color: AppColors.ink,
+            haloColor: Colors.white,
+          ),
+        );
+        marker.setOnTapListener((_) {
+          setState(() => _selected = shop);
+        });
+        markers.add(marker);
+      }
+      await controller.addOverlayAll(markers);
+
+      if (!moveCamera) return;
+      if (shops.length == 1) {
+        await controller.updateCamera(
+          NCameraUpdate.withParams(
+            target: NLatLng(shops.first.lat, shops.first.lng),
+            zoom: 14,
+          ),
+        );
+      } else {
+        final bounds = NLatLngBounds.from(
+          shops.map((s) => NLatLng(s.lat, s.lng)).toList(),
+        );
+        await controller.updateCamera(
+          NCameraUpdate.fitBounds(bounds, padding: const EdgeInsets.all(56)),
+        );
+      }
+    } finally {
+      _drawing = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final shops = context.watch<FoodridgeProvider>().shops;
-    final surplus = shops.where((shop) => shop.partnerSurplus).toList();
+    final provider = context.watch<FoodridgeProvider>();
+    final shops = provider.shops;
+    final focus = widget.focusShopId == null
+        ? null
+        : provider.shopById(widget.focusShopId!);
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Foodridge',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.6,
-                              color: AppColors.ink,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'CNU 인근 독립 키친 — 배달앱에 없는 가게를 모았습니다.',
-                            style: TextStyle(color: Color(0xFF6A5346), height: 1.35),
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const FoodridgeReservationsScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text('내 예약'),
-                    ),
-                  ],
+      appBar: AppBar(
+        title: const Text('Foodridge Map'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const FoodridgeReservationsScreen(),
                 ),
+              );
+            },
+            child: const Text('My bookings'),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          NaverMap(
+            options: NaverMapViewOptions(
+              initialCameraPosition: NCameraPosition(
+                target: focus == null
+                    ? const NLatLng(_defaultLat, _defaultLng)
+                    : NLatLng(focus.lat, focus.lng),
+                zoom: focus == null ? 11 : 14,
               ),
+              locationButtonEnable: false,
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Row(
-                  children: [
-                    const Text(
-                      'Surplus bags today',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${surplus.length} partner kitchens',
-                      style: const TextStyle(color: Color(0xFF8A7466), fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
+            onMapReady: (controller) {
+              _controller = controller;
+              _drawMarkers(shops, moveCamera: focus == null);
+              if (focus != null) setState(() => _selected = focus);
+            },
+          ),
+          Positioned(
+            top: 12,
+            left: 12,
+            right: 12,
+            child: _MapSearchBar(
+              controller: _searchCtrl,
+              onChanged: (v) {
+                setState(() => _query = v);
+                _drawMarkers(shops, moveCamera: false);
+              },
+              onClear: () {
+                _searchCtrl.clear();
+                setState(() {
+                  _query = '';
+                  _selected = null;
+                });
+                _drawMarkers(shops);
+              },
+              resultCount: _filtered(shops).length,
+              hasQuery: _query.isNotEmpty,
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 220,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: surplus.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final shop = surplus[index];
-                    return _SurplusCard(
-                      shop: shop,
-                      onTap: () => _openShop(context, shop),
-                    );
-                  },
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                child: AspectRatio(
-                  aspectRatio: 1.45,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Color(0xFFE7E3D2), Color(0xFFD3DCC8)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: Stack(
-                            children: [
-                              const Positioned(
-                                left: 16,
-                                top: 16,
-                                child: Text(
-                                  'Chonnam National University',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.ink,
-                                  ),
-                                ),
-                              ),
-                              ...shops.map((shop) {
-                                final x = (shop.lng - _minLng) / (_maxLng - _minLng);
-                                final y = 1 - (shop.lat - _minLat) / (_maxLat - _minLat);
-                                return Positioned(
-                                  left: (x * (constraints.maxWidth - 36)).clamp(8, constraints.maxWidth - 36),
-                                  top: (y * (constraints.maxHeight - 36)).clamp(8, constraints.maxHeight - 36),
-                                  child: GestureDetector(
-                                    onTap: () => _openShop(context, shop),
-                                    child: Icon(
-                                      Icons.location_on,
-                                      color: _pinColor(shop.badge),
-                                      size: 28,
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 8, 20, 4),
-                child: Text(
-                  'Nearby kitchens',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: AppColors.ink,
-                  ),
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-              sliver: SliverList.separated(
-                itemCount: shops.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final shop = shops[index];
-                  return Material(
-                    color: const Color(0xFFFFFBF3),
-                    borderRadius: BorderRadius.circular(16),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => _openShop(context, shop),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: shop.photoAsset == null
-                                  ? Container(
-                                      width: 72,
-                                      height: 72,
-                                      color: AppColors.sage.withValues(alpha: 0.2),
-                                    )
-                                  : Image.asset(
-                                      shop.photoAsset!,
-                                      width: 72,
-                                      height: 72,
-                                      fit: BoxFit.cover,
-                                    ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    shop.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.ink,
-                                    ),
-                                  ),
-                                  Text(
-                                    shop.cuisine,
-                                    style: const TextStyle(color: Color(0xFF8A7466), fontSize: 12),
-                                  ),
-                                  Text(
-                                    shop.address,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: Color(0xFF8A7466), fontSize: 11),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            DietMark(badge: shop.badge),
-                          ],
-                        ),
-                      ),
+          ),
+          if (_selected != null)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 16,
+              child: _ShopPreviewCard(
+                shop: _selected!,
+                avgStars: provider.averageStars(_selected!.id),
+                onClose: () => setState(() => _selected = null),
+                onOpen: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ShopDetailScreen(shopId: _selected!.id),
                     ),
                   );
                 },
               ),
             ),
-          ],
-        ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShopMarker extends StatelessWidget {
+  const _ShopMarker({required this.shop});
+
+  static const double diameter = 54;
+  static const double tailHeight = 14;
+
+  final ForeignShop shop;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: diameter,
+      height: diameter + tailHeight,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: diameter,
+            height: diameter,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              border: Border.all(color: AppColors.sage, width: 3),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: shop.photoAsset != null
+                ? Image.asset(
+                    shop.photoAsset!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _fallback(),
+                  )
+                : _fallback(),
+          ),
+          SizedBox(
+            height: tailHeight,
+            child: CustomPaint(
+              size: const Size(16, tailHeight),
+              painter: _TailPainter(),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _openShop(BuildContext context, ForeignShop shop) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ShopDetailScreen(shopId: shop.id)),
+  Widget _fallback() {
+    return Container(
+      color: AppColors.canvasDeep,
+      alignment: Alignment.center,
+      child: Text(
+        shop.name.isEmpty ? '?' : shop.name.substring(0, 1),
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          color: AppColors.sage,
+        ),
+      ),
     );
-  }
-
-  Color _pinColor(DietBadge badge) {
-    switch (badge) {
-      case DietBadge.halal:
-        return const Color(0xFF1B7A4A);
-      case DietBadge.vegan:
-        return AppColors.sage;
-      case DietBadge.vegetarian:
-        return const Color(0xFF7A8F4A);
-      case DietBadge.none:
-        return AppColors.secondary;
-    }
   }
 }
 
-class _SurplusCard extends StatelessWidget {
-  const _SurplusCard({required this.shop, required this.onTap});
+class _TailPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = AppColors.sage;
+    final path = Path()
+      ..moveTo(size.width / 2 - 7, 0)
+      ..lineTo(size.width / 2 + 7, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
 
-  final ForeignShop shop;
-  final VoidCallback onTap;
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _MapSearchBar extends StatelessWidget {
+  const _MapSearchBar({
+    required this.controller,
+    required this.onChanged,
+    required this.onClear,
+    required this.resultCount,
+    required this.hasQuery,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+  final int resultCount;
+  final bool hasQuery;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: 220,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (shop.photoAsset != null)
-                Image.asset(shop.photoAsset!, fit: BoxFit.cover)
-              else
-                Container(color: AppColors.sage),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.75),
-                    ],
-                  ),
+    return Column(
+      children: [
+        Material(
+          elevation: 4,
+          borderRadius: BorderRadius.circular(28),
+          child: TextField(
+            controller: controller,
+            onChanged: onChanged,
+            decoration: InputDecoration(
+              hintText: 'Search kitchens, cuisine, or menus',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: hasQuery
+                  ? IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: onClear,
+                    )
+                  : null,
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(28),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+            ),
+          ),
+        ),
+        if (hasQuery) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: resultCount == 0 ? Colors.redAccent : AppColors.sage,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                resultCount == 0
+                    ? 'No results'
+                    : '$resultCount place${resultCount == 1 ? '' : 's'}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(12),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _ShopPreviewCard extends StatelessWidget {
+  const _ShopPreviewCard({
+    required this.shop,
+    required this.avgStars,
+    required this.onClose,
+    required this.onOpen,
+  });
+
+  final ForeignShop shop;
+  final double avgStars;
+  final VoidCallback onClose;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      elevation: 8,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onOpen,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: shop.photoAsset != null
+                      ? Image.asset(shop.photoAsset!, fit: BoxFit.cover)
+                      : Container(color: AppColors.canvasDeep),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    DietMark(badge: shop.badge),
-                    const Spacer(),
                     Text(
                       shop.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
                       ),
                     ),
-                    Text(
-                      shop.surplusLabel ?? 'Surprise bag',
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 13, color: Color(0xFFE0A800)),
+                        const SizedBox(width: 2),
+                        Text(
+                          avgStars > 0 ? avgStars.toStringAsFixed(1) : '—',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            shop.cuisine,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF8A7466),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      '₩${shop.surplusPrice}  ·  pickup today',
+                      shop.partnerSurplus && shop.surplusPrice != null
+                          ? 'From ₩${NumberFormat('#,###').format(shop.surplusPrice)} · surplus today'
+                          : shop.address,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFFFFE3B8),
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.sage,
+                        fontSize: 13,
                       ),
                     ),
                   ],
                 ),
+              ),
+              IconButton(
+                onPressed: onClose,
+                icon: const Icon(Icons.close, size: 18),
+                color: const Color(0xFF8A7466),
               ),
             ],
           ),
@@ -344,9 +468,7 @@ class DietMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (badge == DietBadge.none) {
-      return const SizedBox.shrink();
-    }
+    if (badge == DietBadge.none) return const SizedBox.shrink();
     final label = switch (badge) {
       DietBadge.halal => 'HALAL',
       DietBadge.vegan => 'VEGAN',
@@ -362,14 +484,13 @@ class DietMark extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: color),
-        borderRadius: BorderRadius.circular(6),
-        color: color.withValues(alpha: 0.08),
+        color: color,
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: color,
+        style: const TextStyle(
+          color: Colors.white,
           fontSize: 10,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.4,

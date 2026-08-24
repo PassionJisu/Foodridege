@@ -55,56 +55,56 @@ class SeedData {
     ),
   ];
 
-  /// 오늘 기준 0~3일 내 단일 팀 일정. 장소는 학교 식당 중복 없이 배정.
+  /// 2026년 9월 1일(화)~4일(금) 단일 팀 일정. 장소는 학교 식당 중복 없이 배정.
   static List<CulinaryMatch> get matches {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    // venues shuffled uniquely across schedules
+    // 화·수·목·금 (2026-09-01 = Tuesday)
+    DateTime at(int month, int day) =>
+        DateTime(2026, month, day, 14, 0);
     return [
       CulinaryMatch(
         id: 'ev-0',
-        roundLabel: '오늘의 키친',
+        roundLabel: '9월 1일 (화)',
         teamId: 'jnu',
         menu: '계절 한식 코스 — 광어회, 보리밥 정식, 유자 셔벗',
         venue: '전남대 학생식당',
-        date: today.add(const Duration(hours: 14)),
-        status: MatchStatus.live,
+        date: at(9, 1),
+        status: MatchStatus.scheduled,
       ),
       CulinaryMatch(
         id: 'ev-1',
-        roundLabel: '내일의 키친',
+        roundLabel: '9월 2일 (수)',
         teamId: 'gju',
         menu: '한식 정찬 — 궁중 비빔밥, 갈비찜, 녹차 한과',
         venue: '광주대 학생식당',
-        date: today.add(const Duration(days: 1, hours: 14)),
+        date: at(9, 2),
         status: MatchStatus.scheduled,
       ),
       CulinaryMatch(
         id: 'ev-2',
-        roundLabel: '모레의 키친',
+        roundLabel: '9월 3일 (목)',
         teamId: 'honam',
         menu: '퓨전 코스 — 한우 타르타르, 된장 리조토, 팥 마카롱',
         venue: '호남대 학생식당',
-        date: today.add(const Duration(days: 2, hours: 14)),
+        date: at(9, 3),
         status: MatchStatus.scheduled,
       ),
       CulinaryMatch(
         id: 'ev-3',
-        roundLabel: '다가오는 키친',
+        roundLabel: '9월 4일 (금)',
         teamId: 'chosun',
         menu: '전통 한식 — 삼합, 전복죽, 약과 아이스크림',
         venue: '조선대 학생식당',
-        date: today.add(const Duration(days: 3, hours: 14)),
+        date: at(9, 4),
         status: MatchStatus.scheduled,
       ),
-      // 과거 일정(리뷰 데모용) — 예약 목록에는 안 보임
+      // 리뷰 데모용 지난 일정
       CulinaryMatch(
         id: 'ev-past',
         roundLabel: '지난 키친',
         teamId: 'gwu',
         menu: '전통 한식 — 삼합, 전복죽',
         venue: '광주여대 학생식당',
-        date: today.subtract(const Duration(days: 2)).add(const Duration(hours: 14)),
+        date: DateTime(2026, 8, 20, 14, 0),
         status: MatchStatus.completed,
       ),
     ];
@@ -182,7 +182,7 @@ class SeedData {
       cuisine: 'Pakistani · Middle Eastern',
       description:
           'Halal kitchen near Chonnam National University. Not listed on Baemin or Coupang Eats.',
-      address: 'Yongbong-dong, Buk-gu, Gwangju (near CNU North Gate)',
+      address: 'Yongbong-dong, Buk-gu, Gwangju (near CNU)',
       lat: 35.1774,
       lng: 126.9072,
       badge: DietBadge.halal,
@@ -195,10 +195,11 @@ class SeedData {
       id: 'green-leaf',
       name: 'Green Leaf Table',
       cuisine: 'Plant-based cafe',
-      description: 'Certified vegan bowls, oat lattes, and zero-waste packaging.',
-      address: 'Yongbong-ro 146, Buk-gu, Gwangju',
-      lat: 35.1751,
-      lng: 126.9104,
+      description:
+          'Certified vegan bowls near Gwangju University. Oat lattes and zero-waste packaging.',
+      address: 'Hyodeok-ro, Nam-gu, Gwangju (near Gwangju Univ.)',
+      lat: 35.1336,
+      lng: 126.8964,
       badge: DietBadge.vegan,
       photoAsset: 'assets/images/shop_vegan.png',
     ),
@@ -206,10 +207,11 @@ class SeedData {
       id: 'sprout-house',
       name: 'Sprout House',
       cuisine: 'Vegetarian Korean',
-      description: 'Egg-inclusive vegetarian set meals for students around CNU.',
-      address: 'Yongbong-ro 77-beon-gil, Buk-gu, Gwangju',
-      lat: 35.1742,
-      lng: 126.9038,
+      description:
+          'Egg-inclusive vegetarian sets popular with Honam University students.',
+      address: 'Eodeung-daero, Gwangsan-gu, Gwangju (near Honam Univ.)',
+      lat: 35.1482,
+      lng: 126.8015,
       badge: DietBadge.vegetarian,
       photoAsset: 'assets/images/shop_bibimbap.png',
     ),
@@ -217,10 +219,11 @@ class SeedData {
       id: 'warung',
       name: 'Warung Nusantara',
       cuisine: 'Indonesian',
-      description: 'Home-style nasi campur and sambal from an Indonesian owner-chef.',
-      address: 'Munhwa-dong, Buk-gu, Gwangju',
-      lat: 35.1789,
-      lng: 126.9046,
+      description:
+          'Home-style nasi campur and sambal from an Indonesian owner-chef in Dong-gu.',
+      address: 'Pilmun-daero, Dong-gu, Gwangju (near Chosun Univ.)',
+      lat: 35.1421,
+      lng: 126.9338,
       badge: DietBadge.none,
       partnerSurplus: true,
       surplusLabel: 'Nasi goreng surprise bag',
@@ -231,22 +234,23 @@ class SeedData {
       id: 'samarkand',
       name: 'Samarkand House',
       cuisine: 'Uzbek · Central Asian',
-      description: 'Plov, lagman, and tandoor bread — a neighborhood table for Central Asian students.',
-      address: 'Yongbong-dong 1321, Buk-gu, Gwangju',
-      lat: 35.1768,
-      lng: 126.9121,
+      description:
+          'Plov, lagman, and tandoor bread — a neighborhood table in Suncheon, Jeonnam.',
+      address: 'Jungang-ro, Suncheon, Jeollanam-do',
+      lat: 34.9507,
+      lng: 127.4872,
       badge: DietBadge.none,
       photoAsset: 'assets/images/shop_plov.png',
     ),
     ForeignShop(
       id: 'golden-dragon',
-      name: 'Yongbong Dragon',
+      name: 'Mokpo Harbor Dragon',
       cuisine: 'Chinese · Shandong',
       description:
-          'Family-run Chinese kitchen near CNU. Hand-pulled noodles and mapo tofu, not listed on Baemin.',
-      address: 'Yongbong-ro 112, Buk-gu, Gwangju',
-      lat: 35.1761,
-      lng: 126.9086,
+          'Family-run Chinese kitchen in Mokpo. Hand-pulled noodles and mapo tofu.',
+      address: 'Haian-ro, Mokpo, Jeollanam-do',
+      lat: 34.8118,
+      lng: 126.3922,
       badge: DietBadge.none,
       partnerSurplus: true,
       surplusLabel: "Today's dumpling & fried rice box",

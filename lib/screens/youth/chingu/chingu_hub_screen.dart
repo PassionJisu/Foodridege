@@ -8,6 +8,7 @@ import '../../../providers/chingu_provider.dart';
 import '../../../theme/app_theme.dart';
 import 'ticket_deposit_payment_screen.dart';
 import 'ticket_history_screen.dart';
+import 'chingu_review_write_screen.dart';
 
 class ChinguHubScreen extends StatefulWidget {
   const ChinguHubScreen({super.key, this.initialTab = 0});
@@ -49,7 +50,7 @@ class _ChinguHubScreenState extends State<ChinguHubScreen>
           leading: TextButton.icon(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
-            label: const Text('포스터', style: TextStyle(color: Colors.white)),
+            label: const Text('', style: TextStyle(color: Colors.white)),
           ),
           title: const SizedBox.shrink(),
           actions: [
@@ -71,7 +72,7 @@ class _ChinguHubScreenState extends State<ChinguHubScreen>
             tabs: const [
               Tab(text: '일정 및 식권 예약'),
               Tab(text: '응원하기'),
-              Tab(text: '별점 피드백'),
+              Tab(text: '리뷰'),
             ],
           ),
         ),
@@ -180,7 +181,7 @@ class _ScheduleTicketTab extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       children: [
         const Text(
-          '오늘부터 3일 이내 일정만 표시됩니다. 시간은 모두 14:00입니다.',
+          '9월 키친 일정 · 시간은 모두 14:00입니다.',
           style: TextStyle(color: Colors.white70, fontSize: 13),
         ),
         const SizedBox(height: 16),
@@ -327,28 +328,14 @@ class _ReviewTab extends StatefulWidget {
 
 class _ReviewTabState extends State<_ReviewTab> {
   String? _selectedTeamId;
-  String? _selectedMatchId;
-  final _comment = TextEditingController();
-  int _stars = 5;
-  String? _photoNote;
-
-  @override
-  void dispose() {
-    _comment.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final chingu = context.watch<ChinguProvider>();
-    final user = context.watch<AuthProvider>().appUser!;
     final teamId = _selectedTeamId ?? chingu.teams.first.id;
     final team = chingu.teamById(teamId);
     final teamReviews = chingu.reviewsForTeam(teamId);
     final avg = chingu.averageStarsForTeam(teamId);
-    final pastOrBookable = [
-      ...chingu.matches.where((m) => m.teamId == teamId),
-    ];
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -357,7 +344,7 @@ class _ReviewTabState extends State<_ReviewTab> {
           initialValue: teamId,
           dropdownColor: AppColors.chinguCard,
           decoration: const InputDecoration(
-            labelText: '학교별 리뷰',
+            labelText: '대학교 분류',
             labelStyle: TextStyle(color: Colors.white70),
           ),
           style: const TextStyle(color: Colors.white),
@@ -377,114 +364,27 @@ class _ReviewTabState extends State<_ReviewTab> {
           style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 16),
-        const Text('데모 · 키오스크', style: TextStyle(color: Colors.white54, fontSize: 12)),
-        const SizedBox(height: 8),
-        ...pastOrBookable.map((match) {
-          final unlocked = chingu.canWriteReview(user.uid, match.id);
-          return Card(
-            color: AppColors.chinguCard,
-            child: ListTile(
-              title: Text(
-                chingu.eventTitle(match),
-                style: const TextStyle(color: Colors.white),
-              ),
-              subtitle: Text(
-                '${DateFormat('M/d').format(match.date)} · ${match.venue}',
-                style: const TextStyle(color: Colors.white54, fontSize: 12),
-              ),
-              trailing: TextButton(
-                onPressed: () {
-                  final err = chingu.simulateKioskPayment(
-                    userId: user.uid,
-                    matchId: match.id,
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        err ?? '키오스크 결제 완료 — 리뷰 작성이 가능합니다.',
-                      ),
-                    ),
-                  );
-                },
-                child: Text(
-                  unlocked ? '발권됨' : '키오스크 결제 완료',
-                  style: const TextStyle(color: AppColors.gold, fontSize: 12),
-                ),
-              ),
-            ),
-          );
-        }),
-        const Divider(height: 32, color: Color(0xFF333333)),
-        const Text('리뷰 작성', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          dropdownColor: AppColors.chinguCard,
-          decoration: const InputDecoration(labelText: '일정 선택'),
-          style: const TextStyle(color: Colors.white),
-          items: pastOrBookable
-              .map(
-                (m) => DropdownMenuItem(
-                  value: m.id,
-                  child: Text(
-                    '${DateFormat('M/d').format(m.date)} ${chingu.eventTitle(m)}',
-                  ),
-                ),
-              )
-              .toList(),
-          onChanged: (id) => setState(() => _selectedMatchId = id),
-        ),
-        const Text('별점 (0~5)', style: TextStyle(color: Colors.white54, fontSize: 12)),
-        Slider(
-          value: _stars.toDouble(),
-          min: 0,
-          max: 5,
-          divisions: 5,
-          label: '$_stars',
-          activeColor: AppColors.gold,
-          onChanged: (v) => setState(() => _stars = v.round()),
-        ),
-        Text('★ $_stars / 5', style: const TextStyle(color: AppColors.gold)),
-        TextField(
-          controller: _comment,
-          maxLines: 3,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: '리뷰를 작성해 주세요',
-            hintStyle: TextStyle(color: Colors.white38),
-          ),
-        ),
-        TextButton(
-          onPressed: () => setState(() => _photoNote = '사진 첨부(데모)'),
-          child: Text(
-            _photoNote ?? '사진 첨부 (선택)',
-            style: const TextStyle(color: AppColors.gold),
-          ),
-        ),
         FilledButton(
-          style: FilledButton.styleFrom(backgroundColor: AppColors.goldBright, foregroundColor: Colors.black),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.goldBright,
+            foregroundColor: Colors.black,
+            minimumSize: const Size.fromHeight(48),
+          ),
           onPressed: () {
-            final matchId = _selectedMatchId ?? pastOrBookable.firstOrNull?.id;
-            if (matchId == null) return;
-            final err = chingu.submitReview(
-              userId: user.uid,
-              userName: user.name,
-              matchId: matchId,
-              stars: _stars,
-              comment: _comment.text,
-              photoNote: _photoNote,
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ChinguReviewWriteScreen(initialTeamId: teamId),
+              ),
             );
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(err ?? '리뷰가 등록되었습니다.')),
-            );
-            if (err == null) {
-              _comment.clear();
-              setState(() => _photoNote = null);
-            }
           },
-          child: const Text('리뷰 등록'),
+          child: const Text('리뷰 작성'),
         ),
         const SizedBox(height: 24),
-        const Text('학교별 리뷰', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        const Text(
+          '학교별 리뷰',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         if (teamReviews.isEmpty)
           const Text('아직 리뷰가 없습니다.', style: TextStyle(color: Colors.white38))

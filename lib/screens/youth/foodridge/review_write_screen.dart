@@ -5,7 +5,7 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/foodridge_provider.dart';
 import '../../../theme/app_theme.dart';
 
-/// Foodridge2 review_write_screen 이식 — 크림톤, 스탬프 문구 제외.
+/// Foodridge review write — English UI. Does NOT award meal tickets.
 class ReviewWriteScreen extends StatefulWidget {
   const ReviewWriteScreen({super.key, required this.shopId});
   final String shopId;
@@ -46,17 +46,17 @@ class _ReviewWriteScreenState extends State<ReviewWriteScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
       return;
     }
-    final reward = await auth.recordReviewReward();
-    if (!mounted) return;
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('리뷰가 등록되었어요!'),
-        content: Text(reward),
+        title: const Text('Thanks for your review!'),
+        content: const Text(
+          'Your review was posted. Meal tickets are only earned in Chingu-kase.',
+        ),
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('확인'),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -73,7 +73,7 @@ class _ReviewWriteScreenState extends State<ReviewWriteScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      appBar: AppBar(title: Text('${shop.name} 리뷰')),
+      appBar: AppBar(title: Text('Review · ${shop.name}')),
       body: !allowed
           ? Center(
               child: Padding(
@@ -88,7 +88,7 @@ class _ReviewWriteScreenState extends State<ReviewWriteScreen> {
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                const Text('별점', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Stars', style: TextStyle(fontWeight: FontWeight.bold)),
                 Row(
                   children: List.generate(5, (i) {
                     return IconButton(
@@ -103,17 +103,20 @@ class _ReviewWriteScreenState extends State<ReviewWriteScreen> {
                 TextField(
                   controller: _content,
                   maxLines: 4,
-                  decoration: const InputDecoration(hintText: '리뷰를 남겨 주세요'),
+                  decoration: const InputDecoration(
+                    hintText: 'Share your experience',
+                  ),
                 ),
                 TextButton(
-                  onPressed: () => setState(() => _photoNote = '사진 첨부(데모)'),
-                  child: Text(_photoNote ?? '사진 첨부 (선택)'),
+                  onPressed: () =>
+                      setState(() => _photoNote = 'Photo attached (demo)'),
+                  child: Text(_photoNote ?? 'Add photo (optional)'),
                 ),
                 const SizedBox(height: 12),
                 FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: AppColors.sage),
                   onPressed: _saving ? null : _submit,
-                  child: Text(_saving ? '등록 중…' : '리뷰 등록'),
+                  child: Text(_saving ? 'Posting…' : 'Post review'),
                 ),
               ],
             ),

@@ -7,7 +7,7 @@ import '../../../providers/foodridge_provider.dart';
 import '../../../theme/app_theme.dart';
 import 'review_write_screen.dart';
 
-/// Foodridge2 reservations_screen 이식 — 크림톤 UI, 스탬프 제외.
+/// Foodridge2 reservations screen — cream UI, English copy, no stamps.
 class FoodridgeReservationsScreen extends StatefulWidget {
   const FoodridgeReservationsScreen({super.key});
 
@@ -38,12 +38,13 @@ class _FoodridgeReservationsScreenState
         content: Text(result.message),
         action: result.success
             ? SnackBarAction(
-                label: '리뷰 쓰기',
+                label: 'Write review',
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ReviewWriteScreen(shopId: reservation.shopId),
+                      builder: (_) =>
+                          ReviewWriteScreen(shopId: reservation.shopId),
                     ),
                   );
                 },
@@ -61,18 +62,18 @@ class _FoodridgeReservationsScreenState
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      appBar: AppBar(title: const Text('내 예약')),
+      appBar: AppBar(title: const Text('My bookings')),
       body: list.isEmpty
           ? const Center(
               child: Text(
-                '예약한 서플러스 박스가 없습니다.',
+                'No surplus bookings yet.',
                 style: TextStyle(color: Color(0xFF8A7466)),
               ),
             )
           : ListView.separated(
               padding: const EdgeInsets.all(20),
               itemCount: list.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, i) {
                 final r = list[i];
                 final verifying = _verifyingId == r.id;
@@ -118,7 +119,9 @@ class _FoodridgeReservationsScreenState
                                 onPressed: verifying
                                     ? null
                                     : () => _verify(provider, r),
-                                child: Text(verifying ? '확인 중…' : 'GPS 도착 확인'),
+                                child: Text(
+                                  verifying ? 'Checking…' : 'GPS check-in',
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -129,8 +132,12 @@ class _FoodridgeReservationsScreenState
                                 ),
                                 onPressed: verifying
                                     ? null
-                                    : () => _verify(provider, r, bypassGps: true),
-                                child: const Text('데모 도착'),
+                                    : () => _verify(
+                                          provider,
+                                          r,
+                                          bypassGps: true,
+                                        ),
+                                child: const Text('Demo arrival'),
                               ),
                             ),
                           ],
@@ -146,13 +153,13 @@ class _FoodridgeReservationsScreenState
                               ),
                             );
                           },
-                          child: const Text('리뷰 작성하기'),
+                          child: const Text('Write a review'),
                         ),
                       if (r.status == FoodridgeReservationStatus.reserved)
                         TextButton(
                           onPressed: () => provider.cancelReservation(r.id),
                           child: const Text(
-                            '예약 취소',
+                            'Cancel booking',
                             style: TextStyle(color: Colors.redAccent),
                           ),
                         ),

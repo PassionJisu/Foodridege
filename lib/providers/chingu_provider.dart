@@ -138,7 +138,7 @@ class ChinguProvider with ChangeNotifier {
   }) {
     final match = _matches.firstWhere((m) => m.id == matchId);
     if (!match.isWithinBookingWindow) {
-      return '예약 가능한 일정(오늘부터 3일 이내)이 아닙니다.';
+      return '예약 가능한 일정이 아닙니다.';
     }
     if (match.isCompleted) return '종료된 일정은 예약할 수 없습니다.';
     if (activeTicketFor(userId, matchId) != null) {
