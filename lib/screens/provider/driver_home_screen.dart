@@ -17,7 +17,7 @@ class DriverHomeScreen extends StatelessWidget {
     return HomeScaffold(
       title: '운송 관리',
       userName: user.name,
-      roleLabel: '자판기 입고 기사님',
+      roleLabel: '환승반찬 입고 기사님',
       accentColor: Colors.teal.shade700,
       onLogout: () => context.read<AuthProvider>().signOut(),
       features: [
@@ -34,7 +34,7 @@ class DriverHomeScreen extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '검수 과정 없이 사진·수량 입력 후 번호를 부여해 입고합니다.',
+                  '검수 과정 없이 사진·수량 입력 후 입고합니다.',
                   style: TextStyle(fontSize: 12),
                 ),
               ],
@@ -55,8 +55,8 @@ class DriverHomeScreen extends StatelessWidget {
         ),
         FeatureTile(
           icon: Icons.kitchen_outlined,
-          title: '자판기 입고 · 번호 부여',
-          subtitle: '사진/반찬명 입력, 1–20 번호, 입고 마무리',
+          title: '환승반찬 입고',
+          subtitle: '사진/반찬명 입력, 입고 마무리',
           comingSoon: false,
           onTap: () {
             Navigator.push(

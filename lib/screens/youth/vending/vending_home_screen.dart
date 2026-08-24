@@ -42,7 +42,7 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
               backgroundColor: AppColors.sage,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.inventory_2_outlined),
-              label: const Text('자판기 입고'),
+              label: const Text('환승반찬 입고'),
             )
           : null,
       body: SafeArea(

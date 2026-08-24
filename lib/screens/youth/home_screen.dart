@@ -152,7 +152,7 @@ class _StudentBanner extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _Chip(
-                      label: '자판기 이용',
+                      label: '환승반찬 이용',
                       value: '${user.vendingUsageCount}회',
                     ),
                   ),
@@ -206,7 +206,7 @@ class _RoleWelcomeBanner extends StatelessWidget {
       UserRole.driver =>
         '어서오세요 ${user.name} 기사님, 오늘도 안전한 수거 부탁드립니다.',
       UserRole.org =>
-        '어서오세요 ${user.name}님, 자판기 입고 신청으로 청년들의 식탁을 채워 주세요.',
+        '어서오세요 ${user.name}님, 환승반찬 입고 신청으로 청년들의 식탁을 채워 주세요.',
       UserRole.admin => '어서오세요 ${user.name}님, 전체 운영 기능을 이용할 수 있습니다.',
       _ => '어서오세요, ${user.name}님!',
     };

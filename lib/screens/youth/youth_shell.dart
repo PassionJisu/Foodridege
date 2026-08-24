@@ -7,7 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/access_gate.dart';
 import 'chingu/chingu_poster_screen.dart';
-import 'foodridge/foodridge_map_screen.dart';
+import 'foodridge/foodridge_home_screen.dart';
 import 'home_screen.dart';
 import 'vending/vending_home_screen.dart';
 
@@ -26,7 +26,7 @@ class _YouthShellState extends State<YouthShell> {
     HomeScreen(),
     ChinguPosterScreen(),
     VendingHomeScreen(),
-    FoodridgeMapScreen(),
+    FoodridgeHomeScreen(),
   ];
 
   Future<void> _onSelect(int value, UserRole role) async {
@@ -48,7 +48,15 @@ class _YouthShellState extends State<YouthShell> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final user = auth.appUser!;
+    final user = auth.appUser;
+
+    // AuthGate가 LoginScreen으로 전환하긴 하지만, 로그아웃 직후 한 프레임에서
+    // null이 들어가면 '!' 크래시가 날 수 있어 방어 코드를 둡니다.
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     if (user.isSuspended) {
       return _SuspendedView(user: user, onLogout: auth.signOut);
@@ -108,7 +116,7 @@ class _YouthShellState extends State<YouthShell> {
                 Icons.kitchen,
                 color: darkNav ? Colors.white : AppColors.primary,
               ),
-              label: '자판기',
+              label: '환승반찬',
             ),
             NavigationDestination(
               icon: Icon(Icons.map_outlined, color: darkNav ? Colors.white54 : null),

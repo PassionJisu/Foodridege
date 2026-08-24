@@ -1,4 +1,5 @@
 import '../models/chingu.dart';
+import '../models/foodridge_menu_item.dart';
 import '../models/foreign_shop.dart';
 import '../models/vending.dart';
 
@@ -134,32 +135,32 @@ class SeedData {
   static const machines = [
     VendingMachine(
       id: 'vm-jnu',
-      name: '전남대 자판기',
+      name: '전남대 환승반찬',
       location: '광주 북구 용봉로 77 · 전남대학교 학생회관',
     ),
     VendingMachine(
       id: 'vm-gwu',
-      name: '광주여대 자판기',
+      name: '광주여대 환승반찬',
       location: '광주 광산구 광주여대길 201',
     ),
     VendingMachine(
       id: 'vm-scnu',
-      name: '순천대 자판기',
+      name: '순천대 환승반찬',
       location: '전남 순천시 중앙로 255',
     ),
     VendingMachine(
       id: 'vm-gju',
-      name: '광주대 자판기',
+      name: '광주대 환승반찬',
       location: '광주 남구 효덕로 277 · 광주대학교',
     ),
     VendingMachine(
       id: 'vm-honam',
-      name: '호남대 자판기',
+      name: '호남대 환승반찬',
       location: '광주 광산구 어등대로 417 · 호남대학교',
     ),
     VendingMachine(
       id: 'vm-chosun',
-      name: '조선대 자판기',
+      name: '조선대 환승반찬',
       location: '광주 동구 필문대로 309 · 조선대학교',
     ),
   ];
@@ -291,6 +292,155 @@ class SeedData {
       stars: 5,
       comment: 'Tastes like home. The lunch surplus box is a fair price for students.',
       createdAt: DateTime(2026, 8, 14),
+    ),
+  ];
+
+  /// Foodridge menu items for demo cart.
+  /// Each store has 2~3 items with remaining quantity (demo-only).
+  static final menuItems = <FoodridgeMenuItem>[
+    FoodridgeMenuItem(
+      id: 'mi-al-1',
+      storeId: 'al-baraka',
+      name: 'Lamb Biryani',
+      price: 4800,
+      remainingQty: 5,
+      photoAsset: 'assets/images/shop_biryani.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-al-2',
+      storeId: 'al-baraka',
+      name: 'Chicken Karahi',
+      price: 5200,
+      remainingQty: 3,
+      photoAsset: 'assets/images/shop_biryani.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-al-3',
+      storeId: 'al-baraka',
+      name: 'Garlic Naan Box',
+      price: 3900,
+      remainingQty: 4,
+      photoAsset: 'assets/images/shop_biryani.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-gl-1',
+      storeId: 'green-leaf',
+      name: 'Vegan Mezze Bowl',
+      price: 4500,
+      remainingQty: 4,
+      photoAsset: 'assets/images/shop_vegan.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-gl-2',
+      storeId: 'green-leaf',
+      name: 'Sesame Oat Latte',
+      price: 4200,
+      remainingQty: 2,
+      photoAsset: 'assets/images/shop_vegan.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-gl-3',
+      storeId: 'green-leaf',
+      name: 'Lentil Soup Cup',
+      price: 3800,
+      remainingQty: 5,
+      photoAsset: 'assets/images/shop_vegan.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-sh-1',
+      storeId: 'sprout-house',
+      name: 'Veggie Bibimbap Set',
+      price: 4300,
+      remainingQty: 4,
+      photoAsset: 'assets/images/shop_bibimbap.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-sh-2',
+      storeId: 'sprout-house',
+      name: 'Kimchi Pancake',
+      price: 4000,
+      remainingQty: 3,
+      photoAsset: 'assets/images/shop_bibimbap.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-sh-3',
+      storeId: 'sprout-house',
+      name: 'Vegetable Hot Pot',
+      price: 5100,
+      remainingQty: 2,
+      photoAsset: 'assets/images/shop_bibimbap.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-wa-1',
+      storeId: 'warung',
+      name: 'Nasi Goreng',
+      price: 4100,
+      remainingQty: 5,
+      photoAsset: 'assets/images/shop_nasi.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-wa-2',
+      storeId: 'warung',
+      name: 'Sambal Chicken Rice',
+      price: 4700,
+      remainingQty: 3,
+      photoAsset: 'assets/images/shop_nasi.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-wa-3',
+      storeId: 'warung',
+      name: 'Iced Fruit Tea',
+      price: 3600,
+      remainingQty: 4,
+      photoAsset: 'assets/images/shop_nasi.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-sa-1',
+      storeId: 'samarkand',
+      name: 'Plov Bowl',
+      price: 4300,
+      remainingQty: 4,
+      photoAsset: 'assets/images/shop_plov.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-sa-2',
+      storeId: 'samarkand',
+      name: 'Lagman Noodles',
+      price: 5000,
+      remainingQty: 2,
+      photoAsset: 'assets/images/shop_plov.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-sa-3',
+      storeId: 'samarkand',
+      name: 'Tandoor Bread Box',
+      price: 3900,
+      remainingQty: 4,
+      photoAsset: 'assets/images/shop_plov.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-dr-1',
+      storeId: 'golden-dragon',
+      name: 'Mapo Tofu Bento',
+      price: 4600,
+      remainingQty: 4,
+      photoAsset: 'assets/images/shop_chinese.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-dr-2',
+      storeId: 'golden-dragon',
+      name: 'Hand-pulled Noodles',
+      price: 5200,
+      remainingQty: 3,
+      photoAsset: 'assets/images/shop_chinese.png',
+    ),
+    FoodridgeMenuItem(
+      id: 'mi-dr-3',
+      storeId: 'golden-dragon',
+      name: 'Crispy Spring Roll',
+      price: 3800,
+      remainingQty: 6,
+      photoAsset: 'assets/images/shop_chinese.png',
     ),
   ];
 }

@@ -55,6 +55,15 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
   Future<NOverlayImage> _iconFor(ForeignShop shop) async {
     final cached = _iconCache[shop.id];
     if (cached != null) return cached;
+    // Ensure local asset is decoded before we snapshot the marker widget.
+    // Otherwise NOverlayImage may capture an empty/placeholder image.
+    if (shop.photoAsset != null) {
+      try {
+        await precacheImage(AssetImage(shop.photoAsset!), context);
+      } catch (_) {
+        // ignore and fallback to marker fallback
+      }
+    }
     final icon = await NOverlayImage.fromWidget(
       widget: _ShopMarker(shop: shop),
       size: _markerSize,
@@ -155,9 +164,9 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
               ),
               locationButtonEnable: false,
             ),
-            onMapReady: (controller) {
+            onMapReady: (controller) async {
               _controller = controller;
-              _drawMarkers(shops, moveCamera: focus == null);
+              await _drawMarkers(shops, moveCamera: focus == null);
               if (focus != null) setState(() => _selected = focus);
             },
           ),

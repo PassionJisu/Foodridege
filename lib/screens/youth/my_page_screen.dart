@@ -10,7 +10,6 @@ import '../provider/driver_pickup_route_screen.dart';
 import '../provider/driver_stocking_screen.dart';
 import '../provider/lounge_selection_for_sale_screen.dart';
 import '../provider/org_supply_screen.dart';
-import '../provider/restaurant_my_page_screen.dart';
 import '../provider/sale_history_screen.dart';
 import 'account_screen.dart';
 import 'chingu/ticket_history_screen.dart';
@@ -92,7 +91,7 @@ class MyPageScreen extends StatelessWidget {
               title: '식권 예약 내역',
               onTap: () => _push(context, const TicketHistoryScreen()),
             ),
-          if (role.canManageStore) ...[
+          if (role.canSubmitSupply) ...[
             _MenuTile(
               icon: Icons.local_shipping_outlined,
               title: '잔반 · 수거 신청',
@@ -102,11 +101,6 @@ class MyPageScreen extends StatelessWidget {
               icon: Icons.history_rounded,
               title: '매매 신청 내역',
               onTap: () => _push(context, const SaleHistoryScreen()),
-            ),
-            _MenuTile(
-              icon: Icons.account_balance_wallet_outlined,
-              title: '정산 내역',
-              onTap: () => _push(context, const RestaurantMyPageScreen()),
             ),
           ],
           if (role.canSubmitSupply)

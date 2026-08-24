@@ -35,14 +35,14 @@ class _DriverStockingScreenState extends State<DriverStockingScreen> {
     final used = vending.usedSlots(selectedId);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('자판기 입고')),
+      appBar: AppBar(title: const Text('환승반찬 입고')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           DropdownButtonFormField<String>(
             key: ValueKey(selectedId),
             initialValue: selectedId,
-            decoration: const InputDecoration(labelText: '자판기 지점'),
+            decoration: const InputDecoration(labelText: '환승반찬 지점'),
             items: vending.machines
                 .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
                 .toList(),
@@ -52,7 +52,7 @@ class _DriverStockingScreenState extends State<DriverStockingScreen> {
           Text(machine.location, style: TextStyle(color: Colors.grey.shade600)),
           const SizedBox(height: 8),
           Text(
-            '사용 슬롯 $used / ${VendingMachine.maxSlots}  ·  사용자·기사 표시 번호는 1–20',
+            '사용 슬롯 $used / ${VendingMachine.maxSlots}  ·  입고 등록 데모',
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           if (machine.stockingCompletedAt != null)
@@ -109,13 +109,12 @@ class _DriverStockingScreenState extends State<DriverStockingScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                        error ??
-                        '$_dishName $qty개가 번호 ${vending.slotsFor(selectedId).firstWhere((s) => s.name == _dishName).displayNumber}번으로 부여되었습니다.',
+                        error ?? 'Stocked: $_dishName × $qty',
                   ),
                 ),
               );
             },
-            child: const Text('번호 부여 후 입고'),
+            child: const Text('Stock items'),
           ),
           const SizedBox(height: 12),
           FilledButton(
@@ -134,7 +133,7 @@ class _DriverStockingScreenState extends State<DriverStockingScreen> {
             child: const Text('전날 재고 전량 폐기'),
           ),
           const SizedBox(height: 20),
-          const Text('슬롯 현황 (표시 번호 / 내부 번호)', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text('Slot status', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           if (slots.isEmpty)
             const Text('입고된 음식이 없습니다.')
