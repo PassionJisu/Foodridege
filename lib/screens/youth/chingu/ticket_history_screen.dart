@@ -14,8 +14,12 @@ class TicketHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final user = auth.appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final chingu = context.watch<ChinguProvider>();
-    final tickets = chingu.ticketsFor(auth.appUser!.uid);
+    final tickets = chingu.ticketsFor(user.uid);
 
     return Theme(
       data: AppTheme.chinguDark,
@@ -31,7 +35,8 @@ class TicketHistoryScreen extends StatelessWidget {
                 itemCount: tickets.length,
                 itemBuilder: (context, index) {
                   final ticket = tickets[index];
-                  final match = chingu.matches.firstWhere((m) => m.id == ticket.matchId);
+                  final match =
+                      chingu.matches.firstWhere((m) => m.id == ticket.matchId);
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
@@ -41,7 +46,10 @@ class TicketHistoryScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(match.roundLabel, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                        Text(
+                          match.roundLabel,
+                          style: const TextStyle(color: Colors.white54, fontSize: 12),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           chingu.eventTitle(match),
@@ -62,61 +70,9 @@ class TicketHistoryScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        if (ticket.status == TicketStatus.reserved) ...[
-                          const Text(
-                            '현장 키오스크에서 보증금 제외 1,000원으로 발권됩니다.',
-                            style: TextStyle(color: Colors.white54, fontSize: 12),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: match.canCancelReservation
-                                      ? () {
-                                          final error = chingu.cancelTicket(ticket.id);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text(error ?? '식권 예약이 취소되었습니다.')),
-                                          );
-                                        }
-                                      : null,
-                                  child: const Text('예약 취소'),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: FilledButton(
-                                  onPressed: () async {
-                                    final error = chingu.issueAtKiosk(ticket.id);
-                                    if (error != null) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(error)),
-                                      );
-                                      return;
-                                    }
-                                    await auth.incrementChinguUsage();
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('키오스크 발권이 완료되었습니다. (1,000원 · 보증금 제외)'),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: AppColors.gold,
-                                    foregroundColor: Colors.black,
-                                  ),
-                                  child: const Text('키오스크 발권'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
                         if (ticket.status == TicketStatus.issued &&
                             !ticket.reviewed) ...[
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 12),
                           SizedBox(
                             width: double.infinity,
                             child: FilledButton(
@@ -139,6 +95,21 @@ class TicketHistoryScreen extends StatelessWidget {
                             ),
                           ),
                         ],
+                        if (ticket.status == TicketStatus.reserved &&
+                            match.canCancelReservation) ...[
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            onPressed: () {
+                              final error = chingu.cancelTicket(ticket.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(error ?? '식권 예약이 취소되었습니다.'),
+                                ),
+                              );
+                            },
+                            child: const Text('예약 취소'),
+                          ),
+                        ],
                       ],
                     ),
                   );
@@ -151,9 +122,9 @@ class TicketHistoryScreen extends StatelessWidget {
   String _statusLabel(MealTicket ticket) {
     switch (ticket.status) {
       case TicketStatus.reserved:
-        return '예약 · 현장 발권 대기';
+        return '예약됨';
       case TicketStatus.issued:
-        return ticket.reviewed ? '발권 · 평가 완료' : '발권 완료 · 평가 대기';
+        return ticket.reviewed ? '결제 완료 · 평가 완료' : '결제 완료 · 평가 대기';
       case TicketStatus.cancelled:
         return '취소됨';
     }

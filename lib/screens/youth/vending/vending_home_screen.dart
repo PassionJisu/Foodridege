@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../models/vending.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/vending_provider.dart';
 import '../../../theme/app_theme.dart';
@@ -20,7 +19,10 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final vending = context.watch<VendingProvider>();
-    final user = context.watch<AuthProvider>().appUser!;
+    final user = context.watch<AuthProvider>().appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final machines = vending.machines;
     final selectedId = _machineId ?? machines.first.id;
     final machine = vending.machineById(selectedId);
@@ -119,7 +121,7 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
             Row(
               children: [
                 const Text(
-                  '현재 판매 중',
+                  '슬롯 현황',
                   style: TextStyle(
                     color: AppColors.ink,
                     fontSize: 18,
@@ -128,10 +130,19 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
                 ),
                 const Spacer(),
                 Text(
-                  '$used / ${VendingMachine.maxSlots} 슬롯',
+                  '재고 $used개',
                   style: const TextStyle(color: Color(0xFF8A7466)),
                 ),
               ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              '입고 품목',
+              style: TextStyle(
+                color: AppColors.ink,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 6),
             Text(

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
 
-/// Foodridge2 할매키친 보증금 결제 플로우를 친구카세 식권에 맞게 이식한 데모 화면.
+/// 식권 전액(1,500원) 결제 데모 — 키오스크 현장결제 없음.
 class TicketDepositPaymentScreen extends StatefulWidget {
   const TicketDepositPaymentScreen({
     super.key,
     required this.matchTitle,
-    this.depositAmount = 500,
+    this.amount = 1500,
   });
 
   final String matchTitle;
-  final int depositAmount;
+  final int amount;
 
   @override
   State<TicketDepositPaymentScreen> createState() =>
@@ -33,7 +33,7 @@ class _TicketDepositPaymentScreenState extends State<TicketDepositPaymentScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('식권 보증금 결제')),
+      appBar: AppBar(title: const Text('식권 결제')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -56,9 +56,9 @@ class _TicketDepositPaymentScreenState extends State<TicketDepositPaymentScreen>
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      '식권 예약을 위해 보증금 ${widget.depositAmount}원을 결제합니다.\n'
-                      '현장 수령 확인 시 보증금은 환급되며, 노쇼 시에는 환급되지 않습니다.\n'
-                      '현장 키오스크에서는 보증금 제외 1,000원으로 발권됩니다.',
+                      '식권 금액 ${widget.amount}원을 즉시 결제합니다.\n'
+                      '결제 완료 후 바로 리뷰를 작성할 수 있습니다.\n'
+                      '현장 키오스크 추가 결제는 없습니다.',
                       style: const TextStyle(height: 1.45),
                     ),
                   ),
@@ -66,7 +66,7 @@ class _TicketDepositPaymentScreenState extends State<TicketDepositPaymentScreen>
                   FilledButton(
                     style: FilledButton.styleFrom(backgroundColor: AppColors.sage),
                     onPressed: _pay,
-                    child: Text('보증금 ${widget.depositAmount}원 결제'),
+                    child: Text('${widget.amount}원 결제하기'),
                   ),
                 ],
               ),
@@ -86,13 +86,13 @@ class _TicketDepositPaymentScreenState extends State<TicketDepositPaymentScreen>
                   const Icon(Icons.check_circle, color: AppColors.sage, size: 72),
                   const SizedBox(height: 16),
                   const Text(
-                    '보증금 결제가 완료되었습니다',
+                    '결제가 완료되었습니다',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '식권이 예약되었습니다. 경기 당일 키오스크에서 발권해 주세요.',
+                    '식권이 확정되었습니다. 리뷰를 작성해 주세요.',
                     textAlign: TextAlign.center,
                   ),
                   const Spacer(),

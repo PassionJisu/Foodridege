@@ -28,6 +28,13 @@
 	<true/>
 	<key>NMFClientId</key>
 	<string>8g5kdjjd6g</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Used to confirm arrival at a kitchen for check-in.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

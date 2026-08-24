@@ -8,7 +8,6 @@ import '../provider/admin_report_manage_screen.dart';
 import '../provider/driver_pickup_list_screen.dart';
 import '../provider/driver_pickup_route_screen.dart';
 import '../provider/driver_stocking_screen.dart';
-import '../provider/lounge_selection_for_sale_screen.dart';
 import '../provider/org_supply_screen.dart';
 import '../provider/sale_history_screen.dart';
 import 'account_screen.dart';
@@ -22,7 +21,13 @@ class MyPageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final user = auth.appUser!;
+    final user = auth.appUser;
+    // 로그아웃 직후 Provider 알림으로 rebuild될 때 null 방어
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     final role = user.role;
 
     return Scaffold(
@@ -93,9 +98,9 @@ class MyPageScreen extends StatelessWidget {
             ),
           if (role.canSubmitSupply) ...[
             _MenuTile(
-              icon: Icons.local_shipping_outlined,
-              title: '잔반 · 수거 신청',
-              onTap: () => _push(context, const LoungeSelectionForSaleScreen()),
+              icon: Icons.inventory_2_outlined,
+              title: '자판기 입고 신청',
+              onTap: () => _push(context, const OrgSupplyScreen()),
             ),
             _MenuTile(
               icon: Icons.history_rounded,
@@ -103,12 +108,6 @@ class MyPageScreen extends StatelessWidget {
               onTap: () => _push(context, const SaleHistoryScreen()),
             ),
           ],
-          if (role.canSubmitSupply)
-            _MenuTile(
-              icon: Icons.inventory_2_outlined,
-              title: '자판기 입고 신청',
-              onTap: () => _push(context, const OrgSupplyScreen()),
-            ),
           if (role.canViewPickupRoute)
             _MenuTile(
               icon: Icons.route_outlined,
@@ -118,7 +117,7 @@ class MyPageScreen extends StatelessWidget {
           if (role.canManageVending) ...[
             _MenuTile(
               icon: Icons.kitchen_outlined,
-              title: '자판기 입고 · 번호 부여',
+              title: '환승반찬 입고 · 번호 부여',
               onTap: () => _push(context, const DriverStockingScreen()),
             ),
             _MenuTile(
@@ -156,7 +155,9 @@ class MyPageScreen extends StatelessWidget {
                 ),
               );
               if (ok == true && context.mounted) {
-                auth.signOut();
+                // 스택을 먼저 정리한 뒤 로그아웃 → 중간 rebuild에서 null 크래시 방지
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                await auth.signOut();
               }
             },
           ),

@@ -12,7 +12,10 @@ class FoodridgeCartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final user = auth.appUser!;
+    final user = auth.appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final provider = context.watch<FoodridgeProvider>();
 
     final cart = provider.cartFor(user.uid);

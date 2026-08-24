@@ -12,7 +12,10 @@ class AdminHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final user = auth.appUser!;
+    final user = auth.appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return HomeScaffold(
       title: '관리 대시보드',
@@ -32,7 +35,7 @@ class AdminHomeScreen extends StatelessWidget {
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '검수는 하지 않습니다. 기사님이 입고 마무리한 시점부터 24시간 후 전량 폐기입니다.',
+                    '검수는 하지 않습니다. 입고 후 전날 재고는 전량 폐기합니다.',
                     style: TextStyle(color: Colors.white, fontSize: 13),
                   ),
                 ),
@@ -43,7 +46,7 @@ class AdminHomeScreen extends StatelessWidget {
         FeatureTile(
           icon: Icons.kitchen_outlined,
           title: '자판기 입고 · 폐기',
-          subtitle: '지점별 슬롯(최대 20) 및 폐기 확인 표',
+          subtitle: '전역 번호 1~120 · 폐기 확인',
           comingSoon: false,
           onTap: () {
             Navigator.push(

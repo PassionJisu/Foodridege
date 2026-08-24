@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/foreign_shop.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/foodridge_provider.dart';
 import '../../../theme/app_theme.dart';
@@ -9,20 +10,49 @@ import 'foodridge_map_screen.dart';
 import 'foodridge_reservations_screen.dart';
 import 'shop_detail_screen.dart';
 
-class FoodridgeHomeScreen extends StatelessWidget {
+enum _MealPickFilter { all, halal, vegan, veget, chinese }
+
+class FoodridgeHomeScreen extends StatefulWidget {
   const FoodridgeHomeScreen({super.key});
+
+  @override
+  State<FoodridgeHomeScreen> createState() => _FoodridgeHomeScreenState();
+}
+
+class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
+  _MealPickFilter _filter = _MealPickFilter.all;
+
+  List<ForeignShop> _filtered(List<ForeignShop> shops) {
+    return shops.where((shop) {
+      switch (_filter) {
+        case _MealPickFilter.all:
+          return true;
+        case _MealPickFilter.halal:
+          return shop.badge == DietBadge.halal;
+        case _MealPickFilter.vegan:
+          return shop.badge == DietBadge.vegan;
+        case _MealPickFilter.veget:
+          return shop.badge == DietBadge.vegetarian;
+        case _MealPickFilter.chinese:
+          return shop.cuisine.toLowerCase().contains('chinese');
+      }
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final provider = context.watch<FoodridgeProvider>();
-
-    final shops = provider.shops;
+    final user = auth.appUser;
+    final shops = _filtered(provider.shops);
+    final bookingCount =
+        user == null ? 0 : provider.reservationsFor(user.uid).length;
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        title: const Text('Foodridge'),
+        backgroundColor: AppColors.canvas,
+        title: const Text('MealPick'),
         actions: [
           IconButton(
             tooltip: 'Map',
@@ -48,8 +78,13 @@ class FoodridgeHomeScreen extends StatelessWidget {
               );
             },
           ),
-          TextButton(
-            onPressed: () {
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        children: [
+          InkWell(
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -57,89 +92,34 @@ class FoodridgeHomeScreen extends StatelessWidget {
                 ),
               );
             },
-            child: const Text('My bookings'),
-          ),
-        ],
-      ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: shops.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, i) {
-          final shop = shops[i];
-          final avg = provider.averageStars(shop.id);
-          final minPrice = provider.minPriceForStore(shop.id);
-          final remaining = provider.remainingCountForStore(shop.id);
-
-          return InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ShopDetailScreen(shopId: shop.id),
-                ),
-              );
-            },
             borderRadius: BorderRadius.circular(16),
             child: Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.92),
+                color: Colors.white.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFD4C8B4)),
               ),
               child: Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: SizedBox(
-                      width: 72,
-                      height: 72,
-                      child: shop.photoAsset != null
-                          ? Image.asset(
-                              shop.photoAsset!,
-                              fit: BoxFit.cover,
-                            )
-                          : Container(color: AppColors.canvasDeep),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
+                  const Icon(Icons.event_available_outlined, color: AppColors.sage),
+                  const SizedBox(width: 12),
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          shop.name,
-                          style: const TextStyle(
+                          'My bookings',
+                          style: TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 16,
-                            color: AppColors.ink,
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 4),
                         Text(
-                          shop.cuisine,
-                          style: const TextStyle(
-                            color: Color(0xFF8A7466),
-                            fontSize: 12,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          minPrice == null
-                              ? 'Sold out'
-                              : 'From ₩$minPrice',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.sage,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Remaining: $remaining',
-                          style: const TextStyle(
+                          'Check-in and reviews for your reservations',
+                          style: TextStyle(
                             color: Color(0xFF8A7466),
                             fontSize: 12,
                           ),
@@ -147,36 +127,228 @@ class FoodridgeHomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.star,
-                              size: 13, color: Color(0xFFE0A800)),
-                          const SizedBox(width: 4),
-                          Text(
-                            avg > 0 ? avg.toStringAsFixed(1) : '—',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 12,
-                              color: AppColors.ink,
-                            ),
-                          ),
-                        ],
+                  if (bookingCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                      const SizedBox(height: 8),
-                      const Icon(Icons.chevron_right,
-                          color: Color(0xFF8A7466)),
-                    ],
-                  ),
+                      decoration: BoxDecoration(
+                        color: AppColors.sage.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '$bookingCount',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.sage,
+                        ),
+                      ),
+                    ),
+                  const Icon(Icons.chevron_right, color: Color(0xFF8A7466)),
                 ],
               ),
             ),
-          );
-        },
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'Categories',
+            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+          ),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _FilterChip(
+                  label: 'All',
+                  selected: _filter == _MealPickFilter.all,
+                  onTap: () => setState(() => _filter = _MealPickFilter.all),
+                ),
+                _FilterChip(
+                  label: 'Halal',
+                  selected: _filter == _MealPickFilter.halal,
+                  onTap: () => setState(() => _filter = _MealPickFilter.halal),
+                ),
+                _FilterChip(
+                  label: 'Vegan',
+                  selected: _filter == _MealPickFilter.vegan,
+                  onTap: () => setState(() => _filter = _MealPickFilter.vegan),
+                ),
+                _FilterChip(
+                  label: 'Veget',
+                  selected: _filter == _MealPickFilter.veget,
+                  onTap: () => setState(() => _filter = _MealPickFilter.veget),
+                ),
+                _FilterChip(
+                  label: 'Chinese',
+                  selected: _filter == _MealPickFilter.chinese,
+                  onTap: () =>
+                      setState(() => _filter = _MealPickFilter.chinese),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (shops.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Text(
+                  'No restaurants in this category.',
+                  style: TextStyle(color: Color(0xFF8A7466)),
+                ),
+              ),
+            )
+          else
+            ...shops.map((shop) {
+              final avg = provider.averageStars(shop.id);
+              final minPrice = provider.minPriceForStore(shop.id);
+              final remaining = provider.remainingCountForStore(shop.id);
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ShopDetailScreen(shopId: shop.id),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFD4C8B4)),
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: SizedBox(
+                            width: 72,
+                            height: 72,
+                            child: shop.photoAsset != null
+                                ? Image.asset(
+                                    shop.photoAsset!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(color: AppColors.canvasDeep),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                shop.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16,
+                                  color: AppColors.ink,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                shop.cuisine,
+                                style: const TextStyle(
+                                  color: Color(0xFF8A7466),
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                minPrice == null
+                                    ? 'Sold out'
+                                    : 'From ₩$minPrice',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.sage,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Remaining: $remaining',
+                                style: const TextStyle(
+                                  color: Color(0xFF8A7466),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  size: 13,
+                                  color: Color(0xFFE0A800),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  avg > 0 ? avg.toStringAsFixed(1) : '—',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            const Icon(
+                              Icons.chevron_right,
+                              color: Color(0xFF8A7466),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+        ],
       ),
     );
   }
 }
 
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onTap(),
+        selectedColor: AppColors.sage.withValues(alpha: 0.25),
+        labelStyle: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: selected ? AppColors.sage : AppColors.ink,
+        ),
+      ),
+    );
+  }
+}

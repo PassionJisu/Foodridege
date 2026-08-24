@@ -152,15 +152,18 @@ class ChinguProvider with ChangeNotifier {
     if (left <= 0) return '해당 학교 식권이 모두 소진되었습니다. (학교당 100장)';
 
     _ticketRemaining[teamId] = left - 1;
+    // 전액(1,500원) 결제 후 즉시 발권 · 리뷰 해금 (키오스크 현장결제 없음)
     _tickets.add(
       MealTicket(
         id: 't-${DateTime.now().millisecondsSinceEpoch}',
         userId: userId,
         matchId: matchId,
-        status: TicketStatus.reserved,
+        status: TicketStatus.issued,
         createdAt: DateTime.now(),
+        issuedAt: DateTime.now(),
       ),
     );
+    _reviewUnlockedMatchIds.add(matchId);
     notifyListeners();
     return null;
   }
@@ -230,7 +233,7 @@ class ChinguProvider with ChangeNotifier {
     if (stars < 0 || stars > 5) return '별점은 0~5점이어야 합니다.';
     if (comment.trim().isEmpty) return '리뷰 내용을 입력해 주세요.';
     if (!canWriteReview(userId, matchId)) {
-      return '키오스크 결제(발권) 완료 후에만 리뷰를 작성할 수 있습니다.';
+      return '식권 결제 완료 후에만 리뷰를 작성할 수 있습니다.';
     }
     if (alreadyReviewed(userId, matchId)) {
       return '이미 이 일정을 평가했습니다.';

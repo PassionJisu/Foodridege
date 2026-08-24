@@ -39,7 +39,7 @@ class _YouthShellState extends State<YouthShell> {
       return;
     }
     if (value == 3 && !role.canAccessFoodridge) {
-      await showAccessDenied(context, 'Foodridge는 현재 역할에서 이용할 수 없어요.');
+      await showAccessDenied(context, 'MealPick은 현재 역할에서 이용할 수 없어요.');
       return;
     }
     setState(() => _index = value);
@@ -124,7 +124,7 @@ class _YouthShellState extends State<YouthShell> {
                 Icons.map,
                 color: isFoodridge ? AppColors.primary : AppColors.primary,
               ),
-              label: 'Foodridge',
+              label: 'MealPick',
             ),
           ],
         ),

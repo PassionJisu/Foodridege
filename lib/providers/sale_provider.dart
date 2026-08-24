@@ -1,99 +1,143 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import '../models/sale_request.dart';
 import '../models/product.dart';
 
+/// 데모용 로컬 SaleProvider (DB 없음). 기관 입고 신청 → 신청 내역으로 연결.
 class SaleProvider with ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<SaleRequest> _mySaleRequests = [];
-  List<SaleRequest> _allSaleRequests = [];
+  SaleProvider() {
+    _seedDemo();
+  }
+
+  final List<SaleRequest> _requests = [];
   bool _isLoading = false;
 
-  List<SaleRequest> get mySaleRequests => _mySaleRequests;
-  List<SaleRequest> get allSaleRequests => _allSaleRequests;
+  List<SaleRequest> get mySaleRequests => List.unmodifiable(
+        [..._requests]..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+      );
+  List<SaleRequest> get allSaleRequests => mySaleRequests;
   bool get isLoading => _isLoading;
 
-  /// [Driver/Admin 전용] 모든 신청 내역 가져오기
+  void _seedDemo() {
+    final now = DateTime.now();
+    _requests.addAll([
+      SaleRequest(
+        id: 'sr-demo-1',
+        restaurantId: 'org-demo',
+        restaurantName: '광주광역시 식자재지원센터',
+        branchName: '환승반찬 입고',
+        category: ProductCategory.sidedish,
+        quantity: 12,
+        pricePerUnit: 0,
+        status: SaleRequestStatus.pending,
+        createdAt: now.subtract(const Duration(hours: 5)),
+      ),
+      SaleRequest(
+        id: 'sr-demo-2',
+        restaurantId: 'org-demo',
+        restaurantName: '전남 농식품유통센터',
+        branchName: '환승반찬 입고',
+        category: ProductCategory.fresh,
+        quantity: 8,
+        pricePerUnit: 0,
+        status: SaleRequestStatus.pending,
+        createdAt: now.subtract(const Duration(hours: 8)),
+      ),
+      SaleRequest(
+        id: 'sr-demo-3',
+        restaurantId: 'org-demo',
+        restaurantName: '호남대 근처 공동부엌',
+        branchName: '환승반찬 입고',
+        category: ProductCategory.sidedish,
+        quantity: 20,
+        pricePerUnit: 0,
+        status: SaleRequestStatus.collected,
+        createdAt: now.subtract(const Duration(days: 1)),
+      ),
+      SaleRequest(
+        id: 'sr-demo-4',
+        restaurantId: 'org-demo',
+        restaurantName: '조선대 기숙사 식당 지원',
+        branchName: '환승반찬 입고',
+        category: ProductCategory.processed,
+        quantity: 15,
+        pricePerUnit: 0,
+        status: SaleRequestStatus.stocked,
+        createdAt: now.subtract(const Duration(days: 2)),
+      ),
+    ]);
+  }
+
   Future<void> fetchAllSaleRequests() async {
     _isLoading = true;
     notifyListeners();
-    try {
-      final snapshot = await _firestore.collection('sale_requests').get();
-      _allSaleRequests = snapshot.docs.map((doc) => SaleRequest.fromFirestore(doc)).toList();
-      _allSaleRequests.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    } catch (e) {
-      debugPrint('Error fetching all sale requests: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  /// 상태 업데이트 로직
-  Future<bool> updateSaleRequestStatus(String requestId, SaleRequestStatus status) async {
-    try {
-      await _firestore.collection('sale_requests').doc(requestId).update({
-        'status': status.name,
-      });
-      return true;
-    } catch (e) {
-      debugPrint('Error updating sale request status: $e');
-      return false;
-    }
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<void> fetchMySaleRequests(String restaurantId) async {
     _isLoading = true;
     notifyListeners();
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<bool> updateSaleRequestStatus(
+    String requestId,
+    SaleRequestStatus status,
+  ) async {
+    final i = _requests.indexWhere((r) => r.id == requestId);
+    if (i < 0) return false;
+    final old = _requests[i];
+    _requests[i] = SaleRequest(
+      id: old.id,
+      restaurantId: old.restaurantId,
+      restaurantName: old.restaurantName,
+      branchName: old.branchName,
+      category: old.category,
+      quantity: old.quantity,
+      pricePerUnit: old.pricePerUnit,
+      status: status,
+      createdAt: old.createdAt,
+    );
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> submitOrgSupplyItems({
+    required String orgId,
+    required String orgName,
+    required List<({String name, int qty, String note})> items,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
     try {
-      // 인덱스 문제 방지를 위해 orderBy를 제거하고 클라이언트 사이드 정렬 적용
-      final snapshot = await _firestore
-          .collection('sale_requests')
-          .where('restaurantId', isEqualTo: restaurantId)
-          .get();
-      
-      _mySaleRequests = snapshot.docs.map((doc) => SaleRequest.fromFirestore(doc)).toList();
-      
-      // 최신순 정렬 (클라이언트 사이드)
-      _mySaleRequests.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      
-      debugPrint('Fetched ${_mySaleRequests.length} sale requests for restaurant: $restaurantId');
-    } catch (e) {
-      debugPrint('Error fetching sale requests: $e');
+      for (final item in items) {
+        _requests.add(
+          SaleRequest(
+            id: 'sr-${DateTime.now().millisecondsSinceEpoch}-${item.name.hashCode}',
+            restaurantId: orgId,
+            restaurantName: orgName,
+            branchName: '환승반찬 입고 · ${item.name}',
+            category: ProductCategory.sidedish,
+            quantity: item.qty,
+            pricePerUnit: 0,
+            status: SaleRequestStatus.pending,
+            createdAt: DateTime.now(),
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      return true;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<bool> submitSaleRequest({
-    required String restaurantId,
-    required String restaurantName,
-    required String branchName,
-    required ProductCategory category,
-    required int quantity,
-    required int pricePerUnit,
-  }) async {
-    try {
-      await _firestore.collection('sale_requests').add({
-        'restaurantId': restaurantId,
-        'restaurantName': restaurantName,
-        'branchName': branchName,
-        'category': category.name,
-        'quantity': quantity,
-        'pricePerUnit': pricePerUnit,
-        'status': SaleRequestStatus.pending.name,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      await fetchMySaleRequests(restaurantId);
-      return true;
-    } catch (e) {
-      debugPrint('Error submitting sale request: $e');
-      return false;
-    }
-  }
-
-  /// 다중 품목 신청 (Batch 처리)
+  /// 레거시 잔반 신청 화면 호환용 (데모).
   Future<bool> submitMultipleSaleRequests({
     required String restaurantId,
     required String restaurantName,
@@ -102,41 +146,42 @@ class SaleProvider with ChangeNotifier {
   }) async {
     _isLoading = true;
     notifyListeners();
-
     try {
-      final batch = _firestore.batch();
-      for (var item in items) {
-        final docRef = _firestore.collection('sale_requests').doc();
-        batch.set(docRef, {
-          'restaurantId': restaurantId,
-          'restaurantName': restaurantName,
-          'branchName': branchName,
-          'category': (item['category'] as ProductCategory).name,
-          'quantity': item['quantity'],
-          'pricePerUnit': item['pricePerUnit'],
-          'status': SaleRequestStatus.pending.name,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+      for (final item in items) {
+        final category = item['category'] as ProductCategory? ?? ProductCategory.sidedish;
+        final quantity = item['quantity'] as int? ?? 0;
+        final price = item['pricePerUnit'] as int? ?? 0;
+        if (quantity <= 0) continue;
+        _requests.add(
+          SaleRequest(
+            id: 'sr-${DateTime.now().millisecondsSinceEpoch}-${category.name}',
+            restaurantId: restaurantId,
+            restaurantName: restaurantName,
+            branchName: branchName,
+            category: category,
+            quantity: quantity,
+            pricePerUnit: price,
+            status: SaleRequestStatus.pending,
+            createdAt: DateTime.now(),
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 5));
       }
-      await batch.commit();
-      await fetchMySaleRequests(restaurantId);
       return true;
-    } catch (e) {
-      debugPrint('Error submitting multiple sale requests: $e');
-      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// 월별 정산 합계 계산
   int getMonthlySettlementAmount(int year, int month) {
-    return _mySaleRequests
-        .where((req) => 
-            req.status == SaleRequestStatus.collected &&
-            req.createdAt.year == year && 
-            req.createdAt.month == month)
+    return _requests
+        .where(
+          (req) =>
+              req.status == SaleRequestStatus.collected &&
+              req.createdAt.year == year &&
+              req.createdAt.month == month,
+        )
         .fold(0, (total, req) => total + req.totalPrice);
   }
 }

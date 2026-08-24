@@ -138,7 +138,7 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        title: const Text('Foodridge Map'),
+        title: const Text('MealPick Map'),
         actions: [
           TextButton(
             onPressed: () {
@@ -162,6 +162,9 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
                     : NLatLng(focus.lat, focus.lng),
                 zoom: focus == null ? 11 : 14,
               ),
+              locale: const NLocale('ko', 'KR'),
+              indoorEnable: false,
+              liteModeEnable: false,
               locationButtonEnable: false,
             ),
             onMapReady: (controller) async {

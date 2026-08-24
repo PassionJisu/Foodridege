@@ -6,7 +6,12 @@
     <application
         android:label="Foodridge"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- Naver Maps SDK reads CLIENT_ID from the Application, not the Activity. -->
+        <meta-data
+            android:name="com.naver.maps.map.CLIENT_ID"
+            android:value="8g5kdjjd6g" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -20,9 +25,6 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
-            <meta-data
-                android:name="com.naver.maps.map.CLIENT_ID"
-                android:value="8g5kdjjd6g" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

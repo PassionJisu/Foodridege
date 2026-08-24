@@ -15,7 +15,8 @@ class VendingMachine {
   final DateTime? disposedAt;
   final bool disposalConfirmed;
 
-  static const int maxSlots = 20;
+  /// 지점별 표시용 상한 (기사 전역 번호는 1~120).
+  static const int maxSlots = 120;
 
   bool get isExpired {
     if (stockingCompletedAt == null) return false;
@@ -46,7 +47,6 @@ class VendingSlot {
     required this.id,
     required this.machineId,
     required this.displayNumber,
-    required this.internalCode,
     required this.name,
     required this.quantity,
     this.photoAsset,
@@ -55,10 +55,8 @@ class VendingSlot {
 
   final String id;
   final String machineId;
-  /// User/driver facing number, always 1–20.
+  /// 기사/이용자 노출 번호 (전역 1~120).
   final int displayNumber;
-  /// Machine-specific internal identifier.
-  final String internalCode;
   final String name;
   final int quantity;
   final String? photoAsset;

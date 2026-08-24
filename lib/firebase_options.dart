@@ -56,7 +56,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '706548889762',
     projectId: 'project-6ce78',
     storageBucket: 'project-6ce78.firebasestorage.app',
-    iosBundleId: 'com.example.flutterApp',
+    iosBundleId: 'com.foodridge.foodridge',
   );
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyB_9TW1dIrUf8I8Olg8TqdXuL7xio9RYeg',
@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '706548889762',
     projectId: 'project-6ce78',
     storageBucket: 'project-6ce78.firebasestorage.app',
-    iosBundleId: 'com.example.flutterApp',
+    iosBundleId: 'com.foodridge.foodridge',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

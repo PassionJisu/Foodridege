@@ -27,7 +27,7 @@ enum UserRole {
   /// 홈 배너에 이용 카운트(기여 무게·자판기/친구카세 횟수) 표시
   bool get showsUsageStats => this == student || this == admin;
 
-  /// 점주 가게/잔반 등록
+  /// 점주 가게/메뉴 등록
   bool get canManageStore => this == owner || this == admin;
 
   /// 기관 입고 신청 (지점 선택 없음)

@@ -27,6 +27,7 @@ Future<void> main() async {
         debugPrint('Naver Map auth failed: $ex');
       },
     );
+    debugPrint('Naver Map init OK · clientId=${NaverConfig.clientId}');
   } catch (e) {
     debugPrint('Naver Map init skipped: $e');
   }

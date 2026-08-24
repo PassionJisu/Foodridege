@@ -6,7 +6,6 @@ import '../../../providers/foodridge_provider.dart';
 import '../../../theme/app_theme.dart';
 import 'foodridge_cart_screen.dart';
 import 'foodridge_map_screen.dart';
-import 'foodridge_reservations_screen.dart';
 import 'review_write_screen.dart';
 
 class ShopDetailScreen extends StatelessWidget {
@@ -18,7 +17,10 @@ class ShopDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<FoodridgeProvider>();
     final auth = context.watch<AuthProvider>();
-    final user = auth.appUser!;
+    final user = auth.appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     final shop = provider.shopById(shopId);
     final reviews = provider.reviewsFor(shop.id);
@@ -31,17 +33,6 @@ class ShopDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(shop.name),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const FoodridgeReservationsScreen(),
-                ),
-              );
-            },
-            child: const Text('My bookings'),
-          ),
           IconButton(
             tooltip: 'Cart',
             onPressed: () {
@@ -182,71 +173,7 @@ class ShopDetailScreen extends StatelessWidget {
                 backgroundColor: AppColors.goldBright,
                 foregroundColor: Colors.black,
               ),
-              onPressed: () async {
-                final nameController = TextEditingController();
-                final priceController = TextEditingController(text: '4000');
-                final remainingController = TextEditingController(text: '3');
-
-                final ok = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Owner: Add menu item'),
-                    content: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            controller: nameController,
-                            decoration: const InputDecoration(labelText: 'Name'),
-                          ),
-                          TextField(
-                            controller: priceController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(labelText: 'Price (₩)'),
-                          ),
-                          TextField(
-                            controller: remainingController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(labelText: 'Remaining qty'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel'),
-                      ),
-                      FilledButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Add'),
-                      ),
-                    ],
-                  ),
-                );
-
-                if (ok != true) return;
-
-                final price = int.tryParse(priceController.text) ?? 0;
-                final remaining = int.tryParse(remainingController.text) ?? 0;
-                final err = provider.addMenuItem(
-                  storeId: shop.id,
-                  name: nameController.text,
-                  price: price,
-                  remainingQty: remaining,
-                  photoAsset: shop.photoAsset,
-                );
-
-                if (err != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(err)),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Menu added.')),
-                  );
-                }
-              },
+              onPressed: () => _showAddMenuDialog(context, provider, shop.id, shop.photoAsset),
               child: const Text('Add menu item'),
             ),
           ],
@@ -301,5 +228,140 @@ class ShopDetailScreen extends StatelessWidget {
       ),
     );
   }
-}
 
+  Future<void> _showAddMenuDialog(
+    BuildContext context,
+    FoodridgeProvider provider,
+    String storeId,
+    String? defaultPhoto,
+  ) async {
+    final nameController = TextEditingController();
+    final priceController = TextEditingController(text: '4000');
+    final remainingController = TextEditingController(text: '3');
+    String? selectedPhoto = defaultPhoto;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setLocal) {
+            return AlertDialog(
+              title: const Text('Owner: Add menu item'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        // 데모: 가게 사진 에셋 순환 선택
+                        const assets = [
+                          'assets/images/shop_biryani.png',
+                          'assets/images/shop_vegan.png',
+                          'assets/images/shop_bibimbap.png',
+                          'assets/images/shop_nasi.png',
+                          'assets/images/shop_plov.png',
+                          'assets/images/shop_chinese.png',
+                        ];
+                        final i = assets.indexOf(selectedPhoto ?? '');
+                        setLocal(() {
+                          selectedPhoto = assets[(i + 1) % assets.length];
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: AppColors.canvasDeep,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFD4C8B4)),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: selectedPhoto == null
+                            ? const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_a_photo_outlined),
+                                  SizedBox(height: 8),
+                                  Text('Tap to attach photo'),
+                                ],
+                              )
+                            : Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Image.asset(selectedPhoto!, fit: BoxFit.cover),
+                                  const Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: ColoredBox(
+                                      color: Color(0x88000000),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(6),
+                                        child: Text(
+                                          'Tap to change photo',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(labelText: 'Name'),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: priceController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Price (₩)'),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: remainingController,
+                      keyboardType: TextInputType.number,
+                      decoration:
+                          const InputDecoration(labelText: 'Remaining qty'),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Add'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (ok != true || !context.mounted) return;
+
+    final price = int.tryParse(priceController.text) ?? 0;
+    final remaining = int.tryParse(remainingController.text) ?? 0;
+    final err = provider.addMenuItem(
+      storeId: storeId,
+      name: nameController.text,
+      price: price,
+      remainingQty: remaining,
+      photoAsset: selectedPhoto,
+    );
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(err ?? 'Menu added.')),
+    );
+  }
+}

@@ -12,7 +12,10 @@ class DriverHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().appUser!;
+    final user = context.watch<AuthProvider>().appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return HomeScaffold(
       title: '운송 관리',
@@ -30,7 +33,7 @@ class DriverHomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '점심 이후 1회 수거 · 출발 전 전날 재고 전량 폐기',
+                  '지점 선택 없이 1~120번 순차 부여 · 입고 마무리 없음',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -56,7 +59,7 @@ class DriverHomeScreen extends StatelessWidget {
         FeatureTile(
           icon: Icons.kitchen_outlined,
           title: '환승반찬 입고',
-          subtitle: '사진/반찬명 입력, 입고 마무리',
+          subtitle: '번호 1~120 순차 부여 (지점 선택 없음)',
           comingSoon: false,
           onTap: () {
             Navigator.push(
@@ -68,7 +71,7 @@ class DriverHomeScreen extends StatelessWidget {
         FeatureTile(
           icon: Icons.checklist_rtl_rounded,
           title: '수거 대상 목록',
-          subtitle: '학생식당 잔반 · B급 농산물 보충분',
+          subtitle: '입고 신청 대기 물품',
           comingSoon: false,
           onTap: () {
             Navigator.push(

@@ -97,7 +97,8 @@ class _ScheduleTicketTab extends StatelessWidget {
     CulinaryMatch match,
   ) async {
     final chingu = context.read<ChinguProvider>();
-    final user = context.read<AuthProvider>().appUser!;
+    final user = context.read<AuthProvider>().appUser;
+    if (user == null) return;
 
     final ok = await showDialog<bool>(
       context: context,
@@ -121,8 +122,8 @@ class _ScheduleTicketTab extends StatelessWidget {
               const Text(
                 '• 학교당 식권 100장\n'
                 '• 같은 날 중복 예약 불가\n'
-                '• 보증금 결제 후 예약 확정\n'
-                '• 현장 키오스크에서 보증금 제외 1,000원 발권\n\n'
+                '• 식권 금액 1,500원 즉시 결제\n'
+                '• 결제 후 바로 리뷰 작성 가능\n\n'
                 '식권을 예약하시겠습니까?',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white70, height: 1.45),
@@ -162,10 +163,21 @@ class _ScheduleTicketTab extends StatelessWidget {
 
     final error = chingu.reserveTicket(userId: user.uid, matchId: match.id);
     if (!context.mounted) return;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+    await context.read<AuthProvider>().incrementChinguUsage();
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          error ?? '식권이 예약되었습니다. 식권 예약 내역에서 확인할 수 있어요.',
+      const SnackBar(content: Text('결제가 완료되었습니다. 리뷰를 작성해 주세요.')),
+    );
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChinguReviewWriteScreen(
+          initialTeamId: match.teamId,
+          initialMatchId: match.id,
         ),
       ),
     );
@@ -174,7 +186,10 @@ class _ScheduleTicketTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chingu = context.watch<ChinguProvider>();
-    final user = context.watch<AuthProvider>().appUser!;
+    final user = context.watch<AuthProvider>().appUser;
+    if (user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     final matches = chingu.bookableMatches;
 
     return ListView(
@@ -248,7 +263,7 @@ class _ScheduleTicketTab extends StatelessWidget {
                         ticket == null
                             ? '식권 예약'
                             : ticket.status == TicketStatus.issued
-                                ? '발권 완료'
+                                ? '결제 완료'
                                 : '예약됨',
                       ),
                     ),

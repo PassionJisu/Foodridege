@@ -4,13 +4,17 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/feature_tile.dart';
 import 'org_supply_screen.dart';
+import 'sale_history_screen.dart';
 
 class OrgHomeScreen extends StatelessWidget {
   const OrgHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().appUser!;
+    final user = context.watch<AuthProvider>().appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return HomeScaffold(
       title: '기관 홈',
@@ -24,7 +28,7 @@ class OrgHomeScreen extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Text(
-              '지점 선택 없이 자판기 입고만 신청합니다. 신고 관리 메뉴는 제공하지 않습니다.',
+              '잔반 수거는 없습니다. 자판기 입고 신청만 이용합니다.',
             ),
           ),
         ),
@@ -37,6 +41,18 @@ class OrgHomeScreen extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const OrgSupplyScreen()),
+            );
+          },
+        ),
+        FeatureTile(
+          icon: Icons.history_rounded,
+          title: '매매 신청 내역',
+          subtitle: '입고 신청 현황 확인',
+          comingSoon: false,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SaleHistoryScreen()),
             );
           },
         ),

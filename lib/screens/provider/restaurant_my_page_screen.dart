@@ -27,7 +27,10 @@ class _RestaurantMyPageScreenState extends State<RestaurantMyPageScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final saleProvider = context.watch<SaleProvider>();
-    final user = auth.appUser!;
+    final user = auth.appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     final now = DateTime.now();
     final monthlyTotal = saleProvider.getMonthlySettlementAmount(now.year, now.month);
@@ -110,7 +113,10 @@ class _RestaurantMyPageScreenState extends State<RestaurantMyPageScreen> {
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('로그아웃', style: TextStyle(color: Colors.red)),
-            onTap: () => auth.signOut(),
+            onTap: () async {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              await auth.signOut();
+            },
           ),
         ],
       ),
