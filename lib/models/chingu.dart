@@ -8,12 +8,18 @@ class CulinaryTeam {
     required this.name,
     required this.region,
     required this.cheers,
+    required this.schoolName,
+    required this.cafeteriaVenue,
+    this.ticketQuota = 100,
   });
 
   final String id;
   final String name;
   final String region;
   final int cheers;
+  final String schoolName;
+  final String cafeteriaVenue;
+  final int ticketQuota;
 
   CulinaryTeam copyWith({int? cheers}) {
     return CulinaryTeam(
@@ -21,27 +27,29 @@ class CulinaryTeam {
       name: name,
       region: region,
       cheers: cheers ?? this.cheers,
+      schoolName: schoolName,
+      cafeteriaVenue: cafeteriaVenue,
+      ticketQuota: ticketQuota,
     );
   }
 }
 
+/// 단일 팀 일정 (토너먼트 vs 형식 없음).
 class CulinaryMatch {
   const CulinaryMatch({
     required this.id,
     required this.roundLabel,
-    required this.homeTeamId,
-    required this.awayTeamId,
+    required this.teamId,
     required this.menu,
     required this.venue,
     required this.date,
-    required this.time,
+    this.time = '14:00',
     required this.status,
   });
 
   final String id;
   final String roundLabel;
-  final String homeTeamId;
-  final String awayTeamId;
+  final String teamId;
   final String menu;
   final String venue;
   final DateTime date;
@@ -58,6 +66,15 @@ class CulinaryMatch {
 
   bool get canReview {
     return isCompleted || DateTime.now().isAfter(date);
+  }
+
+  /// 오늘 기준 3일 이내 일정만 예약 목록에 노출.
+  bool get isWithinBookingWindow {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(date.year, date.month, date.day);
+    final diff = day.difference(today).inDays;
+    return diff >= 0 && diff <= 3 && !isCompleted;
   }
 }
 
@@ -106,13 +123,15 @@ class MatchReview {
     required this.stars,
     required this.comment,
     required this.createdAt,
+    this.photoNote,
   });
 
   final String id;
   final String matchId;
   final String userId;
   final String displayName;
-  final int stars;
+  final int stars; // 0–5
   final String comment;
   final DateTime createdAt;
+  final String? photoNote;
 }

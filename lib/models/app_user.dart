@@ -66,6 +66,15 @@ class AppUser {
 
   int get contributedGrams => vendingUsageCount * 200;
 
+  /// 표시용 kg (자판기 1회 = 0.2kg)
+  double get contributedKg => contributedGrams / 1000.0;
+
+  String get contributedKgLabel {
+    final kg = contributedKg;
+    if (kg == kg.roundToDouble()) return '${kg.toInt()}kg';
+    return '${kg.toStringAsFixed(1)}kg';
+  }
+
   int get usageDays {
     final start = createdAt ?? DateTime.now();
     return DateTime.now().difference(start).inDays.clamp(0, 36500) + 1;

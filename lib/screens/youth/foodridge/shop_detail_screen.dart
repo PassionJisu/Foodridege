@@ -3,36 +3,44 @@ import 'package:provider/provider.dart';
 
 import '../../../providers/auth_provider.dart';
 import '../../../providers/foodridge_provider.dart';
+import '../../../theme/app_theme.dart';
 import 'foodridge_map_screen.dart';
+import 'foodridge_reservations_screen.dart';
+import 'review_write_screen.dart';
 
-class ShopDetailScreen extends StatefulWidget {
+class ShopDetailScreen extends StatelessWidget {
   const ShopDetailScreen({super.key, required this.shopId});
 
   final String shopId;
 
   @override
-  State<ShopDetailScreen> createState() => _ShopDetailScreenState();
-}
-
-class _ShopDetailScreenState extends State<ShopDetailScreen> {
-  final _comment = TextEditingController();
-  int _stars = 5;
-
-  @override
-  void dispose() {
-    _comment.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final provider = context.watch<FoodridgeProvider>();
-    final shop = provider.shopById(widget.shopId);
+    final auth = context.watch<AuthProvider>();
+    final user = auth.appUser!;
+    final shop = provider.shopById(shopId);
     final reviews = provider.reviewsFor(shop.id);
     final avg = provider.averageStars(shop.id);
+    final canReview = provider.canWriteReviewFor(user.uid, shop.id);
 
     return Scaffold(
-      appBar: AppBar(title: Text(shop.name)),
+      backgroundColor: AppColors.canvas,
+      appBar: AppBar(
+        title: Text(shop.name),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const FoodridgeReservationsScreen(),
+                ),
+              );
+            },
+            child: const Text('내 예약'),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -51,10 +59,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  shop.cuisine,
-                  style: const TextStyle(color: Colors.black54),
-                ),
+                child: Text(shop.cuisine, style: const TextStyle(color: Color(0xFF8A7466))),
               ),
               DietMark(badge: shop.badge),
             ],
@@ -62,27 +67,61 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
           const SizedBox(height: 12),
           Text(shop.description, style: const TextStyle(height: 1.45, fontSize: 15)),
           const SizedBox(height: 12),
-          Text(shop.address, style: const TextStyle(color: Colors.black54)),
+          Text(shop.address, style: const TextStyle(color: Color(0xFF8A7466))),
           if (shop.partnerSurplus) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
+                color: AppColors.canvasDeep,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Surplus box (partner kitchen)',
+                    '오늘의 서플러스 박스',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(shop.surplusLabel ?? 'Surprise bag'),
                   Text(
-                    '₩${shop.surplusPrice}  ·  pickup in-store today',
-                    style: const TextStyle(color: Colors.black54),
+                    '₩${shop.surplusPrice}  ·  매장 픽업',
+                    style: const TextStyle(color: Color(0xFF8A7466)),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.sage),
+                    onPressed: () {
+                      final r = provider.createReservation(
+                        userId: user.uid,
+                        shopId: shop.id,
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            r == null
+                                ? '이 가게는 서플러스 예약이 없습니다.'
+                                : '예약되었습니다. 내 예약에서 GPS 도착 확인 후 리뷰를 작성하세요.',
+                          ),
+                          action: r == null
+                              ? null
+                              : SnackBarAction(
+                                  label: '내 예약',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const FoodridgeReservationsScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      );
+                    },
+                    child: const Text('서플러스 예약하기'),
                   ),
                 ],
               ),
@@ -90,17 +129,17 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
           ],
           const SizedBox(height: 24),
           Text(
-            reviews.isEmpty ? 'Reviews' : 'Reviews  ·  ${avg.toStringAsFixed(1)} / 5',
+            reviews.isEmpty ? '리뷰' : '리뷰  ·  ${avg.toStringAsFixed(1)} / 5',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Reviews are only visible on this restaurant page.',
-            style: TextStyle(color: Colors.black45, fontSize: 12),
+            '예약 + GPS 도착 확인 후에만 리뷰를 작성할 수 있습니다.',
+            style: TextStyle(color: Color(0xFF8A7466), fontSize: 12),
           ),
           const SizedBox(height: 12),
           if (reviews.isEmpty)
-            const Text('No reviews yet.', style: TextStyle(color: Colors.black45)),
+            const Text('아직 리뷰가 없습니다.', style: TextStyle(color: Color(0xFF8A7466))),
           ...reviews.map(
             (review) => ListTile(
               contentPadding: EdgeInsets.zero,
@@ -109,46 +148,30 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
             ),
           ),
           const Divider(height: 32),
-          const Text('Leave a review', style: TextStyle(fontWeight: FontWeight.bold)),
-          Row(
-            children: List.generate(5, (i) {
-              return IconButton(
-                onPressed: () => setState(() => _stars = i + 1),
-                icon: Icon(
-                  i < _stars ? Icons.star : Icons.star_border,
-                  color: Colors.orange,
-                ),
-              );
-            }),
-          ),
-          TextField(
-            controller: _comment,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Share a short note for other international students',
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.sage),
+            onPressed: canReview
+                ? () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReviewWriteScreen(shopId: shop.id),
+                      ),
+                    );
+                  }
+                : null,
+            child: Text(
+              canReview ? '리뷰 작성' : '도착 확인 후 리뷰 가능',
             ),
           ),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: () async {
-              if (_comment.text.trim().isEmpty) return;
-              final auth = context.read<AuthProvider>();
-              final name = auth.appUser?.name ?? 'Guest';
-              provider.addReview(
-                shopId: shop.id,
-                author: name,
-                stars: _stars,
-                comment: _comment.text,
-              );
-              _comment.clear();
-              final rewardMessage = await auth.recordReviewReward();
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(rewardMessage)),
-              );
-            },
-            child: const Text('Post review'),
-          ),
+          if (!canReview)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                provider.reviewBlockReason(user.uid, shop.id),
+                style: const TextStyle(color: Color(0xFF8A7466), fontSize: 12),
+              ),
+            ),
         ],
       ),
     );

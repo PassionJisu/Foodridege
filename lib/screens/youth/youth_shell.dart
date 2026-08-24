@@ -56,9 +56,8 @@ class _YouthShellState extends State<YouthShell> {
 
     final role = user.role;
     final isChingu = _index == 1;
-    final isVending = _index == 2;
     final isFoodridge = _index == 3;
-    final darkNav = isChingu || isVending;
+    final darkNav = isChingu;
 
     return Scaffold(
       body: IndexedStack(index: _index, children: _pages),
@@ -74,25 +73,17 @@ class _YouthShellState extends State<YouthShell> {
             }
             return TextStyle(
               fontSize: 12,
-              color: selected
-                  ? (isChingu ? AppColors.gold : AppColors.vendingAccent)
-                  : Colors.white54,
+              color: selected ? AppColors.gold : Colors.white54,
             );
           }),
         ),
         child: NavigationBar(
           selectedIndex: _index,
           onDestinationSelected: (value) => _onSelect(value, role),
-          backgroundColor: isChingu
-              ? AppColors.chinguBlack
-              : isVending
-                  ? AppColors.vendingBg
-                  : AppColors.canvas,
+          backgroundColor: isChingu ? AppColors.chinguBlack : AppColors.canvas,
           indicatorColor: isChingu
               ? AppColors.gold.withValues(alpha: 0.25)
-              : isVending
-                  ? AppColors.vendingLeaf.withValues(alpha: 0.35)
-                  : AppColors.primary.withValues(alpha: 0.15),
+              : AppColors.primary.withValues(alpha: 0.15),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: [
             NavigationDestination(
@@ -115,7 +106,7 @@ class _YouthShellState extends State<YouthShell> {
               icon: Icon(Icons.kitchen_outlined, color: darkNav ? Colors.white54 : null),
               selectedIcon: Icon(
                 Icons.kitchen,
-                color: isVending ? AppColors.vendingAccent : AppColors.primary,
+                color: darkNav ? Colors.white : AppColors.primary,
               ),
               label: '자판기',
             ),
@@ -123,7 +114,7 @@ class _YouthShellState extends State<YouthShell> {
               icon: Icon(Icons.map_outlined, color: darkNav ? Colors.white54 : null),
               selectedIcon: Icon(
                 Icons.map,
-                color: isFoodridge ? AppColors.primary : null,
+                color: isFoodridge ? AppColors.primary : AppColors.primary,
               ),
               label: 'Foodridge',
             ),

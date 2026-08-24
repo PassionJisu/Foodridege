@@ -10,96 +10,46 @@ class ChinguRankingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chingu = context.watch<ChinguProvider>();
-    final ranked = chingu.rankedTeams;
+    final teams = chingu.rankedTeams;
 
     return Theme(
       data: AppTheme.chinguDark,
       child: Scaffold(
         backgroundColor: AppColors.chinguBlack,
-        appBar: AppBar(
-          title: const Text('경쟁 대시보드'),
-        ),
+        appBar: AppBar(title: const Text('응원하기')),
         body: ListView(
           padding: const EdgeInsets.all(20),
           children: [
             const Text(
-              '친구 응원하기',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              '광주 ✕ 전남 조리학과가 한 팀씩 돌아가며 키친을 엽니다.',
+              style: TextStyle(color: Colors.white70),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             const Text(
-              '광주 · 전남 조리학과와 대전 조리학과가 한 팀씩 돌아가며 자존심을 겁니다.',
-              style: TextStyle(color: Colors.white70, height: 1.4),
+              '하루 1회만 응원할 수 있습니다.',
+              style: TextStyle(color: Colors.white54, fontSize: 12),
             ),
-            const SizedBox(height: 20),
-            ...List.generate(ranked.length, (index) {
-              final team = ranked[index];
-              final cheered = chingu.alreadyCheered(team.id);
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: index == 0 ? AppColors.gold : AppColors.chinguBorder,
-                  ),
-                  color: const Color(0xFF141414),
+            const SizedBox(height: 16),
+            ...teams.asMap().entries.map((e) {
+              final team = e.value;
+              return ListTile(
+                leading: Text(
+                  '${e.key + 1}',
+                  style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold),
                 ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 28,
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(
-                          color: index == 0 ? AppColors.gold : Colors.white54,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            team.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            team.region,
-                            style: const TextStyle(color: Colors.white54, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      '${team.cheers}',
-                      style: const TextStyle(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    OutlinedButton(
-                      onPressed: cheered
-                          ? null
-                          : () {
-                              final error = chingu.cheer(team.id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(error ?? '${team.name}을 응원했습니다!')),
-                              );
-                            },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.gold,
-                        disabledForegroundColor: Colors.white24,
-                        side: BorderSide(
-                          color: cheered ? Colors.white24 : AppColors.gold,
-                        ),
-                        minimumSize: const Size(72, 36),
-                      ),
-                      child: Text(cheered ? '완료' : '응원'),
-                    ),
-                  ],
+                title: Text(team.name, style: const TextStyle(color: Colors.white)),
+                subtitle: Text(
+                  '${team.schoolName} · ${team.cheers} 응원',
+                  style: const TextStyle(color: Colors.white54),
+                ),
+                trailing: TextButton(
+                  onPressed: () {
+                    final err = chingu.cheer(team.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(err ?? '응원 완료!')),
+                    );
+                  },
+                  child: const Text('응원', style: TextStyle(color: AppColors.gold)),
                 ),
               );
             }),

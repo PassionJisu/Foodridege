@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../models/foreign_shop.dart';
 import '../../../providers/foodridge_provider.dart';
 import '../../../theme/app_theme.dart';
+import 'foodridge_reservations_screen.dart';
 import 'shop_detail_screen.dart';
 
 class FoodridgeMapScreen extends StatelessWidget {
@@ -24,25 +25,42 @@ class FoodridgeMapScreen extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 12, 20, 4),
-                child: Column(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Foodridge',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.6,
-                        color: AppColors.ink,
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Foodridge',
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.6,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'CNU 인근 독립 키친 — 배달앱에 없는 가게를 모았습니다.',
+                            style: TextStyle(color: Color(0xFF6A5346), height: 1.35),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Independent kitchens near CNU — not listed on Baemin or Coupang Eats.',
-                      style: TextStyle(color: Color(0xFF6A5346), height: 1.35),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const FoodridgeReservationsScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text('내 예약'),
                     ),
                   ],
                 ),

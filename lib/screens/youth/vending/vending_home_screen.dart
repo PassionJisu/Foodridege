@@ -27,7 +27,7 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
     final used = vending.usedSlots(selectedId);
 
     return Scaffold(
-      backgroundColor: AppColors.vendingBg,
+      backgroundColor: AppColors.canvas,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -35,92 +35,45 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
             DropdownButtonFormField<String>(
               key: ValueKey(selectedId),
               initialValue: selectedId,
-              dropdownColor: AppColors.vendingCard,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.vendingCard,
-                labelText: '지점 선택',
-                labelStyle: const TextStyle(color: Colors.white70),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
-                ),
-              ),
+              decoration: const InputDecoration(labelText: '지점 선택'),
               items: machines
-                  .map(
-                    (m) => DropdownMenuItem(
-                      value: m.id,
-                      child: Text(m.name),
-                    ),
-                  )
+                  .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
                   .toList(),
               onChanged: (value) => setState(() => _machineId = value),
             ),
             const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Stack(
+            Container(
+              height: 180,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.sage.withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(
-                    'assets/images/vending_banner.png',
-                    height: 210,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
-                      height: 210,
-                      color: const Color(0xFF163022),
-                    ),
-                  ),
                   Container(
-                    height: 210,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withValues(alpha: 0.25),
-                          Colors.black.withValues(alpha: 0.72),
-                        ],
-                      ),
+                      color: Colors.white.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      '식자재 순환 프로젝트',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
-                  Positioned.fill(
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppColors.vendingLeaf.withValues(alpha: 0.85),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              '식자재 순환 프로젝트',
-                              style: TextStyle(color: Colors.white, fontSize: 12),
-                            ),
-                          ),
-                          const Spacer(),
-                          const Text(
-                            '내가 환경과 지역사회에 기여한 무게',
-                            style: TextStyle(color: Colors.white70, fontSize: 13),
-                          ),
-                          Text(
-                            '${user.contributedGrams} g',
-                            style: const TextStyle(
-                              color: AppColors.vendingAccent,
-                              fontSize: 40,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const Text(
-                            '자판기 1회 이용 = 200g · 당일 반찬만 적재됩니다',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
-                          ),
-                        ],
-                      ),
+                  const Spacer(),
+                  const Text(
+                    '내가 환경과 지역사회에 기여한 무게',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  Text(
+                    user.contributedKgLabel,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 40,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
@@ -132,7 +85,7 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
                 const Text(
                   '현재 판매 중',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.ink,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -140,40 +93,32 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
                 const Spacer(),
                 Text(
                   '$used / ${VendingMachine.maxSlots} 슬롯',
-                  style: const TextStyle(color: Colors.white54),
+                  style: const TextStyle(color: Color(0xFF8A7466)),
                 ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
               machine.location,
-              style: const TextStyle(color: Colors.white38, fontSize: 12),
+              style: const TextStyle(color: Color(0xFF8A7466), fontSize: 12),
             ),
             if (machine.isExpired)
               const Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Text(
                   '입고 마감 후 24시간이 지나 전량 폐기 대상입니다.',
-                  style: TextStyle(color: Colors.orangeAccent, fontSize: 12),
+                  style: TextStyle(color: Colors.orange, fontSize: 12),
                 ),
               ),
             const SizedBox(height: 16),
             if (slots.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 48),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 48),
                 child: Column(
                   children: [
-                    Icon(Icons.kitchen_outlined, size: 64, color: Colors.white.withValues(alpha: 0.25)),
-                    const SizedBox(height: 12),
-                    const Text(
-                      '현재 입고된 상품이 없어요',
-                      style: TextStyle(color: Colors.white54),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      '1,000원 / 200g 균일 · 앱에서 예약·결제는 하지 않습니다',
-                      style: TextStyle(color: Colors.white38, fontSize: 12),
-                    ),
+                    Icon(Icons.kitchen_outlined, size: 64, color: Color(0xFFC4B5A5)),
+                    SizedBox(height: 12),
+                    Text('현재 입고된 상품이 없어요', style: TextStyle(color: Color(0xFF8A7466))),
                   ],
                 ),
               )
@@ -183,8 +128,9 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.vendingCard,
+                    color: Colors.white.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFD4C8B4)),
                   ),
                   child: Row(
                     children: [
@@ -205,14 +151,14 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
                             Text(
                               slot.name,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.ink,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                             Text(
                               'No. ${slot.displayNumber.toString().padLeft(2, '0')}  ·  ${slot.quantity}개  ·  1,000원',
-                              style: const TextStyle(color: Colors.white54, fontSize: 12),
+                              style: const TextStyle(color: Color(0xFF8A7466), fontSize: 12),
                             ),
                           ],
                         ),
@@ -241,6 +187,10 @@ class SeedColor {
         return 0xFF5C4033;
       case '제육볶음':
         return 0xFFB33A3A;
+      case '고등어조림':
+        return 0xFF4A6FA5;
+      case '잡채':
+        return 0xFF8B6914;
       default:
         return 0xFF4A6741;
     }

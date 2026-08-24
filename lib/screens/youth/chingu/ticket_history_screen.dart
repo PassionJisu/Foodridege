@@ -20,10 +20,10 @@ class TicketHistoryScreen extends StatelessWidget {
       data: AppTheme.chinguDark,
       child: Scaffold(
         backgroundColor: AppColors.chinguBlack,
-        appBar: AppBar(title: const Text('식권 신청 내역')),
+        appBar: AppBar(title: const Text('식권 예약 내역')),
         body: tickets.isEmpty
             ? const Center(
-                child: Text('신청한 식권이 없습니다.', style: TextStyle(color: Colors.white54)),
+                child: Text('예약한 식권이 없습니다.', style: TextStyle(color: Colors.white54)),
               )
             : ListView.builder(
                 padding: const EdgeInsets.all(20),
@@ -43,7 +43,7 @@ class TicketHistoryScreen extends StatelessWidget {
                         Text(match.roundLabel, style: const TextStyle(color: Colors.white54, fontSize: 12)),
                         const SizedBox(height: 4),
                         Text(
-                          chingu.vsTitle(match),
+                          chingu.eventTitle(match),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),

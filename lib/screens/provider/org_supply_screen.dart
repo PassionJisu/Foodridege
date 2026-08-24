@@ -37,19 +37,13 @@ class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            '$orgName · 지점 선택 없이 바로 신청합니다.\n아침/점심/저녁 마감 1시간 전까지 접수',
+            '$orgName · 지점 선택 없이 바로 신청합니다.\n점심 마감 1시간 전까지 접수',
             style: const TextStyle(color: Color(0xFF8A7466), height: 1.4),
           ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _meal,
+          InputDecorator(
             decoration: const InputDecoration(labelText: '끼니'),
-            items: const [
-              DropdownMenuItem(value: '아침', child: Text('아침')),
-              DropdownMenuItem(value: '점심', child: Text('점심')),
-              DropdownMenuItem(value: '저녁', child: Text('저녁')),
-            ],
-            onChanged: (v) => setState(() => _meal = v ?? _meal),
+            child: const Text('점심', style: TextStyle(fontWeight: FontWeight.w600)),
           ),
           const SizedBox(height: 10),
           TextField(

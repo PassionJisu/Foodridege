@@ -53,7 +53,6 @@ class HomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   child: Row(
                     children: [
-                      const Spacer(),
                       Material(
                         color: Colors.white.withValues(alpha: 0.92),
                         shape: const CircleBorder(),
@@ -78,6 +77,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const Spacer(),
                     ],
                   ),
                 ),
@@ -139,7 +139,7 @@ class _StudentBanner extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${_format(user.contributedGrams)} g',
+                user.contributedKgLabel,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 40,
@@ -191,11 +191,6 @@ class _StudentBanner extends StatelessWidget {
       ],
     );
   }
-
-  String _format(int n) => n.toString().replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (m) => '${m[1]},',
-      );
 }
 
 class _RoleWelcomeBanner extends StatelessWidget {
