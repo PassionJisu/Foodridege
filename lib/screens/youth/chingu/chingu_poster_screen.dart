@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../theme/app_theme.dart';
 import 'chingu_hub_screen.dart';
+import 'free_ticket_flow.dart';
 
 class ChinguPosterScreen extends StatelessWidget {
   const ChinguPosterScreen({super.key});
@@ -43,7 +44,10 @@ class ChinguPosterScreen extends StatelessWidget {
                   Row(
                     children: [
                       const Spacer(),
-                      _CouponBadge(count: coupons),
+                      GestureDetector(
+                        onTap: () => promptUseHeldFreeTickets(context),
+                        child: _CouponBadge(count: coupons),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -119,7 +123,7 @@ class ChinguPosterScreen extends StatelessWidget {
                       _PosterStat(value: '6', label: '참가팀'),
                       _PosterStat(value: '2', label: '지역'),
                       _PosterStat(value: '9–12월', label: '운영 기간'),
-                      _PosterStat(value: '600장', label: '총 식권'),
+                      _PosterStat(value: '100장', label: '학교 당 식권'),
                     ],
                   ),
                   const SizedBox(height: 20),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../models/foreign_shop.dart';
 import '../../../providers/foodridge_provider.dart';
+import '../../../core/config/naver_config.dart';
 import '../../../theme/app_theme.dart';
 import 'foodridge_reservations_screen.dart';
 import 'shop_detail_screen.dart';
@@ -25,6 +26,7 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
   String _query = '';
   ForeignShop? _selected;
   bool _drawing = false;
+  bool _mapReady = NaverConfig.sdkReady;
   final Map<String, NOverlayImage> _iconCache = {};
 
   static const _defaultLat = 35.1595;
@@ -34,6 +36,17 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
     _ShopMarker.diameter,
     _ShopMarker.diameter + _ShopMarker.tailHeight,
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _prepareMap();
+  }
+
+  Future<void> _prepareMap() async {
+    final ok = await NaverConfig.ensureSdk();
+    if (mounted) setState(() => _mapReady = ok);
+  }
 
   @override
   void dispose() {
@@ -154,25 +167,49 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
       ),
       body: Stack(
         children: [
-          NaverMap(
-            options: NaverMapViewOptions(
-              initialCameraPosition: NCameraPosition(
-                target: focus == null
-                    ? const NLatLng(_defaultLat, _defaultLng)
-                    : NLatLng(focus.lat, focus.lng),
-                zoom: focus == null ? 11 : 14,
+          if (_mapReady)
+            NaverMap(
+              options: NaverMapViewOptions(
+                initialCameraPosition: NCameraPosition(
+                  target: focus == null
+                      ? const NLatLng(_defaultLat, _defaultLng)
+                      : NLatLng(focus.lat, focus.lng),
+                  zoom: focus == null ? 11 : 14,
+                ),
+                locale: const NLocale('ko', 'KR'),
+                indoorEnable: false,
+                liteModeEnable: false,
+                locationButtonEnable: false,
               ),
-              locale: const NLocale('ko', 'KR'),
-              indoorEnable: false,
-              liteModeEnable: false,
-              locationButtonEnable: false,
+              onMapReady: (controller) async {
+                _controller = controller;
+                await _drawMarkers(shops, moveCamera: focus == null);
+                if (focus != null) setState(() => _selected = focus);
+              },
+            )
+          else
+            ColoredBox(
+              color: AppColors.canvasDeep,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
+                children: [
+                  const Text(
+                    '지도를 불러오지 못했습니다. 목록에서 가게를 선택해 주세요.',
+                    style: TextStyle(color: Color(0xFF8A7466), height: 1.4),
+                  ),
+                  const SizedBox(height: 12),
+                  ..._filtered(shops).map(
+                    (shop) => Card(
+                      child: ListTile(
+                        title: Text(shop.name),
+                        subtitle: Text(shop.address),
+                        onTap: () => setState(() => _selected = shop),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            onMapReady: (controller) async {
-              _controller = controller;
-              await _drawMarkers(shops, moveCamera: focus == null);
-              if (focus != null) setState(() => _selected = focus);
-            },
-          ),
           Positioned(
             top: 12,
             left: 12,

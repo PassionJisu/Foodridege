@@ -3,6 +3,7 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../services/naver_map_service.dart';
+import '../../core/config/naver_config.dart';
 import '../../theme/app_theme.dart';
 
 class DriverPickupRouteScreen extends StatefulWidget {
@@ -14,7 +15,7 @@ class DriverPickupRouteScreen extends StatefulWidget {
 }
 
 class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
-  bool _showMap = true;
+  bool _showMap = NaverConfig.sdkReady;
   final Set<int> _done = {};
   DrivingRoute? _summary;
 
@@ -24,6 +25,17 @@ class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
     _Stop('전남대 자판기', '학생회관 1층', 35.1752, 126.9079),
     _Stop('광주여대 자판기', '캠퍼스 후문', 35.1619, 126.7988),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _prepareMap();
+  }
+
+  Future<void> _prepareMap() async {
+    final ok = await NaverConfig.ensureSdk();
+    if (mounted) setState(() => _showMap = ok);
+  }
 
   Future<void> _navigate(_Stop stop) async {
     final app = Uri.parse(
@@ -291,6 +303,18 @@ class _RouteMapState extends State<_RouteMap> {
 
   @override
   Widget build(BuildContext context) {
+    if (!NaverConfig.sdkReady) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            _error ?? '지도를 불러올 수 없습니다. 아래 목록에서 수거를 진행해 주세요.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Color(0xFF8A7466)),
+          ),
+        ),
+      );
+    }
     return Stack(
       children: [
         NaverMap(

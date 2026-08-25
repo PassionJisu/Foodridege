@@ -47,12 +47,32 @@ class _DriverPickupListScreenState extends State<DriverPickupListScreen> {
                     final request = pendingRequests[index];
                     return Card(
                       margin: const EdgeInsets.only(bottom: 16),
-                      child: ListTile(
-                        title: Text('[${request.restaurantName}] ${request.category.label} ${request.quantity}개'),
-                        subtitle: Text('지점: ${request.branchName}'),
-                        trailing: ElevatedButton(
-                          onPressed: () => _handlePickup(request),
-                          child: const Text('수거 완료'),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '[${request.restaurantName}] ${request.category.label} ${request.quantity}개',
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '지점: ${request.branchName}',
+                              style: TextStyle(color: Colors.grey.shade700),
+                            ),
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: FilledButton(
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size(108, 40),
+                                ),
+                                onPressed: () => _handlePickup(request),
+                                child: const Text('수거 완료'),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -61,7 +81,7 @@ class _DriverPickupListScreenState extends State<DriverPickupListScreen> {
     );
   }
 
-  void _handlePickup(SaleRequest request) async {
+  Future<void> _handlePickup(SaleRequest request) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -75,10 +95,13 @@ class _DriverPickupListScreenState extends State<DriverPickupListScreen> {
     );
 
     if (confirmed == true && mounted) {
-      final success = await context.read<SaleProvider>().updateSaleRequestStatus(request.id, SaleRequestStatus.collected);
+      final success = await context
+          .read<SaleProvider>()
+          .updateSaleRequestStatus(request.id, SaleRequestStatus.collected);
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('수거 완료 처리되었습니다.')));
-        context.read<SaleProvider>().fetchAllSaleRequests();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('수거 완료 처리되었습니다.')),
+        );
       }
     }
   }

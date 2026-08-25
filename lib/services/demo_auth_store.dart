@@ -31,7 +31,7 @@ class DemoAuthStore {
         vendingUsageCount: 8,
         chinguUsageCount: 2,
         rewardStack: 2,
-        mealCouponCount: 1,
+        mealCouponCount: 2,
         reviewCount: 2,
       ),
     ),

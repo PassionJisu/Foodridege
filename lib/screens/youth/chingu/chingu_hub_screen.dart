@@ -6,6 +6,7 @@ import '../../../models/chingu.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chingu_provider.dart';
 import '../../../theme/app_theme.dart';
+import 'chingu_ranking_screen.dart';
 import 'ticket_deposit_payment_screen.dart';
 import 'ticket_history_screen.dart';
 import 'chingu_review_write_screen.dart';
@@ -80,7 +81,7 @@ class _ChinguHubScreenState extends State<ChinguHubScreen>
           controller: _tab,
           children: const [
             _ScheduleTicketTab(),
-            _CheerTab(),
+            CheerRankingBoard(),
             _ReviewTab(),
           ],
         ),
@@ -122,8 +123,8 @@ class _ScheduleTicketTab extends StatelessWidget {
               const Text(
                 '• 학교당 식권 100장\n'
                 '• 같은 날 중복 예약 불가\n'
-                '• 식권 금액 1,500원 즉시 결제\n'
-                '• 결제 후 바로 리뷰 작성 가능\n\n'
+                '• 식권 금액 1,000원 (무료 식권 보유 시 결제에서 사용 가능)\n'
+                '• 식사 후 예약 내역 또는 리뷰 탭에서 리뷰 작성\n\n'
                 '식권을 예약하시겠습니까?',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white70, height: 1.45),
@@ -169,16 +170,28 @@ class _ScheduleTicketTab extends StatelessWidget {
     }
     await context.read<AuthProvider>().incrementChinguUsage();
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('결제가 완료되었습니다. 리뷰를 작성해 주세요.')),
-    );
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ChinguReviewWriteScreen(
-          initialTeamId: match.teamId,
-          initialMatchId: match.id,
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.chinguCard,
+        title: const Text(
+          '식권이 완료되었습니다!',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
         ),
+        content: const Text(
+          '식사를 마친 후 리뷰를 남겨주세요!',
+          style: TextStyle(color: Colors.white70, height: 1.4),
+        ),
+        actions: [
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.goldBright,
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('확인'),
+          ),
+        ],
       ),
     );
   }
@@ -196,9 +209,24 @@ class _ScheduleTicketTab extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       children: [
         const Text(
-          '9월 키친 일정 · 시간은 모두 14:00입니다.',
+          '10월 키친 일정 · 시간은 모두 14:00입니다.',
           style: TextStyle(color: Colors.white70, fontSize: 13),
         ),
+        if (user.displayCouponCount > 0) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.gold.withValues(alpha: 0.12),
+              border: Border.all(color: AppColors.gold.withValues(alpha: 0.45)),
+            ),
+            child: Text(
+              '무료 식권 ${user.displayCouponCount}장 보유 · 일정을 고른 뒤 결제에서 사용할 수 있습니다.',
+              style: const TextStyle(color: AppColors.gold, fontSize: 13, height: 1.35),
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         if (matches.isEmpty)
           const Padding(
@@ -272,63 +300,6 @@ class _ScheduleTicketTab extends StatelessWidget {
               ),
             );
           }),
-      ],
-    );
-  }
-}
-
-class _CheerTab extends StatelessWidget {
-  const _CheerTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final chingu = context.watch<ChinguProvider>();
-    final teams = chingu.rankedTeams;
-
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const Text(
-          '유저당 하루 1회, 한 학교를 응원할 수 있습니다.',
-          style: TextStyle(color: Colors.white70, fontSize: 13),
-        ),
-        const SizedBox(height: 16),
-        ...teams.asMap().entries.map((e) {
-          final i = e.key;
-          final team = e.value;
-          final cheered = chingu.alreadyCheeredToday(team.id);
-          return ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              backgroundColor: AppColors.gold.withValues(alpha: 0.2),
-              child: Text(
-                '${i + 1}',
-                style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold),
-              ),
-            ),
-            title: Text(team.name, style: const TextStyle(color: Colors.white)),
-            subtitle: Text(
-              '${team.schoolName} · 응원 ${team.cheers}',
-              style: const TextStyle(color: Colors.white54),
-            ),
-            trailing: TextButton(
-              onPressed: cheered || !chingu.canCheerToday(team.id)
-                  ? null
-                  : () {
-                      final err = chingu.cheer(team.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(err ?? '${team.name}을(를) 응원했습니다!')),
-                      );
-                    },
-              child: Text(
-                cheered ? '오늘 응원함' : '응원',
-                style: TextStyle(
-                  color: cheered ? Colors.white38 : AppColors.gold,
-                ),
-              ),
-            ),
-          );
-        }),
       ],
     );
   }

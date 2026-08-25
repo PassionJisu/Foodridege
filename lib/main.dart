@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
@@ -20,17 +19,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ko');
 
-  try {
-    await FlutterNaverMap().init(
-      clientId: NaverConfig.clientId,
-      onAuthFailed: (ex) {
-        debugPrint('Naver Map auth failed: $ex');
-      },
-    );
-    debugPrint('Naver Map init OK · clientId=${NaverConfig.clientId}');
-  } catch (e) {
-    debugPrint('Naver Map init skipped: $e');
-  }
+  final naverReady = await NaverConfig.ensureSdk();
+  debugPrint(
+    naverReady
+        ? 'Naver Map init OK · clientId=${NaverConfig.clientId}'
+        : 'Naver Map unavailable — map widgets will use a fallback',
+  );
 
   var firebaseConfigured = false;
   try {

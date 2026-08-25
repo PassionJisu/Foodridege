@@ -42,13 +42,33 @@ class _AdminStockingManageScreenState extends State<AdminStockingManageScreen> {
                     final request = collectedRequests[index];
                     return Card(
                       margin: const EdgeInsets.only(bottom: 16),
-                      child: ListTile(
-                        title: Text('[${request.restaurantName}] ${request.category.label} ${request.quantity}개'),
-                        subtitle: Text('지점: ${request.branchName}\n금액: ${request.totalPrice}원'),
-                        trailing: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-                          onPressed: () => _handleStocking(request),
-                          child: const Text('입고 확정'),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '[${request.restaurantName}] ${request.category.label} ${request.quantity}개',
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '지점: ${request.branchName}\n금액: ${request.totalPrice}원',
+                            ),
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: FilledButton(
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size(108, 40),
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () => _handleStocking(request),
+                                child: const Text('입고 확정'),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );

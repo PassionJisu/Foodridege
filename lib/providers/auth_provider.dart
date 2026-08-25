@@ -115,6 +115,22 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 친구카세 결제에서 무료 식권 1장을 사용한다.
+  bool consumeMealCoupon() {
+    final user = _appUser;
+    if (user == null) return false;
+    if (user.mealCouponCount > 0) {
+      _appUser = user.copyWith(mealCouponCount: user.mealCouponCount - 1);
+    } else if (user.freeMealCount > 0) {
+      _appUser = user.copyWith(freeMealCount: user.freeMealCount - 1);
+    } else {
+      return false;
+    }
+    DemoAuthStore.replaceUser(_appUser!);
+    notifyListeners();
+    return true;
+  }
+
   /// 리뷰 1회 적립. 5회마다 식권(mealCoupon) +1 (Foodridge2 리워드 규칙).
   Future<String> recordReviewReward() async {
     final user = _appUser;

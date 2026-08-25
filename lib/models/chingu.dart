@@ -68,7 +68,7 @@ class CulinaryMatch {
     return isCompleted || DateTime.now().isAfter(date);
   }
 
-  /// 데모: 9월 키친 일정 등 다가오는(미완료) 일정을 예약 목록에 노출.
+  /// 데모: 다가오는(미완료) 일정을 예약 목록에 노출.
   bool get isWithinBookingWindow {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

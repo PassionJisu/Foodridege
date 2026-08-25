@@ -152,7 +152,7 @@ class ChinguProvider with ChangeNotifier {
     if (left <= 0) return '해당 학교 식권이 모두 소진되었습니다. (학교당 100장)';
 
     _ticketRemaining[teamId] = left - 1;
-    // 전액(1,500원) 결제 후 즉시 발권 · 리뷰 해금 (키오스크 현장결제 없음)
+    // 전액(1,000원) 결제 후 즉시 발권 · 리뷰 해금 (키오스크 현장결제 없음)
     _tickets.add(
       MealTicket(
         id: 't-${DateTime.now().millisecondsSinceEpoch}',
@@ -278,5 +278,16 @@ class ChinguProvider with ChangeNotifier {
     );
     notifyListeners();
     return null;
+  }
+
+  /// 데모용 실시간 랭킹 — 다른 이용자 응원을 흉내 내 순위가 움직이게 함.
+  void addCrowdCheers(String teamId, int amount) {
+    if (amount <= 0) return;
+    final index = _teams.indexWhere((t) => t.id == teamId);
+    if (index < 0) return;
+    _teams[index] = _teams[index].copyWith(
+      cheers: _teams[index].cheers + amount,
+    );
+    notifyListeners();
   }
 }

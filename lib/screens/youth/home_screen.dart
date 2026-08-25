@@ -5,6 +5,7 @@ import '../../models/app_user.dart';
 import '../../models/user_role.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
+import 'chingu/free_ticket_flow.dart';
 import 'my_page_screen.dart';
 
 /// Shared home for every role. Profile opens MyPage; banners differ by role.
@@ -186,7 +187,10 @@ class _StudentBanner extends StatelessWidget {
               child: _Stat(
                 icon: Icons.confirmation_number_outlined,
                 value: '${user.displayCouponCount}장',
-                label: '이벤트 식권',
+                label: '무료 식권',
+                onTap: user.role.canAccessChingu
+                    ? () => promptUseHeldFreeTickets(context)
+                    : null,
               ),
             ),
           ],
@@ -279,15 +283,17 @@ class _Stat extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.label,
+    this.onTap,
   });
 
   final IconData icon;
   final String value;
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final child = Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
         color: AppColors.canvasDeep.withValues(alpha: 0.95),
@@ -309,6 +315,15 @@ class _Stat extends StatelessWidget {
           const SizedBox(height: 2),
           Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF7A6558))),
         ],
+      ),
+    );
+    if (onTap == null) return child;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: child,
       ),
     );
   }

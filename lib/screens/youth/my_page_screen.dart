@@ -11,6 +11,7 @@ import '../provider/driver_stocking_screen.dart';
 import '../provider/org_supply_screen.dart';
 import '../provider/sale_history_screen.dart';
 import 'account_screen.dart';
+import 'chingu/free_ticket_flow.dart';
 import 'chingu/ticket_history_screen.dart';
 import 'report_screen.dart';
 
@@ -60,25 +61,31 @@ class MyPageScreen extends StatelessWidget {
                 color: AppColors.canvasDeep,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.stars_outlined, color: AppColors.sage),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '리뷰 ${user.reviewCount}회 · 다음 식권까지 '
-                      '${user.reviewsToNextCoupon}회',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+              child: InkWell(
+                onTap: role.canAccessChingu
+                    ? () => promptUseHeldFreeTickets(context)
+                    : null,
+                borderRadius: BorderRadius.circular(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.stars_outlined, color: AppColors.sage),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '리뷰 ${user.reviewCount}회 · 다음 식권까지 '
+                        '${user.reviewsToNextCoupon}회',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
-                  ),
-                  Text(
-                    '식권 ${user.displayCouponCount}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.sage,
+                    Text(
+                      '무료 식권 ${user.displayCouponCount}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.sage,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
