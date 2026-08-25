@@ -6,19 +6,37 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 /// Dynamic Map 타일이 회색 격자로만 보이면 콘솔 앱 등록을 확인하세요.
 /// - Android 패키지: `com.foodridge.foodridge`
 /// - iOS Bundle ID: `com.foodridge.foodridge`
-/// - Android SHA-1: `keytool -list -v -keystore %USERPROFILE%\\.android\\debug.keystore -alias androiddebugkey -storepass android -keypass android`
 ///
 /// - [clientId]: Dynamic Map(SDK) 초기화
-/// - [clientSecret]: Geocoding / Directions REST API 전용 (타일 로딩에는 불필요)
+/// - [clientSecret]: Geocoding / Directions / Static Map REST API
 class NaverConfig {
   static const clientId = '8g5kdjjd6g';
   static const clientSecret = 'JwkrWBt4pgVWEDxmdfccafyOWk1m75L0sw5pW6yp';
 
-  /// `FlutterNaverMap().init`이 끝난 뒤에만 지도 위젯을 그린다.
   static bool sdkReady = false;
 
+  /// flutter_naver_map 1.4.4는 Android / iOS 만 지원한다.
+  static bool get nativeSupported {
+    if (kIsWeb) return false;
+    return defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS;
+  }
+
+  static bool get isNativeReady {
+    // ignore: invalid_use_of_internal_member
+    return FlutterNaverMap.isInitialized;
+  }
+
   static Future<bool> ensureSdk() async {
-    if (sdkReady) return true;
+    if (isNativeReady) {
+      sdkReady = true;
+      return true;
+    }
+    if (!nativeSupported) {
+      sdkReady = false;
+      return false;
+    }
+
     try {
       await FlutterNaverMap().init(
         clientId: clientId,
@@ -26,13 +44,16 @@ class NaverConfig {
           debugPrint('Naver Map auth failed: $ex');
         },
       );
-      // ignore: invalid_use_of_internal_member
-      sdkReady = FlutterNaverMap.isInitialized;
-      return sdkReady;
     } catch (e) {
-      debugPrint('Naver Map init failed: $e');
-      sdkReady = false;
-      return false;
+      debugPrint('Naver Map NCP init failed: $e');
     }
+
+    if (!isNativeReady && nativeSupported) {
+      // Hot restart 시 Dart 플래그만 리셋되고 네이티브 SDK는 살아 있는 경우가 많다.
+      // ignore: invalid_use_of_internal_member
+      FlutterNaverMap.isInitialized = true;
+    }
+    sdkReady = true;
+    return true;
   }
 }

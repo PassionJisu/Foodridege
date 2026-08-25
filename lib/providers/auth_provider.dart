@@ -34,6 +34,12 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
         return false;
       }
+      if (user.isStayExpired) {
+        DemoAuthStore.deleteUser(user.uid);
+        _errorMessage = '체류 기간이 종료되어 자동 탈퇴되었습니다. 다시 회원가입해 주세요.';
+        notifyListeners();
+        return false;
+      }
       _appUser = user;
       _status = AuthStatus.authenticated;
       notifyListeners();
@@ -55,6 +61,9 @@ class AuthProvider extends ChangeNotifier {
     String? schoolInfo,
     String? businessRegistrationNumber,
     String? adminSecret,
+    StudentOrigin? studentOrigin,
+    DateTime? stayStart,
+    DateTime? stayEnd,
   }) async {
     _setLoading(true);
     _errorMessage = null;
@@ -71,6 +80,9 @@ class AuthProvider extends ChangeNotifier {
         schoolInfo: schoolInfo?.trim(),
         businessRegistrationNumber: businessRegistrationNumber?.trim(),
         createdAt: DateTime.now(),
+        studentOrigin: studentOrigin,
+        stayStart: stayStart,
+        stayEnd: stayEnd,
       );
       final error = DemoAuthStore.signUp(
         user: user,

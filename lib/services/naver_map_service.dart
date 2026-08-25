@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:http/http.dart' as http;
 
@@ -73,5 +74,53 @@ class NaverMapService {
       distanceMeters: (summary['distance'] as num?)?.toInt() ?? 0,
       durationMs: (summary['duration'] as num?)?.toInt() ?? 0,
     );
+  }
+
+  /// Windows 등 네이티브 SDK가 없는 환경용 네이버 정적 지도.
+  static Future<Uint8List?> staticRaster({
+    required double lat,
+    required double lng,
+    required int width,
+    required int height,
+    int level = 11,
+    List<NLatLng> markers = const [],
+  }) async {
+    final w = width.clamp(200, 1024);
+    final h = height.clamp(200, 1024);
+    final qp = <String, String>{
+      'w': '$w',
+      'h': '$h',
+      'center': '$lng,$lat',
+      'level': '${level.clamp(1, 20)}',
+      'scale': '2',
+      'format': 'png',
+    };
+    var uri = Uri.parse('$_base/map-static/v2/raster').replace(
+      queryParameters: qp,
+    );
+    if (markers.isNotEmpty) {
+      final extra = markers
+          .take(12)
+          .map(
+            (m) =>
+                'markers=${Uri.encodeQueryComponent('type:d|size:mid|pos:${m.longitude} ${m.latitude}')}',
+          )
+          .join('&');
+      uri = Uri.parse('${uri.toString()}&$extra');
+    }
+    final res = await http
+        .get(
+          uri,
+          headers: {
+            ..._headers,
+            'Accept': 'image/png,image/jpeg,*/*',
+          },
+        )
+        .timeout(_timeout);
+    if (res.statusCode != 200 || res.bodyBytes.isEmpty) {
+      debugPrint('Naver static map failed: ${res.statusCode}');
+      return null;
+    }
+    return res.bodyBytes;
   }
 }

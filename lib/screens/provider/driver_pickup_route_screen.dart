@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../services/naver_map_service.dart';
 import '../../core/config/naver_config.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/host_naver_map.dart';
 
 class DriverPickupRouteScreen extends StatefulWidget {
   const DriverPickupRouteScreen({super.key});
@@ -15,7 +16,7 @@ class DriverPickupRouteScreen extends StatefulWidget {
 }
 
 class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
-  bool _showMap = NaverConfig.sdkReady;
+  bool _showMap = true;
   final Set<int> _done = {};
   DrivingRoute? _summary;
 
@@ -29,12 +30,9 @@ class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
   @override
   void initState() {
     super.initState();
-    _prepareMap();
-  }
-
-  Future<void> _prepareMap() async {
-    final ok = await NaverConfig.ensureSdk();
-    if (mounted) setState(() => _showMap = ok);
+    NaverConfig.ensureSdk().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> _navigate(_Stop stop) async {
@@ -243,6 +241,27 @@ class _RouteMap extends StatefulWidget {
 class _RouteMapState extends State<_RouteMap> {
   String? _error;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSummary();
+  }
+
+  Future<void> _loadSummary() async {
+    final points = widget.stops.map((s) => NLatLng(s.lat, s.lng)).toList();
+    if (points.length < 2) return;
+    try {
+      final route = await NaverMapService.drivingRouteDetail(
+        start: points.first,
+        goal: points.last,
+        waypoints: points.sublist(1, points.length - 1),
+      );
+      if (mounted) widget.onSummary(route);
+    } catch (_) {
+      if (mounted) widget.onSummary(null);
+    }
+  }
+
   Future<void> _draw(NaverMapController controller) async {
     final points = widget.stops.map((s) => NLatLng(s.lat, s.lng)).toList();
     await controller.addOverlayAll({
@@ -303,29 +322,14 @@ class _RouteMapState extends State<_RouteMap> {
 
   @override
   Widget build(BuildContext context) {
-    if (!NaverConfig.sdkReady) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            _error ?? '지도를 불러올 수 없습니다. 아래 목록에서 수거를 진행해 주세요.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFF8A7466)),
-          ),
-        ),
-      );
-    }
+    final pins = widget.stops.map((s) => NLatLng(s.lat, s.lng)).toList();
     return Stack(
       children: [
-        NaverMap(
-          options: const NaverMapViewOptions(
-            initialCameraPosition: NCameraPosition(
-              target: NLatLng(35.1595, 126.8526),
-              zoom: 11,
-            ),
-            locationButtonEnable: false,
-          ),
-          onMapReady: _draw,
+        HostNaverMap(
+          initialTarget: const NLatLng(35.1595, 126.8526),
+          initialZoom: 11,
+          pins: pins,
+          onNativeReady: _draw,
         ),
         if (_error != null)
           Positioned(

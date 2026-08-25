@@ -27,6 +27,7 @@ class DemoAuthStore {
         rrnLastDigit: '4',
         phone: '010-2000-0001',
         schoolInfo: '전남대학교',
+        studentOrigin: StudentOrigin.korean,
         createdAt: DateTime(2026, 3, 2),
         vendingUsageCount: 8,
         chinguUsageCount: 2,
@@ -141,6 +142,10 @@ class DemoAuthStore {
         user: user,
       );
     }
+  }
+
+  static void deleteUser(String uid) {
+    _accounts.removeWhere((account) => account.user.uid == uid);
   }
 }
 

@@ -2,6 +2,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'user_role.dart';
 
+enum StudentOrigin {
+  korean('korean', '일반 한국인 대학생'),
+  exchange('exchange', '외국인 (교환학생)');
+
+  const StudentOrigin(this.value, this.label);
+  final String value;
+  final String label;
+
+  static StudentOrigin fromValue(String? value) {
+    return StudentOrigin.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => StudentOrigin.korean,
+    );
+  }
+}
+
 class AppUser {
   const AppUser({
     required this.uid,
@@ -28,6 +44,9 @@ class AppUser {
     this.mealCouponCount = 0,
     this.helpedYouthCount = 0,
     this.reviewCount = 0,
+    this.studentOrigin,
+    this.stayStart,
+    this.stayEnd,
   });
 
   final String uid;
@@ -56,6 +75,21 @@ class AppUser {
   final int helpedYouthCount;
   /// 리뷰 작성 횟수 (5회마다 식권 리워드)
   final int reviewCount;
+  /// 대학생: 한국인 / 외국인(교환학생)
+  final StudentOrigin? studentOrigin;
+  final DateTime? stayStart;
+  final DateTime? stayEnd;
+
+  bool get isExchangeStudent => studentOrigin == StudentOrigin.exchange;
+
+  /// 체류 종료일 다음날부터 자동 탈퇴 대상.
+  bool get isStayExpired {
+    if (!isExchangeStudent || stayEnd == null) return false;
+    final end = DateTime(stayEnd!.year, stayEnd!.month, stayEnd!.day);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return today.isAfter(end);
+  }
 
   static const reviewsPerCoupon = 5;
 
@@ -123,6 +157,9 @@ class AppUser {
       mealCouponCount: mealCouponCount ?? this.mealCouponCount,
       helpedYouthCount: helpedYouthCount ?? this.helpedYouthCount,
       reviewCount: reviewCount ?? this.reviewCount,
+      studentOrigin: studentOrigin,
+      stayStart: stayStart,
+      stayEnd: stayEnd,
     );
   }
 
@@ -153,6 +190,11 @@ class AppUser {
       mealCouponCount: data['mealCouponCount'] as int? ?? data['freeMealCount'] as int? ?? 0,
       helpedYouthCount: data['helpedYouthCount'] as int? ?? 0,
       reviewCount: data['reviewCount'] as int? ?? 0,
+      studentOrigin: data['studentOrigin'] == null
+          ? null
+          : StudentOrigin.fromValue(data['studentOrigin'] as String?),
+      stayStart: (data['stayStart'] as Timestamp?)?.toDate(),
+      stayEnd: (data['stayEnd'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -182,6 +224,9 @@ class AppUser {
       'mealCouponCount': mealCouponCount,
       'helpedYouthCount': helpedYouthCount,
       'reviewCount': reviewCount,
+      if (studentOrigin != null) 'studentOrigin': studentOrigin!.value,
+      if (stayStart != null) 'stayStart': Timestamp.fromDate(stayStart!),
+      if (stayEnd != null) 'stayEnd': Timestamp.fromDate(stayEnd!),
     };
   }
 }

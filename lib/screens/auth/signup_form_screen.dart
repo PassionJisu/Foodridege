@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/app_user.dart';
 import '../../models/user_role.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/demo_auth_store.dart';
@@ -29,8 +30,11 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
   final _adminSecretController = TextEditingController();
 
   DateTime? _birthDate;
+  DateTime? _stayStart;
+  DateTime? _stayEnd;
   bool _obscurePassword = true;
   String? _school = DemoAuthStore.universities.first;
+  StudentOrigin _origin = StudentOrigin.korean;
 
   @override
   void dispose() {
@@ -60,6 +64,30 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
     }
   }
 
+  Future<void> _pickStayDate({required bool start}) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: start
+          ? (_stayStart ?? now)
+          : (_stayEnd ?? now.add(const Duration(days: 180))),
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 6),
+      locale: const Locale('ko'),
+    );
+    if (picked == null) return;
+    setState(() {
+      if (start) {
+        _stayStart = picked;
+        if (_stayEnd != null && _stayEnd!.isBefore(picked)) {
+          _stayEnd = null;
+        }
+      } else {
+        _stayEnd = picked;
+      }
+    });
+  }
+
   Future<void> _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
     if (_birthDate == null) {
@@ -68,9 +96,35 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
       );
       return;
     }
+    if (widget.role == UserRole.student && _origin == StudentOrigin.exchange) {
+      if (_stayStart == null || _stayEnd == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('체류 기간(시작일·종료일)을 선택해 주세요')),
+        );
+        return;
+      }
+      if (_stayEnd!.isBefore(_stayStart!)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('체류 종료일은 시작일 이후여야 합니다')),
+        );
+        return;
+      }
+      final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+      final end = DateTime(_stayEnd!.year, _stayEnd!.month, _stayEnd!.day);
+      if (todayDate.isAfter(end)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미 종료된 체류 기간으로는 가입할 수 없습니다')),
+        );
+        return;
+      }
+    }
 
     final auth = context.read<AuthProvider>();
     auth.clearError();
+
+    final isStudent = widget.role == UserRole.student;
+    final isExchange = isStudent && _origin == StudentOrigin.exchange;
 
     final success = await auth.signUp(
       email: _emailController.text,
@@ -78,14 +132,17 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
       role: widget.role,
       name: _nameController.text,
       birthDate: _birthDate!,
-      rrnLastDigit: _rrnLastDigitController.text,
+      rrnLastDigit: isExchange ? '' : _rrnLastDigitController.text,
       phone: _phoneController.text,
       address: _addressController.text,
-      schoolInfo: widget.role == UserRole.student ? _school : null,
+      schoolInfo: isStudent ? _school : null,
       businessRegistrationNumber: widget.role == UserRole.owner
           ? _businessNumberController.text
           : null,
       adminSecret: widget.role == UserRole.admin ? _adminSecretController.text : null,
+      studentOrigin: isStudent ? _origin : null,
+      stayStart: isExchange ? _stayStart : null,
+      stayEnd: isExchange ? _stayEnd : null,
     );
 
     if (!mounted) return;
@@ -186,24 +243,6 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
             ),
             const SizedBox(height: 12),
             TextFormField(
-              controller: _rrnLastDigitController,
-              keyboardType: TextInputType.number,
-              maxLength: 1,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                labelText: '주민등록번호 뒷번호 1자리 *',
-                prefixIcon: Icon(Icons.badge_outlined),
-                counterText: '',
-              ),
-              validator: (v) {
-                if (v == null || v.length != 1) {
-                  return '뒷번호 1자리를 입력해 주세요';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
@@ -214,6 +253,105 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
               validator: (v) =>
                   v == null || v.trim().length < 10 ? '연락처를 입력해 주세요' : null,
             ),
+            if (widget.role == UserRole.student) ...[
+              const SizedBox(height: 24),
+              const _SectionTitle(title: '대학생 구분'),
+              const SizedBox(height: 12),
+              RadioGroup<StudentOrigin>(
+                groupValue: _origin,
+                onChanged: (value) {
+                  if (value != null) setState(() => _origin = value);
+                },
+                child: Column(
+                  children: [
+                    RadioListTile<StudentOrigin>(
+                      value: StudentOrigin.korean,
+                      title: Text(StudentOrigin.korean.label),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    RadioListTile<StudentOrigin>(
+                      value: StudentOrigin.exchange,
+                      title: Text(StudentOrigin.exchange.label),
+                      subtitle: const Text('학교 정보와 체류 기간으로 가입합니다.'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                key: ValueKey(_school),
+                initialValue: _school,
+                decoration: InputDecoration(
+                  labelText: _origin == StudentOrigin.exchange
+                      ? '학교 정보 *'
+                      : '대학 *',
+                  prefixIcon: const Icon(Icons.school_outlined),
+                  helperText: _origin == StudentOrigin.exchange
+                      ? '교환학생은 소속 학교 정보로 가입합니다.'
+                      : null,
+                ),
+                items: DemoAuthStore.universities
+                    .map((name) => DropdownMenuItem(value: name, child: Text(name)))
+                    .toList(),
+                onChanged: (value) => setState(() => _school = value),
+                validator: (v) => v == null || v.isEmpty ? '학교를 선택해 주세요' : null,
+              ),
+              if (_origin == StudentOrigin.exchange) ...[
+                const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  title: Text(
+                    _stayStart == null
+                        ? '체류 시작일 *'
+                        : '체류 시작일  ${dateFormat.format(_stayStart!)}',
+                  ),
+                  trailing: const Icon(Icons.calendar_today),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  onTap: () => _pickStayDate(start: true),
+                ),
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  title: Text(
+                    _stayEnd == null
+                        ? '체류 종료일 *'
+                        : '체류 종료일  ${dateFormat.format(_stayEnd!)}',
+                  ),
+                  subtitle: const Text('종료일 다음날부터 자동 회원 탈퇴됩니다.'),
+                  trailing: const Icon(Icons.event_busy_outlined),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  onTap: () => _pickStayDate(start: false),
+                ),
+              ],
+            ],
+            if (widget.role != UserRole.student ||
+                _origin == StudentOrigin.korean) ...[
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _rrnLastDigitController,
+                keyboardType: TextInputType.number,
+                maxLength: 1,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: '주민등록번호 뒷번호 1자리 *',
+                  prefixIcon: Icon(Icons.badge_outlined),
+                  counterText: '',
+                ),
+                validator: (v) {
+                  if (v == null || v.length != 1) {
+                    return '뒷번호 1자리를 입력해 주세요';
+                  }
+                  return null;
+                },
+              ),
+            ],
             if (widget.role == UserRole.owner) ...[
               const SizedBox(height: 12),
               TextFormField(
@@ -251,22 +389,6 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                 prefixIcon: Icon(Icons.location_on_outlined),
               ),
             ),
-            if (widget.role == UserRole.student) ...[
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                key: ValueKey(_school),
-                initialValue: _school,
-                decoration: const InputDecoration(
-                  labelText: '대학 *',
-                  prefixIcon: Icon(Icons.school_outlined),
-                ),
-                items: DemoAuthStore.universities
-                    .map((name) => DropdownMenuItem(value: name, child: Text(name)))
-                    .toList(),
-                onChanged: (value) => setState(() => _school = value),
-                validator: (v) => v == null || v.isEmpty ? '대학을 선택해 주세요' : null,
-              ),
-            ],
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: auth.isLoading ? null : _handleSignup,
