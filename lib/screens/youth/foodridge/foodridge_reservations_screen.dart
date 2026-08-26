@@ -137,7 +137,7 @@ class _FoodridgeReservationsScreenState
                                           r,
                                           bypassGps: true,
                                         ),
-                                child: const Text('Demo arrival'),
+                                child: const Text("I've arrived"),
                               ),
                             ),
                           ],

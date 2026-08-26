@@ -85,10 +85,8 @@ class _TicketDepositPaymentScreenState extends State<TicketDepositPaymentScreen>
                       coupons > 0
                           ? '식권 금액 ${widget.amount}원.\n'
                               '무료 식권 $coupons장을 가지고 있습니다. '
-                              '결제할 때 사용할지 선택할 수 있습니다.\n'
-                              '현장 키오스크 추가 결제는 없습니다.'
-                          : '식권 금액 ${widget.amount}원을 즉시 결제합니다.\n'
-                              '현장 키오스크 추가 결제는 없습니다.',
+                              '결제할 때 사용할지 선택할 수 있습니다.'
+                          : '식권 금액 ${widget.amount}원을 결제합니다.',
                       style: const TextStyle(height: 1.45),
                     ),
                   ),

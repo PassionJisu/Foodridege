@@ -113,30 +113,10 @@ class _ChinguReviewWriteScreenState extends State<ChinguReviewWriteScreen> {
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
                 subtitle: Text(
-                  unlocked ? '리뷰 작성 가능' : '키오스크 결제 후 작성 가능',
+                  unlocked ? '리뷰 작성 가능' : '식권 결제 후 작성 가능',
                   style: TextStyle(
                     color: unlocked ? AppColors.gold : Colors.white38,
                     fontSize: 12,
-                  ),
-                ),
-                trailing: TextButton(
-                  onPressed: () {
-                    final err = chingu.simulateKioskPayment(
-                      userId: user.uid,
-                      matchId: match.id,
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          err ?? '키오스크 결제 완료 — 리뷰 작성이 가능합니다.',
-                        ),
-                      ),
-                    );
-                    setState(() => _matchId = match.id);
-                  },
-                  child: const Text(
-                    '키오스크 결제 완료',
-                    style: TextStyle(color: AppColors.gold, fontSize: 12),
                   ),
                 ),
               );

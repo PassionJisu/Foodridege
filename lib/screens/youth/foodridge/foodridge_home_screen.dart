@@ -21,21 +21,38 @@ class FoodridgeHomeScreen extends StatefulWidget {
 
 class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
   _MealPickFilter _filter = _MealPickFilter.all;
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   List<ForeignShop> _filtered(List<ForeignShop> shops) {
+    final q = _query.trim().toLowerCase();
     return shops.where((shop) {
       switch (_filter) {
         case _MealPickFilter.all:
-          return true;
+          break;
         case _MealPickFilter.halal:
-          return shop.badge == DietBadge.halal;
+          if (shop.badge != DietBadge.halal) return false;
+          break;
         case _MealPickFilter.vegan:
-          return shop.badge == DietBadge.vegan;
+          if (shop.badge != DietBadge.vegan) return false;
+          break;
         case _MealPickFilter.veget:
-          return shop.badge == DietBadge.vegetarian;
+          if (shop.badge != DietBadge.vegetarian) return false;
+          break;
         case _MealPickFilter.chinese:
-          return shop.cuisine.toLowerCase().contains('chinese');
+          if (!shop.cuisine.toLowerCase().contains('chinese')) return false;
+          break;
       }
+      if (q.isEmpty) return true;
+      return shop.name.toLowerCase().contains(q) ||
+          shop.cuisine.toLowerCase().contains(q) ||
+          shop.address.toLowerCase().contains(q);
     }).toList();
   }
 
@@ -83,6 +100,54 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
+          TextField(
+            controller: _searchCtrl,
+            onChanged: (v) => setState(() => _query = v),
+            decoration: InputDecoration(
+              hintText: 'Search kitchens, cuisine, or menus',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _query.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        setState(() => _query = '');
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(28),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+            ),
+          ),
+          if (_query.trim().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: shops.isEmpty ? Colors.redAccent : AppColors.sage,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  shops.isEmpty
+                      ? 'No results'
+                      : '${shops.length} place${shops.length == 1 ? '' : 's'}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
           InkWell(
             onTap: () {
               Navigator.push(
@@ -191,12 +256,14 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
           ),
           const SizedBox(height: 16),
           if (shops.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
               child: Center(
                 child: Text(
-                  'No restaurants in this category.',
-                  style: TextStyle(color: Color(0xFF8A7466)),
+                  _query.trim().isNotEmpty
+                      ? 'No restaurants match your search.'
+                      : 'No restaurants in this category.',
+                  style: const TextStyle(color: Color(0xFF8A7466)),
                 ),
               ),
             )
