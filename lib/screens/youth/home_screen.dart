@@ -160,13 +160,15 @@ class _StudentBanner extends StatelessWidget {
                       value: '${user.vendingUsageCount}회',
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _Chip(
-                      label: '친구카세 이용',
-                      value: '${user.chinguUsageCount}회',
+                  if (user.role.canAccessChingu) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _Chip(
+                        label: '친구카세 이용',
+                        value: '${user.chinguUsageCount}회',
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ],
@@ -182,17 +184,17 @@ class _StudentBanner extends StatelessWidget {
                 label: '이용 일수',
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _Stat(
-                icon: Icons.confirmation_number_outlined,
-                value: '${user.displayCouponCount}장',
-                label: '무료 식권',
-                onTap: user.role.canAccessChingu
-                    ? () => promptUseHeldFreeTickets(context)
-                    : null,
+            if (user.role.canAccessChingu) ...[
+              const SizedBox(width: 8),
+              Expanded(
+                child: _Stat(
+                  icon: Icons.confirmation_number_outlined,
+                  value: '${user.displayCouponCount}장',
+                  label: '무료 식권',
+                  onTap: () => promptUseHeldFreeTickets(context),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ],

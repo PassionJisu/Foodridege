@@ -44,7 +44,7 @@ class RoleSelectionScreen extends StatelessWidget {
           RoleCard(
             role: UserRole.youth,
             icon: Icons.volunteer_activism_outlined,
-            description: '환승반찬, 친구카세, MealPick 맵',
+            description: '환승반찬, MealPick 맵',
             onTap: () => _goToSignup(context, UserRole.youth),
           ),
           const SizedBox(height: 24),

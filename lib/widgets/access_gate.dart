@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const chinguStudentOnlyMessage = '대학생만 이용 가능합니다.';
+
 Future<void> showAccessDenied(BuildContext context, String message) {
   return showDialog<void>(
     context: context,

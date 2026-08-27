@@ -9,13 +9,19 @@ import '../../../core/config/naver_config.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/host_naver_map.dart';
 import 'foodridge_reservations_screen.dart';
+import 'mealpick_filter.dart';
 import 'shop_detail_screen.dart';
 
 /// Naver Map explore screen (Foodridge2 pattern) with Final shop dummy data.
 class FoodridgeMapScreen extends StatefulWidget {
-  const FoodridgeMapScreen({super.key, this.focusShopId});
+  const FoodridgeMapScreen({
+    super.key,
+    this.focusShopId,
+    this.initialFilter = MealPickFilter.all,
+  });
 
   final String? focusShopId;
+  final MealPickFilter initialFilter;
 
   @override
   State<FoodridgeMapScreen> createState() => _FoodridgeMapScreenState();
@@ -25,6 +31,7 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
   NaverMapController? _controller;
   final _searchCtrl = TextEditingController();
   String _query = '';
+  late MealPickFilter _filter;
   ForeignShop? _selected;
   bool _drawing = false;
   final Map<String, NOverlayImage> _iconCache = {};
@@ -40,6 +47,7 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
   @override
   void initState() {
     super.initState();
+    _filter = widget.initialFilter;
     NaverConfig.ensureSdk().then((_) {
       if (mounted) setState(() {});
     });
@@ -52,14 +60,19 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
   }
 
   List<ForeignShop> _filtered(List<ForeignShop> shops) {
-    final q = _query.trim().toLowerCase();
-    if (q.isEmpty) return shops;
-    return shops.where((s) {
-      return s.name.toLowerCase().contains(q) ||
-          s.address.toLowerCase().contains(q) ||
-          s.cuisine.toLowerCase().contains(q) ||
-          (s.surplusLabel?.toLowerCase().contains(q) ?? false);
-    }).toList();
+    return filterMealPickShops(shops, filter: _filter, query: _query);
+  }
+
+  void _applyFilter(MealPickFilter value, List<ForeignShop> shops) {
+    setState(() {
+      _filter = value;
+      final visible = _filtered(shops);
+      if (_selected != null &&
+          visible.every((shop) => shop.id != _selected!.id)) {
+        _selected = null;
+      }
+    });
+    _drawMarkers(shops);
   }
 
   Future<NOverlayImage> _iconFor(ForeignShop shop) async {
@@ -141,9 +154,11 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<FoodridgeProvider>();
     final shops = provider.shops;
+    final visible = _filtered(shops);
     final focus = widget.focusShopId == null
         ? null
         : provider.shopById(widget.focusShopId!);
+    final showCount = _query.isNotEmpty || _filter != MealPickFilter.all;
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
@@ -169,7 +184,7 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
                 ? const NLatLng(_defaultLat, _defaultLng)
                 : NLatLng(focus.lat, focus.lng),
             initialZoom: focus == null ? 11 : 14,
-            pins: shops.map((s) => NLatLng(s.lat, s.lng)).toList(),
+            pins: visible.map((s) => NLatLng(s.lat, s.lng)).toList(),
             onNativeReady: (controller) async {
               _controller = controller;
               await _drawMarkers(shops, moveCamera: focus == null);
@@ -180,22 +195,34 @@ class _FoodridgeMapScreenState extends State<FoodridgeMapScreen> {
             top: 12,
             left: 12,
             right: 12,
-            child: _MapSearchBar(
-              controller: _searchCtrl,
-              onChanged: (v) {
-                setState(() => _query = v);
-                _drawMarkers(shops, moveCamera: false);
-              },
-              onClear: () {
-                _searchCtrl.clear();
-                setState(() {
-                  _query = '';
-                  _selected = null;
-                });
-                _drawMarkers(shops);
-              },
-              resultCount: _filtered(shops).length,
-              hasQuery: _query.isNotEmpty,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _MapSearchBar(
+                  controller: _searchCtrl,
+                  onChanged: (v) {
+                    setState(() => _query = v);
+                    _drawMarkers(shops, moveCamera: false);
+                  },
+                  onClear: () {
+                    _searchCtrl.clear();
+                    setState(() {
+                      _query = '';
+                      _selected = null;
+                    });
+                    _drawMarkers(shops);
+                  },
+                  resultCount: visible.length,
+                  hasQuery: _query.isNotEmpty,
+                  showCount: showCount,
+                ),
+                const SizedBox(height: 8),
+                MealPickCategoryBar(
+                  selected: _filter,
+                  elevated: true,
+                  onChanged: (value) => _applyFilter(value, shops),
+                ),
+              ],
             ),
           ),
           if (_selected != null)
@@ -307,6 +334,7 @@ class _MapSearchBar extends StatelessWidget {
     required this.onClear,
     required this.resultCount,
     required this.hasQuery,
+    this.showCount = false,
   });
 
   final TextEditingController controller;
@@ -314,6 +342,7 @@ class _MapSearchBar extends StatelessWidget {
   final VoidCallback onClear;
   final int resultCount;
   final bool hasQuery;
+  final bool showCount;
 
   @override
   Widget build(BuildContext context) {
@@ -344,7 +373,7 @@ class _MapSearchBar extends StatelessWidget {
             ),
           ),
         ),
-        if (hasQuery) ...[
+        if (showCount) ...[
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerLeft,

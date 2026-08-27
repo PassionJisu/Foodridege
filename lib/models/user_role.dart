@@ -14,8 +14,8 @@ enum UserRole {
 
   bool get isConsumer => this == student || this == youth;
 
-  /// 친구카세(식권/응원) 접근
-  bool get canAccessChingu => this == student || this == youth || this == admin;
+  /// 친구카세(식권/응원) 접근 — 대학생 전용 (관리자는 운영용으로 유지)
+  bool get canAccessChingu => this == student || this == admin;
 
   /// 자판기 조회
   bool get canAccessVending =>

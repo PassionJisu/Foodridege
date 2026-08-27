@@ -4,16 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
+import 'package:flutter_app/data/seed_data.dart';
 import 'package:flutter_app/models/attached_photo.dart';
 import 'package:flutter_app/models/foodridge_reservation.dart';
 import 'package:flutter_app/models/user_role.dart';
 import 'package:flutter_app/providers/auth_provider.dart';
 import 'package:flutter_app/providers/chingu_provider.dart';
 import 'package:flutter_app/providers/foodridge_provider.dart';
+import 'package:flutter_app/providers/vending_provider.dart';
 import 'package:flutter_app/screens/auth/role_selection_screen.dart';
 import 'package:flutter_app/screens/auth/signup_form_screen.dart';
 import 'package:flutter_app/screens/youth/foodridge/foodridge_checkout_screen.dart';
+import 'package:flutter_app/screens/youth/foodridge/mealpick_filter.dart';
 import 'package:flutter_app/screens/youth/foodridge/shop_detail_screen.dart';
+import 'package:flutter_app/screens/youth/my_page_screen.dart';
+import 'package:flutter_app/screens/youth/youth_shell.dart';
 import 'package:flutter_app/services/demo_auth_store.dart';
 import 'package:flutter_app/widgets/photo_attach_field.dart';
 
@@ -27,6 +32,8 @@ Widget _app({required Widget child, AuthProvider? auth, FoodridgeProvider? foodr
   );
 }
 
+void _noopFilter(MealPickFilter value) {}
+
 void main() {
   testWidgets('역할 선택에 청년 가입 카드가 대학생 아래에 있다', (tester) async {
     await tester.pumpWidget(_app(child: const RoleSelectionScreen()));
@@ -36,6 +43,133 @@ void main() {
     final studentY = tester.getTopLeft(find.text('대학생')).dy;
     final youthY = tester.getTopLeft(find.text('청년')).dy;
     expect(youthY, greaterThan(studentY));
+    expect(find.text('환승반찬, 친구카세, MealPick 맵'), findsOneWidget);
+    expect(find.text('환승반찬, MealPick 맵'), findsOneWidget);
+  });
+
+  test('청년은 친구카세에 접근할 수 없고 환승반찬·MealPick만 가능하다', () {
+    expect(UserRole.youth.canAccessChingu, isFalse);
+    expect(UserRole.youth.canAccessVending, isTrue);
+    expect(UserRole.youth.canAccessFoodridge, isTrue);
+    expect(UserRole.student.canAccessChingu, isTrue);
+  });
+
+  testWidgets('청년 하단 탭에 친구카세가 있고 누르면 대학생 전용 안내가 나온다', (tester) async {
+    final auth = AuthProvider();
+    await auth.signIn('youth@foodridge.kr', DemoAuthStore.password);
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: auth),
+          ChangeNotifierProvider(create: (_) => FoodridgeProvider()),
+          ChangeNotifierProvider(create: (_) => VendingProvider()),
+        ],
+        child: const MaterialApp(home: YouthShell()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('친구카세'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('환승반찬'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('MealPick'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('환승반찬 이용'), findsOneWidget);
+    expect(find.text('친구카세 이용'), findsNothing);
+    expect(find.text('무료 식권'), findsNothing);
+    expect(find.text('이용 일수'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('친구카세'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('접근 제한'), findsOneWidget);
+    expect(find.text('대학생만 이용 가능합니다.'), findsOneWidget);
+    expect(find.text('환승반찬 이용'), findsOneWidget);
+  });
+
+  testWidgets('청년 마이페이지에는 식권 기능이 없다', (tester) async {
+    final auth = AuthProvider();
+    await auth.signIn('youth@foodridge.kr', DemoAuthStore.password);
+
+    await tester.pumpWidget(_app(auth: auth, child: const MyPageScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('무료 식권'), findsNothing);
+    expect(find.textContaining('다음 식권까지'), findsNothing);
+    expect(find.text('식권 예약 내역'), findsNothing);
+    expect(find.text('로그아웃'), findsOneWidget);
+  });
+
+  testWidgets('대학생 마이페이지에는 식권 기능이 있다', (tester) async {
+    final auth = AuthProvider();
+    await auth.signIn('student@foodridge.kr', DemoAuthStore.password);
+
+    await tester.pumpWidget(_app(auth: auth, child: const MyPageScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('무료 식권'), findsOneWidget);
+    expect(find.text('식권 예약 내역'), findsOneWidget);
+  });
+
+  testWidgets('대학생 하단 탭에는 친구카세가 있다', (tester) async {
+    final auth = AuthProvider();
+    await auth.signIn('student@foodridge.kr', DemoAuthStore.password);
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: auth),
+          ChangeNotifierProvider(create: (_) => FoodridgeProvider()),
+          ChangeNotifierProvider(create: (_) => VendingProvider()),
+        ],
+        child: const MaterialApp(home: YouthShell()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('친구카세'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('환승반찬'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('MealPick'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('청년 외국인 가입은 ARC가 필수이고 학번은 없다', (tester) async {
@@ -283,6 +417,50 @@ void main() {
     final id = foodridge.reservationsFor(userId).first.id;
     foodridge.cancelReservation(id);
     expect(foodridge.reservationsFor(userId), isEmpty);
+  });
+
+  test('MealPick 카테고리 필터는 홈·지도에서 같은 가게를 남긴다', () {
+    final shops = SeedData.shops;
+    expect(
+      filterMealPickShops(shops, filter: MealPickFilter.halal).map((s) => s.id),
+      ['al-baraka'],
+    );
+    expect(
+      filterMealPickShops(shops, filter: MealPickFilter.vegan).single.id,
+      'green-leaf',
+    );
+    expect(
+      filterMealPickShops(shops, filter: MealPickFilter.veget).single.id,
+      'sprout-house',
+    );
+    expect(
+      filterMealPickShops(shops, filter: MealPickFilter.chinese).single.id,
+      'golden-dragon',
+    );
+    expect(
+      filterMealPickShops(shops, filter: MealPickFilter.all).length,
+      shops.length,
+    );
+  });
+
+  testWidgets('MealPick 카테고리 칩은 All·Halal·Vegan·Veget·Chinese다', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: MealPickCategoryBar(
+            selected: MealPickFilter.all,
+            onChanged: _noopFilter,
+            elevated: true,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('All'), findsOneWidget);
+    expect(find.text('Halal'), findsOneWidget);
+    expect(find.text('Vegan'), findsOneWidget);
+    expect(find.text('Veget'), findsOneWidget);
+    expect(find.text('Chinese'), findsOneWidget);
   });
 
   test('친구카세 시드 리뷰 일부에는 사진이 첨부되어 있다', () {

@@ -60,7 +60,7 @@ class MyPageScreen extends StatelessWidget {
               style: const TextStyle(color: Color(0xFF8A7466), fontSize: 13),
             ),
           ],
-          if (role.showsUsageStats) ...[
+          if (role.canAccessChingu) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
@@ -69,9 +69,7 @@ class MyPageScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: InkWell(
-                onTap: role.canAccessChingu
-                    ? () => promptUseHeldFreeTickets(context)
-                    : null,
+                onTap: () => promptUseHeldFreeTickets(context),
                 borderRadius: BorderRadius.circular(16),
                 child: Row(
                   children: [

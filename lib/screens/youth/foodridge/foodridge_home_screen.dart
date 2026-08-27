@@ -8,9 +8,8 @@ import '../../../theme/app_theme.dart';
 import 'foodridge_cart_screen.dart';
 import 'foodridge_map_screen.dart';
 import 'foodridge_reservations_screen.dart';
+import 'mealpick_filter.dart';
 import 'shop_detail_screen.dart';
-
-enum _MealPickFilter { all, halal, vegan, veget, chinese }
 
 class FoodridgeHomeScreen extends StatefulWidget {
   const FoodridgeHomeScreen({super.key});
@@ -20,7 +19,7 @@ class FoodridgeHomeScreen extends StatefulWidget {
 }
 
 class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
-  _MealPickFilter _filter = _MealPickFilter.all;
+  MealPickFilter _filter = MealPickFilter.all;
   final _searchCtrl = TextEditingController();
   String _query = '';
 
@@ -31,29 +30,7 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
   }
 
   List<ForeignShop> _filtered(List<ForeignShop> shops) {
-    final q = _query.trim().toLowerCase();
-    return shops.where((shop) {
-      switch (_filter) {
-        case _MealPickFilter.all:
-          break;
-        case _MealPickFilter.halal:
-          if (shop.badge != DietBadge.halal) return false;
-          break;
-        case _MealPickFilter.vegan:
-          if (shop.badge != DietBadge.vegan) return false;
-          break;
-        case _MealPickFilter.veget:
-          if (shop.badge != DietBadge.vegetarian) return false;
-          break;
-        case _MealPickFilter.chinese:
-          if (!shop.cuisine.toLowerCase().contains('chinese')) return false;
-          break;
-      }
-      if (q.isEmpty) return true;
-      return shop.name.toLowerCase().contains(q) ||
-          shop.cuisine.toLowerCase().contains(q) ||
-          shop.address.toLowerCase().contains(q);
-    }).toList();
+    return filterMealPickShops(shops, filter: _filter, query: _query);
   }
 
   @override
@@ -79,7 +56,7 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const FoodridgeMapScreen(),
+                  builder: (_) => FoodridgeMapScreen(initialFilter: _filter),
                 ),
               );
             },
@@ -226,38 +203,9 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
           ),
           const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _FilterChip(
-                  label: 'All',
-                  selected: _filter == _MealPickFilter.all,
-                  onTap: () => setState(() => _filter = _MealPickFilter.all),
-                ),
-                _FilterChip(
-                  label: 'Halal',
-                  selected: _filter == _MealPickFilter.halal,
-                  onTap: () => setState(() => _filter = _MealPickFilter.halal),
-                ),
-                _FilterChip(
-                  label: 'Vegan',
-                  selected: _filter == _MealPickFilter.vegan,
-                  onTap: () => setState(() => _filter = _MealPickFilter.vegan),
-                ),
-                _FilterChip(
-                  label: 'Veget',
-                  selected: _filter == _MealPickFilter.veget,
-                  onTap: () => setState(() => _filter = _MealPickFilter.veget),
-                ),
-                _FilterChip(
-                  label: 'Chinese',
-                  selected: _filter == _MealPickFilter.chinese,
-                  onTap: () =>
-                      setState(() => _filter = _MealPickFilter.chinese),
-                ),
-              ],
-            ),
+          MealPickCategoryBar(
+            selected: _filter,
+            onChanged: (value) => setState(() => _filter = value),
           ),
           const SizedBox(height: 16),
           if (shops.isEmpty)
@@ -391,35 +339,6 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
               );
             }),
         ],
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        onSelected: (_) => onTap(),
-        selectedColor: AppColors.sage.withValues(alpha: 0.25),
-        labelStyle: TextStyle(
-          fontWeight: FontWeight.w700,
-          color: selected ? AppColors.sage : AppColors.ink,
-        ),
       ),
     );
   }
