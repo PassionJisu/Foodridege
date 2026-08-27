@@ -16,6 +16,7 @@ class ForeignShop {
     this.surplusLabel,
     this.surplusPrice,
     this.photoAsset,
+    this.closesAt = '21:00',
   });
 
   final String id;
@@ -30,6 +31,11 @@ class ForeignShop {
   final String? surplusLabel;
   final int? surplusPrice;
   final String? photoAsset;
+
+  /// 가게 마감 시각 (HH:mm). MealPick 상세에 "Open till 21:00" 형태로 표시.
+  final String closesAt;
+
+  String get openTillLabel => 'Open till $closesAt';
 }
 
 class ShopReview {

@@ -195,25 +195,25 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('청년 회원가입'), findsOneWidget);
-    expect(find.text('청년 구분'), findsOneWidget);
+    expect(find.textContaining('청년 회원가입'), findsOneWidget);
+    expect(find.textContaining('청년 구분'), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.text('외국인 청년'),
+      find.textContaining('외국인 청년'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.text('외국인 청년'));
+    await tester.tap(find.textContaining('외국인 청년'));
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
-      find.text('ARC (외국인등록증) 번호 *'),
+      find.textContaining('ARC (외국인등록증) 번호'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('ARC (외국인등록증) 번호 *'), findsOneWidget);
-    expect(find.text('학번 *'), findsNothing);
-    expect(find.text('주민등록번호 뒷번호 1자리 *'), findsNothing);
+    expect(find.textContaining('ARC (외국인등록증) 번호'), findsOneWidget);
+    expect(find.textContaining('학번 *'), findsNothing);
+    expect(find.textContaining('주민등록번호 뒷번호 1자리'), findsNothing);
   });
 
   testWidgets('대학생 외국인 가입은 학번이 필수이고 ARC는 없다', (tester) async {
@@ -223,20 +223,20 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
-      find.text('외국인 (교환학생)'),
+      find.textContaining('외국인 (교환학생)'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.text('외국인 (교환학생)'));
+    await tester.tap(find.textContaining('외국인 (교환학생)'));
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
-      find.text('학번 *'),
+      find.textContaining('학번 *'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('학번 *'), findsOneWidget);
-    expect(find.text('ARC (외국인등록증) 번호 *'), findsNothing);
+    expect(find.textContaining('학번 *'), findsOneWidget);
+    expect(find.textContaining('ARC (외국인등록증) 번호'), findsNothing);
   });
 
   testWidgets('관리자 Add menu item 다이얼로그가 레이아웃 루프 없이 열린다', (tester) async {
@@ -253,6 +253,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+
+    expect(find.text('Open till 21:00'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('Add menu item'),

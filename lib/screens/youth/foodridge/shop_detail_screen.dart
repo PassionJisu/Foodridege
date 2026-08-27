@@ -87,6 +87,20 @@ class ShopDetailScreen extends StatelessWidget {
               DietMark(badge: shop.badge),
             ],
           ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.schedule, size: 16, color: AppColors.sage),
+              const SizedBox(width: 6),
+              Text(
+                shop.openTillLabel,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.sage,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           Text(
             shop.description,

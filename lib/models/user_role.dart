@@ -1,16 +1,25 @@
 enum UserRole {
-  student('student', '대학생', isProvider: false),
-  youth('youth', '청년', isProvider: false),
-  owner('owner', '점주', isProvider: true),
+  student('student', '대학생', isProvider: false, englishLabel: 'University student'),
+  youth('youth', '청년', isProvider: false, englishLabel: 'Youth'),
+  owner('owner', '점주', isProvider: true, englishLabel: 'Shop owner'),
   org('org', '기관', isProvider: true),
   driver('driver', '운송기사', isProvider: true),
   admin('admin', '관리자', isProvider: true);
 
-  const UserRole(this.value, this.label, {required this.isProvider});
+  const UserRole(
+    this.value,
+    this.label, {
+    required this.isProvider,
+    this.englishLabel,
+  });
 
   final String value;
   final String label;
   final bool isProvider;
+  final String? englishLabel;
+
+  bool get showsEnglishSignup =>
+      this == student || this == youth || this == owner;
 
   bool get isConsumer => this == student || this == youth;
 

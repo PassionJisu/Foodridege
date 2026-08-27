@@ -34,6 +34,12 @@ class SaleRequest {
     this.photoPath,
     this.photoBytes,
     this.itemLabel,
+    this.displayNumber,
+    this.machineId,
+    this.machineName,
+    this.pickupAddress,
+    this.lat,
+    this.lng,
   });
 
   final String id;
@@ -50,7 +56,56 @@ class SaleRequest {
   final Uint8List? photoBytes;
   final String? itemLabel;
 
+  /// 신청 즉시 부여되는 전역 슬롯 번호 (1~120).
+  final int? displayNumber;
+  final String? machineId;
+  final String? machineName;
+  final String? pickupAddress;
+  final double? lat;
+  final double? lng;
+
   int get totalPrice => quantity * pricePerUnit;
+
+  bool get hasSlotAssignment => displayNumber != null && machineId != null;
+
+  String get slotSummary {
+    if (displayNumber == null) return '';
+    final campus = machineName ?? '';
+    if (campus.isEmpty) return 'No. $displayNumber';
+    return 'No. $displayNumber · $campus';
+  }
+
+  SaleRequest copyWith({
+    SaleRequestStatus? status,
+    int? displayNumber,
+    String? machineId,
+    String? machineName,
+    String? pickupAddress,
+    double? lat,
+    double? lng,
+  }) {
+    return SaleRequest(
+      id: id,
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
+      branchName: branchName,
+      category: category,
+      quantity: quantity,
+      pricePerUnit: pricePerUnit,
+      status: status ?? this.status,
+      createdAt: createdAt,
+      photoAsset: photoAsset,
+      photoPath: photoPath,
+      photoBytes: photoBytes,
+      itemLabel: itemLabel,
+      displayNumber: displayNumber ?? this.displayNumber,
+      machineId: machineId ?? this.machineId,
+      machineName: machineName ?? this.machineName,
+      pickupAddress: pickupAddress ?? this.pickupAddress,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+    );
+  }
 
   factory SaleRequest.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     try {
@@ -62,6 +117,13 @@ class SaleRequest {
         if (value is num) return value.toInt();
         if (value is String) return int.tryParse(value) ?? 0;
         return 0;
+      }
+
+      double? parseDouble(dynamic value) {
+        if (value == null) return null;
+        if (value is num) return value.toDouble();
+        if (value is String) return double.tryParse(value);
+        return null;
       }
 
       return SaleRequest(
@@ -77,6 +139,12 @@ class SaleRequest {
         photoAsset: data['photoAsset'] as String?,
         photoPath: data['photoPath'] as String?,
         itemLabel: data['itemLabel'] as String?,
+        displayNumber: data['displayNumber'] as int?,
+        machineId: data['machineId'] as String?,
+        machineName: data['machineName'] as String?,
+        pickupAddress: data['pickupAddress'] as String?,
+        lat: parseDouble(data['lat']),
+        lng: parseDouble(data['lng']),
       );
     } catch (e) {
       debugPrint('Error parsing sale request (ID: ${doc.id}): $e');
@@ -97,6 +165,12 @@ class SaleRequest {
       if (photoAsset != null) 'photoAsset': photoAsset,
       if (photoPath != null) 'photoPath': photoPath,
       if (itemLabel != null) 'itemLabel': itemLabel,
+      if (displayNumber != null) 'displayNumber': displayNumber,
+      if (machineId != null) 'machineId': machineId,
+      if (machineName != null) 'machineName': machineName,
+      if (pickupAddress != null) 'pickupAddress': pickupAddress,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
     };
   }
 }

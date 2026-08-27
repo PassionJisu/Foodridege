@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../data/org_locations.dart';
+import '../../providers/sale_provider.dart';
 import '../../services/naver_map_service.dart';
 import '../../core/config/naver_config.dart';
 import '../../theme/app_theme.dart';
@@ -19,13 +22,7 @@ class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
   bool _showMap = true;
   final Set<int> _done = {};
   DrivingRoute? _summary;
-
-  static const _stops = [
-    _Stop('전남대 학생식당', '광주 북구 용봉로 77', 35.1761, 126.9058),
-    _Stop('광주여대 학생식당', '광주 광산구 광주여대길 201', 35.1628, 126.7965),
-    _Stop('전남대 자판기', '학생회관 1층', 35.1752, 126.9079),
-    _Stop('광주여대 자판기', '캠퍼스 후문', 35.1619, 126.7988),
-  ];
+  List<OrgPickupPlace>? _frozenStops;
 
   @override
   void initState() {
@@ -35,7 +32,7 @@ class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
     });
   }
 
-  Future<void> _navigate(_Stop stop) async {
+  Future<void> _navigate(OrgPickupPlace stop) async {
     final app = Uri.parse(
       'nmap://route/car?dlat=${stop.lat}&dlng=${stop.lng}'
       '&dname=${Uri.encodeComponent(stop.name)}&appname=com.foodridge.app',
@@ -51,14 +48,41 @@ class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
     }
   }
 
+  Future<void> _markCollected(OrgPickupPlace stop, int index) async {
+    if (stop.isOrigin) {
+      setState(() => _done.add(index));
+      return;
+    }
+    final count =
+        await context.read<SaleProvider>().markOrgCollected(stop.name);
+    if (!mounted) return;
+    setState(() => _done.add(index));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          count > 0
+              ? '${stop.name} 수거 완료 · $count품목'
+              : '${stop.name} 출발 확인',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final remaining = _stops.length - _done.length;
-    final nextIndex = List.generate(_stops.length, (i) => i)
-        .where((i) => !_done.contains(i))
+    final sale = context.watch<SaleProvider>();
+    _frozenStops ??= OrgLocations.routeForPending(sale.pendingPickups);
+    final stops = _frozenStops!;
+    final remaining = stops
+        .asMap()
+        .entries
+        .where((e) => !e.value.isOrigin && !_done.contains(e.key))
+        .length;
+    final nextIndex = List.generate(stops.length, (i) => i)
+        .where((i) => !_done.contains(i) && !stops[i].isOrigin)
         .cast<int?>()
         .firstWhere((_) => true, orElse: () => null);
-    final next = nextIndex == null ? null : _stops[nextIndex];
+    final next = nextIndex == null ? null : stops[nextIndex];
 
     return Scaffold(
       appBar: AppBar(
@@ -79,9 +103,14 @@ class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Row(
               children: [
-                _MiniStat(label: '정차', value: '${_stops.length}곳'),
+                _MiniStat(label: '정차', value: '${stops.length}곳'),
                 const SizedBox(width: 14),
-                _MiniStat(label: '남음', value: '$remaining곳'),
+                _MiniStat(
+                  label: '기관',
+                  value: '${stops.where((s) => !s.isOrigin).length}곳',
+                ),
+                const SizedBox(width: 14),
+                _MiniStat(label: '남음', value: '${remaining.clamp(0, 99)}곳'),
                 if (_summary != null) ...[
                   const SizedBox(width: 14),
                   _MiniStat(
@@ -104,8 +133,8 @@ class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
             Expanded(
               flex: 4,
               child: _RouteMap(
-                key: ValueKey(_done.join(',')),
-                stops: _stops,
+                key: ValueKey(stops.map((s) => s.name).join(',')),
+                stops: stops,
                 done: _done,
                 onSummary: (s) {
                   if (mounted) setState(() => _summary = s);
@@ -114,95 +143,139 @@ class _DriverPickupRouteScreenState extends State<DriverPickupRouteScreen> {
             ),
           Expanded(
             flex: _showMap ? 3 : 1,
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              itemCount: _stops.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, i) {
-                final stop = _stops[i];
-                final done = _done.contains(i);
-                return Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: done ? AppColors.sage : const Color(0xFFD4C8B4),
+            child: stops.length <= 1
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text(
+                        '오늘은 수거 신청된 기관이 없습니다.\n출발지(전남대)만 표시합니다.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Color(0xFF8A7466), height: 1.5),
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 14,
-                            backgroundColor: done ? AppColors.sage : AppColors.secondary,
-                            child: Text(
-                              '${i + 1}',
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                    itemCount: stops.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemBuilder: (context, i) {
+                      final stop = stops[i];
+                      final done = _done.contains(i);
+                      final items = stop.isOrigin
+                          ? const <String>[]
+                          : sale.pendingPickups
+                              .where((r) => r.restaurantName == stop.name)
+                              .map((r) =>
+                                  '${r.itemLabel ?? r.category.label} (No. ${r.displayNumber ?? '-'})')
+                              .toList();
+                      return Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: done
+                                ? AppColors.sage
+                                : const Color(0xFFD4C8B4),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: done
+                                      ? AppColors.sage
+                                      : (stop.isOrigin
+                                          ? AppColors.goldBright
+                                          : AppColors.secondary),
+                                  child: Text(
+                                    '${i + 1}',
+                                    style: TextStyle(
+                                      color: stop.isOrigin && !done
+                                          ? Colors.black
+                                          : Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    stop.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                if (stop.isOrigin)
+                                  const Text(
+                                    '출발',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF8A7466),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              stop.address,
                               style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF8A7466),
                                 fontSize: 12,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              stop.name,
-                              style: const TextStyle(fontWeight: FontWeight.w800),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        stop.address,
-                        style: const TextStyle(color: Color(0xFF8A7466), fontSize: 12),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _navigate(stop),
-                              icon: const Icon(Icons.directions, size: 16),
-                              label: const Text('길안내'),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: FilledButton.icon(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.sage,
+                            if (items.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                items.join(' · '),
+                                style: const TextStyle(fontSize: 12),
                               ),
-                              onPressed:
-                                  done ? null : () => setState(() => _done.add(i)),
-                              icon: const Icon(Icons.check, size: 16),
-                              label: Text(done ? '완료됨' : '수거 완료'),
+                            ],
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () => _navigate(stop),
+                                    icon: const Icon(Icons.directions, size: 16),
+                                    label: const Text('길안내'),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: FilledButton.icon(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: AppColors.sage,
+                                    ),
+                                    onPressed: done
+                                        ? null
+                                        : () => _markCollected(stop, i),
+                                    icon: const Icon(Icons.check, size: 16),
+                                    label: Text(
+                                      done
+                                          ? '완료됨'
+                                          : (stop.isOrigin ? '출발 확인' : '수거 완료'),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
     );
   }
-}
-
-class _Stop {
-  const _Stop(this.name, this.address, this.lat, this.lng);
-  final String name;
-  final String address;
-  final double lat;
-  final double lng;
 }
 
 class _MiniStat extends StatelessWidget {
@@ -230,7 +303,7 @@ class _RouteMap extends StatefulWidget {
     required this.onSummary,
   });
 
-  final List<_Stop> stops;
+  final List<OrgPickupPlace> stops;
   final Set<int> done;
   final ValueChanged<DrivingRoute?> onSummary;
 
@@ -326,7 +399,7 @@ class _RouteMapState extends State<_RouteMap> {
     return Stack(
       children: [
         HostNaverMap(
-          initialTarget: const NLatLng(35.1595, 126.8526),
+          initialTarget: const NLatLng(35.1761, 126.9058),
           initialZoom: 11,
           pins: pins,
           onNativeReady: _draw,

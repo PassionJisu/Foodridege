@@ -177,7 +177,11 @@ class _ScheduleTicketTab extends StatelessWidget {
         backgroundColor: AppColors.chinguCard,
         title: const Text(
           '식권 결제가 완료되었습니다.',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
         ),
         content: const Text(
           '식사를 마친 후 리뷰를 남겨주세요!',

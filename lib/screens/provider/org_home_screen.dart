@@ -28,14 +28,14 @@ class OrgHomeScreen extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Text(
-              '잔반 수거는 없습니다. 자판기 입고 신청만 이용합니다.',
+              '오전 11시~오후 3시 수거 신청. 신청 즉시 자판기 번호가 배정됩니다.',
             ),
           ),
         ),
         FeatureTile(
           icon: Icons.inventory_2_outlined,
-          title: '자판기 입고 신청',
-          subtitle: '끼니·품목만 등록 (지점 선택 없음)',
+          title: '잔반 수거 신청',
+          subtitle: '오전 11시~오후 3시 · 번호·대학 자동 배정',
           comingSoon: false,
           onTap: () {
             Navigator.push(

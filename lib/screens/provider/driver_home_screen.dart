@@ -33,11 +33,11 @@ class DriverHomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '지점 선택 없이 1~120번 순차 부여 · 입고 마무리 없음',
+                  '신청 즉시 1~120번 · 대학 라운드로빈 배정',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '검수 과정 없이 사진·수량 입력 후 입고합니다.',
+                  '수거 후 배정된 슬롯 번호 그대로 자판기에 입고합니다.',
                   style: TextStyle(fontSize: 12),
                 ),
               ],
@@ -47,7 +47,7 @@ class DriverHomeScreen extends StatelessWidget {
         FeatureTile(
           icon: Icons.route_outlined,
           title: '수거 동선 확인',
-          subtitle: '오늘 광주 01구역 정차 지점',
+          subtitle: '전남대 출발 · 신청 기관 최적 경로',
           comingSoon: false,
           onTap: () {
             Navigator.push(
@@ -59,7 +59,7 @@ class DriverHomeScreen extends StatelessWidget {
         FeatureTile(
           icon: Icons.kitchen_outlined,
           title: '환승반찬 입고',
-          subtitle: '번호 1~120 순차 부여 (지점 선택 없음)',
+          subtitle: '배정된 슬롯 번호로 대학 자판기 입고',
           comingSoon: false,
           onTap: () {
             Navigator.push(
@@ -71,7 +71,7 @@ class DriverHomeScreen extends StatelessWidget {
         FeatureTile(
           icon: Icons.checklist_rtl_rounded,
           title: '수거 대상 목록',
-          subtitle: '입고 신청 대기 물품',
+          subtitle: '신청 대기 물품 · 배정 번호 확인',
           comingSoon: false,
           onTap: () {
             Navigator.push(

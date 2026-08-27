@@ -53,12 +53,14 @@ class _DriverPickupListScreenState extends State<DriverPickupListScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '[${request.restaurantName}] ${request.category.label} ${request.quantity}개',
+                              '[${request.restaurantName}] ${request.itemLabel ?? request.category.label} ${request.quantity}개',
                               style: const TextStyle(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '지점: ${request.branchName}',
+                              request.slotSummary.isEmpty
+                                  ? '지점: ${request.branchName}'
+                                  : request.slotSummary,
                               style: TextStyle(color: Colors.grey.shade700),
                             ),
                             const SizedBox(height: 12),

@@ -284,6 +284,15 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              const SizedBox(height: 4),
+                              Text(
+                                shop.openTillLabel,
+                                style: const TextStyle(
+                                  color: AppColors.sage,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                               const SizedBox(height: 8),
                               Text(
                                 minPrice == null

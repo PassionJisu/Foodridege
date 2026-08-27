@@ -111,7 +111,7 @@ class MyPageScreen extends StatelessWidget {
           if (role.canSubmitSupply) ...[
             _MenuTile(
               icon: Icons.inventory_2_outlined,
-              title: '자판기 입고 신청',
+              title: '잔반 수거 신청',
               onTap: () => _push(context, const OrgSupplyScreen()),
             ),
             _MenuTile(
@@ -129,7 +129,7 @@ class MyPageScreen extends StatelessWidget {
           if (role.canManageVending) ...[
             _MenuTile(
               icon: Icons.kitchen_outlined,
-              title: '환승반찬 입고 · 번호 부여',
+              title: '환승반찬 입고 · 배정 번호',
               onTap: () => _push(context, const DriverStockingScreen()),
             ),
             _MenuTile(

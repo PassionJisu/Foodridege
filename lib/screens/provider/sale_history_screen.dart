@@ -143,16 +143,27 @@ class _SaleRequestCard extends StatelessWidget {
                   : '${request.itemLabel} · ${request.quantity}개',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            if (request.slotSummary.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                request.slotSummary,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1565C0),
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             Row(
               children: [
                 const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(
-                  request.branchName,
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                Expanded(
+                  child: Text(
+                    request.pickupAddress ?? request.branchName,
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                  ),
                 ),
-                const Spacer(),
                 Text(
                   '예정 금액: ${request.totalPrice}원',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue),

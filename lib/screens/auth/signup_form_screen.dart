@@ -50,6 +50,13 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
 
   bool get _isOrg => widget.role == UserRole.org;
 
+  bool get _bilingual => widget.role.showsEnglishSignup;
+
+  String _l(String ko, [String? en]) {
+    if (!_bilingual || en == null || en.isEmpty) return ko;
+    return '$ko  /  $en';
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -110,7 +117,7 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_isOrg && _birthDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('생년월일을 선택해 주세요')),
+        SnackBar(content: Text(_l('생년월일을 선택해 주세요', 'Please select your date of birth'))),
       );
       return;
     }
@@ -189,30 +196,34 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
     final dateFormat = DateFormat('yyyy년 MM월 dd일');
 
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.role.label} 회원가입')),
+      appBar: AppBar(
+        title: Text(_l('${widget.role.label} 회원가입', 'Sign up')),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            _SectionTitle(title: '계정 정보'),
+            _SectionTitle(title: _l('계정 정보', 'Account')),
             const SizedBox(height: 12),
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: '이메일 *',
-                prefixIcon: Icon(Icons.email_outlined),
+              decoration: InputDecoration(
+                labelText: _l('이메일 *', 'Email *'),
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
               validator: (v) =>
-                  v == null || !v.contains('@') ? '올바른 이메일을 입력해 주세요' : null,
+                  v == null || !v.contains('@')
+                      ? _l('올바른 이메일을 입력해 주세요', 'Enter a valid email')
+                      : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
               decoration: InputDecoration(
-                labelText: '비밀번호 *',
+                labelText: _l('비밀번호 *', 'Password *'),
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -225,32 +236,36 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                 ),
               ),
               validator: (v) =>
-                  v == null || v.length < 6 ? '비밀번호는 6자 이상이어야 합니다' : null,
+                  v == null || v.length < 6
+                      ? _l('비밀번호는 6자 이상이어야 합니다', 'Password must be at least 6 characters')
+                      : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _passwordConfirmController,
               obscureText: _obscurePassword,
-              decoration: const InputDecoration(
-                labelText: '비밀번호 확인 *',
-                prefixIcon: Icon(Icons.lock_outline),
+              decoration: InputDecoration(
+                labelText: _l('비밀번호 확인 *', 'Confirm password *'),
+                prefixIcon: const Icon(Icons.lock_outline),
               ),
               validator: (v) => v != _passwordController.text
-                  ? '비밀번호가 일치하지 않습니다'
+                  ? _l('비밀번호가 일치하지 않습니다', 'Passwords do not match')
                   : null,
             ),
             const SizedBox(height: 24),
-            _SectionTitle(title: '필수 정보'),
+            _SectionTitle(title: _l('필수 정보', 'Required')),
             const SizedBox(height: 12),
             TextFormField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: _isOrg ? '대표자명 *' : '이름 *',
+                labelText: _isOrg ? '대표자명 *' : _l('이름 *', 'Name *'),
                 prefixIcon: const Icon(Icons.person_outline),
               ),
               validator: (v) =>
                   v == null || v.trim().isEmpty
-                      ? (_isOrg ? '대표자명을 입력해 주세요' : '이름을 입력해 주세요')
+                      ? (_isOrg
+                          ? '대표자명을 입력해 주세요'
+                          : _l('이름을 입력해 주세요', 'Please enter your name'))
                       : null,
             ),
             if (!_isOrg) ...[
@@ -259,11 +274,11 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                 contentPadding: EdgeInsets.zero,
                 title: Text(
                   _birthDate == null
-                      ? '생년월일 *'
+                      ? _l('생년월일 *', 'Date of birth *')
                       : dateFormat.format(_birthDate!),
                 ),
                 subtitle: _birthDate == null
-                    ? const Text('탭하여 생년월일 선택')
+                    ? Text(_l('탭하여 생년월일 선택', 'Tap to select'))
                     : null,
                 trailing: const Icon(Icons.calendar_today),
                 shape: RoundedRectangleBorder(
@@ -276,20 +291,24 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: '연락처 *',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                decoration: InputDecoration(
+                  labelText: _l('연락처 *', 'Phone *'),
+                  prefixIcon: const Icon(Icons.phone_outlined),
                   hintText: '010-1234-5678',
                 ),
                 validator: (v) =>
-                    v == null || v.trim().length < 10 ? '연락처를 입력해 주세요' : null,
+                    v == null || v.trim().length < 10
+                        ? _l('연락처를 입력해 주세요', 'Please enter your phone number')
+                        : null,
               ),
             ],
             if (widget.role == UserRole.student ||
                 widget.role == UserRole.youth) ...[
               const SizedBox(height: 24),
               _SectionTitle(
-                title: widget.role == UserRole.youth ? '청년 구분' : '대학생 구분',
+                title: widget.role == UserRole.youth
+                    ? _l('청년 구분', 'Youth category')
+                    : _l('대학생 구분', 'Student category'),
               ),
               const SizedBox(height: 12),
               RadioGroup<StudentOrigin>(
@@ -301,16 +320,36 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                   children: [
                     RadioListTile<StudentOrigin>(
                       value: StudentOrigin.korean,
-                      title: Text(StudentOrigin.korean.labelFor(widget.role)),
+                      title: Text(
+                        _l(
+                          StudentOrigin.korean.labelFor(widget.role),
+                          widget.role == UserRole.youth
+                              ? 'Korean youth'
+                              : 'Korean university student',
+                        ),
+                      ),
                       contentPadding: EdgeInsets.zero,
                     ),
                     RadioListTile<StudentOrigin>(
                       value: StudentOrigin.exchange,
-                      title: Text(StudentOrigin.exchange.labelFor(widget.role)),
+                      title: Text(
+                        _l(
+                          StudentOrigin.exchange.labelFor(widget.role),
+                          widget.role == UserRole.youth
+                              ? 'International youth'
+                              : 'International / exchange student',
+                        ),
+                      ),
                       subtitle: Text(
                         widget.role == UserRole.youth
-                            ? '외국인 청년은 ARC(외국인등록증) 정보가 필요합니다.'
-                            : '외국인 대학생은 학번으로 가입합니다.',
+                            ? _l(
+                                'ARC(외국인등록증) 정보가 필요합니다.',
+                                'ARC (Alien Registration Card) is required.',
+                              )
+                            : _l(
+                                '학번으로 가입합니다. ARC는 필요하지 않습니다.',
+                                'Sign up with your student ID. ARC is not required.',
+                              ),
                       ),
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -325,39 +364,49 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                 initialValue: _school,
                 decoration: InputDecoration(
                   labelText: _origin == StudentOrigin.exchange
-                      ? '학교 정보 *'
-                      : '대학 *',
+                      ? _l('학교 정보 *', 'University *')
+                      : _l('대학 *', 'University *'),
                   prefixIcon: const Icon(Icons.school_outlined),
                   helperText: _origin == StudentOrigin.exchange
-                      ? '교환학생은 소속 학교 정보로 가입합니다.'
+                      ? _l(
+                          '교환학생은 소속 학교 정보로 가입합니다.',
+                          'Exchange students sign up with their host university.',
+                        )
                       : null,
                 ),
                 items: DemoAuthStore.universities
                     .map((name) => DropdownMenuItem(value: name, child: Text(name)))
                     .toList(),
                 onChanged: (value) => setState(() => _school = value),
-                validator: (v) => v == null || v.isEmpty ? '학교를 선택해 주세요' : null,
+                validator: (v) => v == null || v.isEmpty
+                    ? _l('학교를 선택해 주세요', 'Please select a university')
+                    : null,
               ),
               if (_origin == StudentOrigin.exchange) ...[
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _studentIdController,
-                  decoration: const InputDecoration(
-                    labelText: '학번 *',
-                    prefixIcon: Icon(Icons.badge_outlined),
+                  decoration: InputDecoration(
+                    labelText: _l('학번 *', 'Student ID *'),
+                    prefixIcon: const Icon(Icons.badge_outlined),
                     hintText: '202412345',
-                    helperText: '외국인 대학생은 학번만 있으면 됩니다. (ARC 불필요)',
+                    helperText: _l(
+                      '외국인 대학생은 학번만 있으면 됩니다. (ARC 불필요)',
+                      'Student ID is enough. ARC is not required.',
+                    ),
                   ),
                   validator: (v) =>
-                      v == null || v.trim().isEmpty ? '학번을 입력해 주세요' : null,
+                      v == null || v.trim().isEmpty
+                          ? _l('학번을 입력해 주세요', 'Please enter your student ID')
+                          : null,
                 ),
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                   title: Text(
                     _stayStart == null
-                        ? '체류 시작일 *'
-                        : '체류 시작일  ${dateFormat.format(_stayStart!)}',
+                        ? _l('체류 시작일 *', 'Stay start date *')
+                        : '${_l('체류 시작일', 'Stay start')}  ${dateFormat.format(_stayStart!)}',
                   ),
                   trailing: const Icon(Icons.calendar_today),
                   shape: RoundedRectangleBorder(
@@ -371,10 +420,15 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                   title: Text(
                     _stayEnd == null
-                        ? '체류 종료일 *'
-                        : '체류 종료일  ${dateFormat.format(_stayEnd!)}',
+                        ? _l('체류 종료일 *', 'Stay end date *')
+                        : '${_l('체류 종료일', 'Stay end')}  ${dateFormat.format(_stayEnd!)}',
                   ),
-                  subtitle: const Text('종료일 다음날부터 자동 회원 탈퇴됩니다.'),
+                  subtitle: Text(
+                    _l(
+                      '종료일 다음날부터 자동 회원 탈퇴됩니다.',
+                      'Your account is closed the day after this date.',
+                    ),
+                  ),
                   trailing: const Icon(Icons.event_busy_outlined),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -390,16 +444,19 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
               TextFormField(
                 controller: _arcController,
                 textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(
-                  labelText: 'ARC (외국인등록증) 번호 *',
-                  prefixIcon: Icon(Icons.credit_card_outlined),
+                decoration: InputDecoration(
+                  labelText: _l('ARC (외국인등록증) 번호 *', 'Alien Registration Card *'),
+                  prefixIcon: const Icon(Icons.credit_card_outlined),
                   hintText: '000000-0000000',
-                  helperText: '외국인 청년은 ARC 정보 기입이 필수입니다.',
+                  helperText: _l(
+                    '외국인 청년은 ARC 정보 기입이 필수입니다.',
+                    'Required for international youth.',
+                  ),
                 ),
                 validator: (v) {
                   final value = v?.replaceAll(RegExp(r'[\s-]'), '') ?? '';
                   if (value.length < 8) {
-                    return 'ARC 번호를 입력해 주세요';
+                    return _l('ARC 번호를 입력해 주세요', 'Please enter your ARC number');
                   }
                   return null;
                 },
@@ -412,14 +469,14 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                 keyboardType: TextInputType.number,
                 maxLength: 1,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                  labelText: '주민등록번호 뒷번호 1자리 *',
-                  prefixIcon: Icon(Icons.badge_outlined),
+                decoration: InputDecoration(
+                  labelText: _l('주민등록번호 뒷번호 1자리 *', 'RRN last digit *'),
+                  prefixIcon: const Icon(Icons.badge_outlined),
                   counterText: '',
                 ),
                 validator: (v) {
                   if (v == null || v.length != 1) {
-                    return '뒷번호 1자리를 입력해 주세요';
+                    return _l('뒷번호 1자리를 입력해 주세요', 'Enter the last digit of your RRN');
                   }
                   return null;
                 },
@@ -430,13 +487,13 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
               TextFormField(
                 controller: _businessNumberController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '사업자 등록 번호 *',
-                  prefixIcon: Icon(Icons.business_outlined),
+                decoration: InputDecoration(
+                  labelText: _l('사업자 등록 번호 *', 'Business registration number *'),
+                  prefixIcon: const Icon(Icons.business_outlined),
                   hintText: '000-00-00000',
                 ),
                 validator: (v) => v == null || v.trim().length < 10
-                    ? '사업자 등록 번호를 입력해 주세요'
+                    ? _l('사업자 등록 번호를 입력해 주세요', 'Please enter your business number')
                     : null,
               ),
             ],
@@ -488,7 +545,7 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
               ),
             ],
             const SizedBox(height: 24),
-            _SectionTitle(title: '선택 정보'),
+            _SectionTitle(title: _l('선택 정보', 'Optional')),
             const SizedBox(height: 12),
             if (_isOrg)
               TextFormField(
@@ -502,9 +559,9 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
             else
               TextFormField(
                 controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: '주소',
-                  prefixIcon: Icon(Icons.location_on_outlined),
+                decoration: InputDecoration(
+                  labelText: _l('주소', 'Address'),
+                  prefixIcon: const Icon(Icons.location_on_outlined),
                 ),
               ),
             const SizedBox(height: 32),
@@ -516,7 +573,7 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('가입 완료'),
+                  : Text(_l('가입 완료', 'Complete sign-up')),
             ),
           ],
         ),

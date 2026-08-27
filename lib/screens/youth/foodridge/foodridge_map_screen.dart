@@ -478,6 +478,15 @@ class _ShopPreviewCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
+                      shop.openTillLabel,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.sage,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
                       shop.partnerSurplus && shop.surplusPrice != null
                           ? 'From ₩${NumberFormat('#,###').format(shop.surplusPrice)} · surplus today'
                           : shop.address,

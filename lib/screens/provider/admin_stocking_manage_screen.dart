@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/sale_provider.dart';
 import '../../providers/inventory_provider.dart';
+import '../../providers/vending_provider.dart';
 import '../../models/sale_request.dart';
 
 class AdminStockingManageScreen extends StatefulWidget {
@@ -23,13 +24,11 @@ class _AdminStockingManageScreenState extends State<AdminStockingManageScreen> {
   @override
   Widget build(BuildContext context) {
     final saleProvider = context.watch<SaleProvider>();
-    final collectedRequests = saleProvider.allSaleRequests
-        .where((req) => req.status == SaleRequestStatus.collected)
-        .toList();
+    final collectedRequests = saleProvider.collectedForStocking;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('입고 관리 (00:30)'),
+        title: const Text('입고 관리'),
       ),
       body: saleProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -48,12 +47,14 @@ class _AdminStockingManageScreenState extends State<AdminStockingManageScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '[${request.restaurantName}] ${request.category.label} ${request.quantity}개',
+                              '[${request.restaurantName}] ${request.itemLabel ?? request.category.label} ${request.quantity}개',
                               style: const TextStyle(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '지점: ${request.branchName}\n금액: ${request.totalPrice}원',
+                              request.slotSummary.isEmpty
+                                  ? '지점: ${request.branchName}'
+                                  : request.slotSummary,
                             ),
                             const SizedBox(height: 12),
                             Align(
@@ -82,7 +83,11 @@ class _AdminStockingManageScreenState extends State<AdminStockingManageScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('입고 확정'),
-        content: const Text('수거된 물품을 확인하셨나요?\n확정 시 즉시 냉장고 재고에 반영됩니다.'),
+        content: Text(
+          request.hasSlotAssignment
+              ? '${request.slotSummary} 슬롯으로 자판기 재고에 반영합니다.'
+              : '수거된 물품을 확인하셨나요?\n확정 시 즉시 냉장고 재고에 반영됩니다.',
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('취소')),
           TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('확정')),
@@ -91,17 +96,41 @@ class _AdminStockingManageScreenState extends State<AdminStockingManageScreen> {
     );
 
     if (confirmed == true && mounted) {
-      // 1. 재고에 추가
-      final stockSuccess = await context.read<InventoryProvider>().addStockFromRequest(request);
-      
-      if (stockSuccess && mounted) {
-        // 2. 신청 상태를 stocked로 변경
-        final statusSuccess = await context.read<SaleProvider>().updateSaleRequestStatus(request.id, SaleRequestStatus.stocked);
-        
-        if (statusSuccess && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('냉장고 입고가 완료되었습니다!')));
-          context.read<SaleProvider>().fetchAllSaleRequests();
+      final vending = context.read<VendingProvider>();
+      final sale = context.read<SaleProvider>();
+      final inventory = context.read<InventoryProvider>();
+
+      if (request.hasSlotAssignment) {
+        final result = vending.stockReserved(
+              displayNumber: request.displayNumber!,
+              machineId: request.machineId!,
+              name: request.itemLabel ?? request.category.label,
+              quantity: request.quantity,
+              photoAsset: request.photoAsset,
+              photoPath: request.photoPath,
+              photoBytes: request.photoBytes,
+            );
+        if (result.error != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(result.error!)),
+            );
+          }
+          return;
         }
+      } else {
+        final stockSuccess = await inventory.addStockFromRequest(request);
+        if (!stockSuccess) return;
+      }
+
+      final statusSuccess =
+          await sale.updateSaleRequestStatus(request.id, SaleRequestStatus.stocked);
+
+      if (statusSuccess && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('냉장고 입고가 완료되었습니다!')),
+        );
+        sale.fetchAllSaleRequests();
       }
     }
   }

@@ -54,6 +54,16 @@ class RoleCard extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                     ),
+                    if (role.englishLabel != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        role.englishLabel!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       description,
