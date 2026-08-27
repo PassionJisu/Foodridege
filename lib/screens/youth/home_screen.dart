@@ -215,7 +215,8 @@ class _RoleWelcomeBanner extends StatelessWidget {
       UserRole.org =>
         '어서오세요 ${user.name}님, 환승반찬 입고 신청으로 청년들의 식탁을 채워 주세요.',
       UserRole.admin => '어서오세요 ${user.name}님, 전체 운영 기능을 이용할 수 있습니다.',
-      _ => '어서오세요, ${user.name}님!',
+      UserRole.youth => '어서오세요, ${user.name}님! 청년 회원으로 서비스를 이용할 수 있습니다.',
+      UserRole.student => '어서오세요, ${user.name}님!',
     };
 
     return Container(

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/foodridge_provider.dart';
 import '../../../theme/app_theme.dart';
-import 'foodridge_reservations_screen.dart';
+import 'foodridge_checkout_screen.dart';
 
 class FoodridgeCartScreen extends StatelessWidget {
   const FoodridgeCartScreen({super.key});
@@ -137,45 +137,17 @@ class FoodridgeCartScreen extends StatelessWidget {
                             backgroundColor: AppColors.sage,
                             foregroundColor: Colors.white,
                           ),
-                          onPressed: () async {
-                            final result = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Checkout'),
-                                content: const Text(
-                                  'Create bookings from your cart and move to GPS check-in?',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  FilledButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: const Text('Confirm'),
-                                  ),
-                                ],
-                              ),
-                            );
-
-                            if (result != true) return;
-                            final err =
-                                provider.checkoutCart(userId: user.uid);
-                            if (err != null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(err)),
-                              );
-                              return;
-                            }
-                            if (!context.mounted) return;
-                            Navigator.pushReplacement(
+                          onPressed: () {
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const FoodridgeReservationsScreen(),
+                                builder: (_) => const FoodridgeCheckoutScreen(
+                                  source: MealPickCheckoutSource.cart,
+                                ),
                               ),
                             );
                           },
-                          child: const Text('Checkout & book'),
+                          child: const Text('Book / Pay'),
                         ),
                       ),
                     ],

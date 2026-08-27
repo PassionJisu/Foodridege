@@ -22,9 +22,9 @@ class FoodridgeCartLine {
 
   int get lineTotal => unitPrice * qty;
 
-  FoodridgeCartLine copyWith({int? qty}) {
+  FoodridgeCartLine copyWith({String? id, int? qty}) {
     return FoodridgeCartLine(
-      id: id,
+      id: id ?? this.id,
       userId: userId,
       menuItemId: menuItemId,
       storeId: storeId,

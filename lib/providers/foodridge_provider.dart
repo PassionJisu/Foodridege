@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../data/seed_data.dart';
+import '../models/attached_photo.dart';
 import '../models/foodridge_cart_line.dart';
 import '../models/foodridge_menu_item.dart';
 import '../models/foodridge_reservation.dart';
@@ -24,6 +25,7 @@ class FoodridgeProvider with ChangeNotifier {
 
   final List<FoodridgeReservation> _reservations = [];
   final List<FoodridgeCartLine> _cartLines = [];
+  final List<FoodridgeCartLine> _draftLines = [];
 
   List<ForeignShop> get shops => List.unmodifiable(_shops);
   List<FoodridgeReservation> get reservations => List.unmodifiable(_reservations);
@@ -64,12 +66,18 @@ class FoodridgeProvider with ChangeNotifier {
   }
 
   List<FoodridgeReservation> reservationsFor(String userId) {
-    return _reservations.where((r) => r.userId == userId).toList()
+    return _reservations
+        .where(
+          (r) =>
+              r.userId == userId &&
+              r.status != FoodridgeReservationStatus.cancelled,
+        )
+        .toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   // --------------------
-  // Cart (local)
+  // Cart (local) & shop draft (temporary hold on restaurant page)
   // --------------------
   List<FoodridgeCartLine> cartFor(String userId) {
     final list =
@@ -81,7 +89,78 @@ class FoodridgeProvider with ChangeNotifier {
   int cartTotalFor(String userId) =>
       cartFor(userId).fold<int>(0, (sum, line) => sum + line.lineTotal);
 
+  int cartCountFor(String userId) =>
+      cartFor(userId).fold<int>(0, (sum, line) => sum + line.qty);
+
+  List<FoodridgeCartLine> draftFor(String userId, String storeId) {
+    final list = _draftLines
+        .where((c) => c.userId == userId && c.storeId == storeId)
+        .toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return list;
+  }
+
+  int draftTotalFor(String userId, String storeId) =>
+      draftFor(userId, storeId).fold<int>(0, (sum, line) => sum + line.lineTotal);
+
+  int draftCountFor(String userId, String storeId) =>
+      draftFor(userId, storeId).fold<int>(0, (sum, line) => sum + line.qty);
+
+  int draftQtyFor({
+    required String userId,
+    required String menuItemId,
+  }) {
+    return _draftLines
+        .where((l) => l.userId == userId && l.menuItemId == menuItemId)
+        .fold<int>(0, (sum, l) => sum + l.qty);
+  }
+
+  String? addToDraft({
+    required String userId,
+    required String menuItemId,
+    int qty = 1,
+  }) {
+    return _addToLines(
+      target: _draftLines,
+      userId: userId,
+      menuItemId: menuItemId,
+      qty: qty,
+    );
+  }
+
+  void decrementDraft({
+    required String userId,
+    required String menuItemId,
+  }) {
+    final idx = _draftLines.indexWhere(
+      (l) => l.userId == userId && l.menuItemId == menuItemId,
+    );
+    if (idx < 0) return;
+    final line = _draftLines[idx];
+    _restoreStock(line.menuItemId, 1);
+    if (line.qty <= 1) {
+      _draftLines.removeAt(idx);
+    } else {
+      _draftLines[idx] = line.copyWith(qty: line.qty - 1);
+    }
+    notifyListeners();
+  }
+
   String? addToCart({
+    required String userId,
+    required String menuItemId,
+    int qty = 1,
+  }) {
+    return _addToLines(
+      target: _cartLines,
+      userId: userId,
+      menuItemId: menuItemId,
+      qty: qty,
+    );
+  }
+
+  String? _addToLines({
+    required List<FoodridgeCartLine> target,
     required String userId,
     required String menuItemId,
     int qty = 1,
@@ -92,17 +171,16 @@ class FoodridgeProvider with ChangeNotifier {
     final item = _menuItems[mIdx];
     if (item.remainingQty < qty) return 'Not enough stock.';
 
-    // Deduct stock immediately for demo simplicity.
     _menuItems[mIdx] = item.copyWith(remainingQty: item.remainingQty - qty);
 
-    final existingIdx = _cartLines.indexWhere(
+    final existingIdx = target.indexWhere(
       (l) => l.userId == userId && l.menuItemId == menuItemId,
     );
     if (existingIdx >= 0) {
-      final existing = _cartLines[existingIdx];
-      _cartLines[existingIdx] = existing.copyWith(qty: existing.qty + qty);
+      final existing = target[existingIdx];
+      target[existingIdx] = existing.copyWith(qty: existing.qty + qty);
     } else {
-      _cartLines.add(
+      target.add(
         FoodridgeCartLine(
           id: 'fc-${DateTime.now().millisecondsSinceEpoch}-$menuItemId',
           userId: userId,
@@ -119,6 +197,42 @@ class FoodridgeProvider with ChangeNotifier {
     return null;
   }
 
+  void _restoreStock(String menuItemId, int qty) {
+    final mIdx = _menuItems.indexWhere((m) => m.id == menuItemId);
+    if (mIdx < 0) return;
+    final item = _menuItems[mIdx];
+    _menuItems[mIdx] = item.copyWith(remainingQty: item.remainingQty + qty);
+  }
+
+  String? commitDraftToCart({
+    required String userId,
+    required String storeId,
+  }) {
+    final drafts = draftFor(userId, storeId);
+    if (drafts.isEmpty) return 'Select a menu item first.';
+
+    for (final line in drafts) {
+      final existingIdx = _cartLines.indexWhere(
+        (l) => l.userId == userId && l.menuItemId == line.menuItemId,
+      );
+      if (existingIdx >= 0) {
+        final existing = _cartLines[existingIdx];
+        _cartLines[existingIdx] = existing.copyWith(qty: existing.qty + line.qty);
+      } else {
+        _cartLines.add(
+          line.copyWith(
+            id: 'fc-${DateTime.now().millisecondsSinceEpoch}-${line.menuItemId}',
+          ),
+        );
+      }
+    }
+    _draftLines.removeWhere(
+      (l) => l.userId == userId && l.storeId == storeId,
+    );
+    notifyListeners();
+    return null;
+  }
+
   void removeCartLine({
     required String userId,
     required String cartLineId,
@@ -128,22 +242,50 @@ class FoodridgeProvider with ChangeNotifier {
     );
     if (idx < 0) return;
     final line = _cartLines[idx];
-
-    final mIdx = _menuItems.indexWhere((m) => m.id == line.menuItemId);
-    if (mIdx >= 0) {
-      final item = _menuItems[mIdx];
-      _menuItems[mIdx] = item.copyWith(remainingQty: item.remainingQty + line.qty);
-    }
-
+    _restoreStock(line.menuItemId, line.qty);
     _cartLines.removeAt(idx);
     notifyListeners();
   }
 
-  String? checkoutCart({required String userId}) {
-    final lines = cartFor(userId);
-    if (lines.isEmpty) return 'Cart is empty.';
+  String? checkoutCart({
+    required String userId,
+    FoodridgePaymentMethod paymentMethod = FoodridgePaymentMethod.onSite,
+    bool paid = false,
+  }) {
+    return _checkoutLines(
+      userId: userId,
+      lines: cartFor(userId),
+      paymentMethod: paymentMethod,
+      paid: paid,
+      clearCart: true,
+    );
+  }
 
-    // One reservation per store (so review is also per store).
+  String? checkoutDraft({
+    required String userId,
+    required String storeId,
+    FoodridgePaymentMethod paymentMethod = FoodridgePaymentMethod.onSite,
+    bool paid = false,
+  }) {
+    return _checkoutLines(
+      userId: userId,
+      lines: draftFor(userId, storeId),
+      paymentMethod: paymentMethod,
+      paid: paid,
+      clearDraftStoreId: storeId,
+    );
+  }
+
+  String? _checkoutLines({
+    required String userId,
+    required List<FoodridgeCartLine> lines,
+    required FoodridgePaymentMethod paymentMethod,
+    required bool paid,
+    bool clearCart = false,
+    String? clearDraftStoreId,
+  }) {
+    if (lines.isEmpty) return 'Nothing to check out.';
+
     final byStore = <String, List<FoodridgeCartLine>>{};
     for (final l in lines) {
       byStore.putIfAbsent(l.storeId, () => []).add(l);
@@ -156,7 +298,7 @@ class FoodridgeProvider with ChangeNotifier {
       final total = storeLines.fold<int>(0, (sum, l) => sum + l.lineTotal);
       final itemLabel = storeLines.length == 1
           ? storeLines.first.menuItemName
-          : '${storeLines.length} items in cart';
+          : '${storeLines.length} items';
 
       _reservations.add(
         FoodridgeReservation(
@@ -167,11 +309,20 @@ class FoodridgeProvider with ChangeNotifier {
           itemLabel: itemLabel,
           price: total,
           createdAt: DateTime.now(),
+          paymentMethod: paymentMethod,
+          paid: paid || paymentMethod == FoodridgePaymentMethod.inApp,
         ),
       );
     }
 
-    _cartLines.removeWhere((l) => l.userId == userId);
+    if (clearCart) {
+      _cartLines.removeWhere((l) => l.userId == userId);
+    }
+    if (clearDraftStoreId != null) {
+      _draftLines.removeWhere(
+        (l) => l.userId == userId && l.storeId == clearDraftStoreId,
+      );
+    }
     notifyListeners();
     return null;
   }
@@ -185,6 +336,8 @@ class FoodridgeProvider with ChangeNotifier {
     required int price,
     required int remainingQty,
     String? photoAsset,
+    String? photoPath,
+    Uint8List? photoBytes,
   }) {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return 'Menu name is required.';
@@ -199,6 +352,8 @@ class FoodridgeProvider with ChangeNotifier {
         price: price,
         remainingQty: remainingQty,
         photoAsset: photoAsset,
+        photoPath: photoPath,
+        photoBytes: photoBytes,
       ),
     );
     notifyListeners();
@@ -231,10 +386,10 @@ class FoodridgeProvider with ChangeNotifier {
   }
 
   void cancelReservation(String id) {
-    final i = _reservations.indexWhere((r) => r.id == id);
-    if (i < 0) return;
-    if (_reservations[i].status != FoodridgeReservationStatus.reserved) return;
-    _reservations[i].status = FoodridgeReservationStatus.cancelled;
+    _reservations.removeWhere(
+      (r) =>
+          r.id == id && r.status == FoodridgeReservationStatus.reserved,
+    );
     notifyListeners();
   }
 
@@ -309,6 +464,7 @@ class FoodridgeProvider with ChangeNotifier {
     required int stars,
     required String comment,
     String? photoNote,
+    AttachedPhoto? photo,
   }) {
     final reservation = reviewableReservationFor(userId, shopId);
     if (reservation == null) {
@@ -323,6 +479,7 @@ class FoodridgeProvider with ChangeNotifier {
         stars: stars,
         comment: comment.trim(),
         createdAt: DateTime.now(),
+        photo: photo,
       ),
     );
     reservation.reviewed = true;

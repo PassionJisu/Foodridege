@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/attached_photo.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/foodridge_provider.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/photo_attach_field.dart';
 
 /// Foodridge review write — English UI. Does NOT award meal tickets.
 class ReviewWriteScreen extends StatefulWidget {
@@ -17,7 +19,7 @@ class ReviewWriteScreen extends StatefulWidget {
 class _ReviewWriteScreenState extends State<ReviewWriteScreen> {
   final _content = TextEditingController();
   int _stars = 5;
-  String? _photoNote;
+  AttachedPhoto? _photo;
   bool _saving = false;
 
   @override
@@ -38,7 +40,7 @@ class _ReviewWriteScreenState extends State<ReviewWriteScreen> {
       author: user.name,
       stars: _stars,
       comment: _content.text,
-      photoNote: _photoNote,
+      photo: _photo,
     );
     if (!mounted) return;
     setState(() => _saving = false);
@@ -107,10 +109,13 @@ class _ReviewWriteScreenState extends State<ReviewWriteScreen> {
                     hintText: 'Share your experience',
                   ),
                 ),
-                TextButton(
-                  onPressed: () =>
-                      setState(() => _photoNote = 'Photo attached (demo)'),
-                  child: Text(_photoNote ?? 'Add photo (optional)'),
+                PhotoAttachField(
+                  photo: _photo,
+                  onChanged: (value) => setState(() => _photo = value),
+                  label: 'Add a photo (optional)',
+                  cameraLabel: 'Take photo',
+                  galleryLabel: 'Choose from gallery',
+                  removeLabel: 'Remove photo',
                 ),
                 const SizedBox(height: 12),
                 FilledButton(

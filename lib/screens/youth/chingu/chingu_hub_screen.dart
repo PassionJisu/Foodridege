@@ -6,6 +6,7 @@ import '../../../models/chingu.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chingu_provider.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/attached_photo_view.dart';
 import 'chingu_ranking_screen.dart';
 import 'ticket_deposit_payment_screen.dart';
 import 'ticket_history_screen.dart';
@@ -377,18 +378,41 @@ class _ReviewTabState extends State<_ReviewTab> {
         else
           ...teamReviews.map((r) {
             final match = chingu.matches.firstWhere((m) => m.id == r.matchId);
-            return ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                '${'★' * r.stars}${'☆' * (5 - r.stars)}  ${r.displayName}',
-                style: const TextStyle(color: Colors.white),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${'★' * r.stars}${'☆' * (5 - r.stars)}  ${r.displayName}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${DateFormat('M/d').format(match.date)} ${chingu.eventTitle(match)}',
+                    style: const TextStyle(color: Colors.white38, fontSize: 12),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    r.comment,
+                    style: const TextStyle(color: Colors.white70, height: 1.4),
+                  ),
+                  if (r.photo != null && r.photo!.hasImage) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 180,
+                      width: double.infinity,
+                      child: AttachedPhotoView(
+                        photo: r.photo!,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              subtitle: Text(
-                '${DateFormat('M/d').format(match.date)} ${chingu.eventTitle(match)}\n${r.comment}'
-                '${r.photoNote != null ? '\n📷 ${r.photoNote}' : ''}',
-                style: const TextStyle(color: Colors.white54),
-              ),
-              isThreeLine: true,
             );
           }),
       ],

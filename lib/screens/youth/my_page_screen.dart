@@ -53,6 +53,13 @@ class MyPageScreen extends StatelessWidget {
             role.label,
             style: const TextStyle(color: Color(0xFF8A7466), fontSize: 14),
           ),
+          if (role == UserRole.org && user.orgName != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              user.orgName!,
+              style: const TextStyle(color: Color(0xFF8A7466), fontSize: 13),
+            ),
+          ],
           if (role.showsUsageStats) ...[
             const SizedBox(height: 16),
             Container(

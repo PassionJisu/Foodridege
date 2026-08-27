@@ -9,6 +9,22 @@ extension FoodridgeReservationStatusX on FoodridgeReservationStatus {
       };
 }
 
+enum FoodridgePaymentMethod { onSite, inApp }
+
+extension FoodridgePaymentMethodX on FoodridgePaymentMethod {
+  String get label => switch (this) {
+        FoodridgePaymentMethod.onSite => 'Pay at store',
+        FoodridgePaymentMethod.inApp => 'Pay in app',
+      };
+
+  String get pickupNote => switch (this) {
+        FoodridgePaymentMethod.onSite =>
+          'Pay when you pick up at the kitchen.',
+        FoodridgePaymentMethod.inApp =>
+          'Paid in app. Pick up at the kitchen.',
+      };
+}
+
 /// Foodridge2 Reservation 모델을 Final 더미 데이터에 맞게 단순화 (스탬프 제외).
 class FoodridgeReservation {
   FoodridgeReservation({
@@ -20,6 +36,8 @@ class FoodridgeReservation {
     required this.price,
     required this.createdAt,
     this.status = FoodridgeReservationStatus.reserved,
+    this.paymentMethod = FoodridgePaymentMethod.onSite,
+    this.paid = false,
     this.arrivedAt,
     this.reviewed = false,
   });
@@ -32,6 +50,8 @@ class FoodridgeReservation {
   final int price;
   final DateTime createdAt;
   FoodridgeReservationStatus status;
+  FoodridgePaymentMethod paymentMethod;
+  bool paid;
   DateTime? arrivedAt;
   bool reviewed;
 

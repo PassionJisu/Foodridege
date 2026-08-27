@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/attached_photo.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sale_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/attached_photo_view.dart';
+import '../../widgets/photo_attach_field.dart';
 import 'sale_history_screen.dart';
 
 /// 기관 입고 신청 — 지점 선택 없이 품목만 등록 → 매매 신청 내역 연결.
@@ -17,7 +20,8 @@ class OrgSupplyScreen extends StatefulWidget {
 class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
   final _name = TextEditingController();
   final _qty = TextEditingController(text: '5');
-  final _note = TextEditingController(text: '사진 첨부(데모)');
+  final _note = TextEditingController();
+  AttachedPhoto? _photo;
   final _items = <_Draft>[];
   bool _submitting = false;
 
@@ -35,9 +39,16 @@ class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
     setState(() => _submitting = true);
     final ok = await context.read<SaleProvider>().submitOrgSupplyItems(
           orgId: user.uid,
-          orgName: user.name,
+          orgName: user.displayOrgName,
           items: _items
-              .map((d) => (name: d.name, qty: d.qty, note: d.note))
+              .map(
+                (d) => (
+                  name: d.name,
+                  qty: d.qty,
+                  note: d.note,
+                  photo: d.photo,
+                ),
+              )
               .toList(),
         );
     if (!mounted) return;
@@ -59,7 +70,8 @@ class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final orgName = context.watch<AuthProvider>().appUser?.name ?? '기관';
+    final orgName =
+        context.watch<AuthProvider>().appUser?.displayOrgName ?? '기관';
 
     return Scaffold(
       appBar: AppBar(title: const Text('자판기 입고 신청')),
@@ -89,7 +101,13 @@ class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
           const SizedBox(height: 10),
           TextField(
             controller: _note,
-            decoration: const InputDecoration(labelText: '사진/검수 메모'),
+            decoration: const InputDecoration(labelText: '특이사항'),
+          ),
+          const SizedBox(height: 12),
+          PhotoAttachField(
+            photo: _photo,
+            onChanged: (value) => setState(() => _photo = value),
+            label: '음식 사진 첨부',
           ),
           const SizedBox(height: 12),
           OutlinedButton(
@@ -102,9 +120,11 @@ class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
                     name: _name.text.trim(),
                     qty: qty,
                     note: _note.text.trim(),
+                    photo: _photo,
                   ),
                 );
                 _name.clear();
+                _photo = null;
               });
             },
             child: const Text('품목 추가'),
@@ -112,8 +132,19 @@ class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
           const SizedBox(height: 12),
           ..._items.map(
             (d) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: d.photo != null && d.photo!.hasImage
+                  ? SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: AttachedPhotoView(
+                        photo: d.photo!,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    )
+                  : const Icon(Icons.image_outlined),
               title: Text('${d.name} · ${d.qty}개'),
-              subtitle: Text(d.note),
+              subtitle: d.note.isEmpty ? null : Text(d.note),
               trailing: IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () => setState(() => _items.remove(d)),
@@ -139,8 +170,14 @@ class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
 }
 
 class _Draft {
-  _Draft({required this.name, required this.qty, required this.note});
+  _Draft({
+    required this.name,
+    required this.qty,
+    required this.note,
+    this.photo,
+  });
   final String name;
   final int qty;
   final String note;
+  final AttachedPhoto? photo;
 }

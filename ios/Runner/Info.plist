@@ -35,6 +35,14 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Used to confirm arrival at a kitchen for check-in.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>리뷰·입고 신청에 첨부할 사진을 촬영합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>리뷰·입고 신청에 첨부할 사진을 갤러리에서 선택합니다.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>선택한 사진을 앱에서 사용할 수 있도록 접근합니다.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>카메라 촬영 시 필요할 수 있습니다.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

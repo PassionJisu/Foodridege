@@ -1,3 +1,5 @@
+import 'attached_photo.dart';
+
 enum DietBadge { none, halal, vegan, vegetarian }
 
 class ForeignShop {
@@ -38,6 +40,7 @@ class ShopReview {
     required this.stars,
     required this.comment,
     required this.createdAt,
+    this.photo,
   });
 
   final String id;
@@ -46,4 +49,5 @@ class ShopReview {
   final int stars;
   final String comment;
   final DateTime createdAt;
+  final AttachedPhoto? photo;
 }

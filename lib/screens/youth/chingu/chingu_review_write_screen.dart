@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/attached_photo.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chingu_provider.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/photo_attach_field.dart';
 
 /// 친구카세 리뷰 작성 전용 페이지 (키오스크 발권 후 작성).
 class ChinguReviewWriteScreen extends StatefulWidget {
@@ -27,7 +29,7 @@ class _ChinguReviewWriteScreenState extends State<ChinguReviewWriteScreen> {
   String? _matchId;
   final _comment = TextEditingController();
   int _stars = 5;
-  String? _photoNote;
+  AttachedPhoto? _photo;
 
   @override
   void initState() {
@@ -145,12 +147,11 @@ class _ChinguReviewWriteScreenState extends State<ChinguReviewWriteScreen> {
                 hintStyle: TextStyle(color: Colors.white38),
               ),
             ),
-            TextButton(
-              onPressed: () => setState(() => _photoNote = '사진 첨부(데모)'),
-              child: Text(
-                _photoNote ?? '사진 첨부 (선택)',
-                style: const TextStyle(color: AppColors.gold),
-              ),
+            PhotoAttachField(
+              photo: _photo,
+              onChanged: (value) => setState(() => _photo = value),
+              dark: true,
+              label: '식사 사진 첨부 (선택)',
             ),
             const SizedBox(height: 12),
             FilledButton(
@@ -167,7 +168,7 @@ class _ChinguReviewWriteScreenState extends State<ChinguReviewWriteScreen> {
                   matchId: matchId,
                   stars: _stars,
                   comment: _comment.text,
-                  photoNote: _photoNote,
+                  photo: _photo,
                 );
                 if (err != null) {
                   ScaffoldMessenger.of(context).showSnackBar(

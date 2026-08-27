@@ -28,6 +28,10 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
   final _addressController = TextEditingController();
   final _businessNumberController = TextEditingController();
   final _adminSecretController = TextEditingController();
+  final _studentIdController = TextEditingController();
+  final _arcController = TextEditingController();
+  final _orgNameController = TextEditingController();
+  final _businessTypeController = TextEditingController();
 
   DateTime? _birthDate;
   DateTime? _stayStart;
@@ -35,6 +39,16 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
   bool _obscurePassword = true;
   String? _school = DemoAuthStore.universities.first;
   StudentOrigin _origin = StudentOrigin.korean;
+
+  bool get _needsRrn {
+    if (widget.role == UserRole.org) return false;
+    if (widget.role == UserRole.student || widget.role == UserRole.youth) {
+      return _origin == StudentOrigin.korean;
+    }
+    return true;
+  }
+
+  bool get _isOrg => widget.role == UserRole.org;
 
   @override
   void dispose() {
@@ -47,6 +61,10 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
     _addressController.dispose();
     _businessNumberController.dispose();
     _adminSecretController.dispose();
+    _studentIdController.dispose();
+    _arcController.dispose();
+    _orgNameController.dispose();
+    _businessTypeController.dispose();
     super.dispose();
   }
 
@@ -90,7 +108,7 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
 
   Future<void> _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_birthDate == null) {
+    if (!_isOrg && _birthDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('생년월일을 선택해 주세요')),
       );
@@ -124,6 +142,9 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
     auth.clearError();
 
     final isStudent = widget.role == UserRole.student;
+    final isYouth = widget.role == UserRole.youth;
+    final isOrg = widget.role == UserRole.org;
+    final isForeign = (isStudent || isYouth) && _origin == StudentOrigin.exchange;
     final isExchange = isStudent && _origin == StudentOrigin.exchange;
 
     final success = await auth.signUp(
@@ -131,18 +152,25 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
       password: _passwordController.text,
       role: widget.role,
       name: _nameController.text,
-      birthDate: _birthDate!,
-      rrnLastDigit: isExchange ? '' : _rrnLastDigitController.text,
+      birthDate: _birthDate ?? DateTime(1980, 1, 1),
+      rrnLastDigit: (isForeign || isOrg) ? '' : _rrnLastDigitController.text,
       phone: _phoneController.text,
       address: _addressController.text,
-      schoolInfo: isStudent ? _school : null,
-      businessRegistrationNumber: widget.role == UserRole.owner
-          ? _businessNumberController.text
-          : null,
+      schoolInfo: isStudent
+          ? _school
+          : (isOrg ? _orgNameController.text : null),
+      businessRegistrationNumber:
+          (widget.role == UserRole.owner || isOrg)
+              ? _businessNumberController.text
+              : null,
       adminSecret: widget.role == UserRole.admin ? _adminSecretController.text : null,
-      studentOrigin: isStudent ? _origin : null,
+      studentOrigin: (isStudent || isYouth) ? _origin : null,
       stayStart: isExchange ? _stayStart : null,
       stayEnd: isExchange ? _stayEnd : null,
+      studentId: isExchange ? _studentIdController.text : null,
+      arcNumber: isYouth && isForeign ? _arcController.text : null,
+      orgName: isOrg ? _orgNameController.text : null,
+      businessType: isOrg ? _businessTypeController.text : null,
     );
 
     if (!mounted) return;
@@ -216,46 +244,53 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: '이름 *',
-                prefixIcon: Icon(Icons.person_outline),
+              decoration: InputDecoration(
+                labelText: _isOrg ? '대표자명 *' : '이름 *',
+                prefixIcon: const Icon(Icons.person_outline),
               ),
               validator: (v) =>
-                  v == null || v.trim().isEmpty ? '이름을 입력해 주세요' : null,
+                  v == null || v.trim().isEmpty
+                      ? (_isOrg ? '대표자명을 입력해 주세요' : '이름을 입력해 주세요')
+                      : null,
             ),
-            const SizedBox(height: 12),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                _birthDate == null
-                    ? '생년월일 *'
-                    : dateFormat.format(_birthDate!),
+            if (!_isOrg) ...[
+              const SizedBox(height: 12),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  _birthDate == null
+                      ? '생년월일 *'
+                      : dateFormat.format(_birthDate!),
+                ),
+                subtitle: _birthDate == null
+                    ? const Text('탭하여 생년월일 선택')
+                    : null,
+                trailing: const Icon(Icons.calendar_today),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade300),
+                ),
+                onTap: _pickBirthDate,
               ),
-              subtitle: _birthDate == null
-                  ? const Text('탭하여 생년월일 선택')
-                  : null,
-              trailing: const Icon(Icons.calendar_today),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.grey.shade300),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: '연락처 *',
+                  prefixIcon: Icon(Icons.phone_outlined),
+                  hintText: '010-1234-5678',
+                ),
+                validator: (v) =>
+                    v == null || v.trim().length < 10 ? '연락처를 입력해 주세요' : null,
               ),
-              onTap: _pickBirthDate,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: '연락처 *',
-                prefixIcon: Icon(Icons.phone_outlined),
-                hintText: '010-1234-5678',
-              ),
-              validator: (v) =>
-                  v == null || v.trim().length < 10 ? '연락처를 입력해 주세요' : null,
-            ),
-            if (widget.role == UserRole.student) ...[
+            ],
+            if (widget.role == UserRole.student ||
+                widget.role == UserRole.youth) ...[
               const SizedBox(height: 24),
-              const _SectionTitle(title: '대학생 구분'),
+              _SectionTitle(
+                title: widget.role == UserRole.youth ? '청년 구분' : '대학생 구분',
+              ),
               const SizedBox(height: 12),
               RadioGroup<StudentOrigin>(
                 groupValue: _origin,
@@ -266,18 +301,24 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                   children: [
                     RadioListTile<StudentOrigin>(
                       value: StudentOrigin.korean,
-                      title: Text(StudentOrigin.korean.label),
+                      title: Text(StudentOrigin.korean.labelFor(widget.role)),
                       contentPadding: EdgeInsets.zero,
                     ),
                     RadioListTile<StudentOrigin>(
                       value: StudentOrigin.exchange,
-                      title: Text(StudentOrigin.exchange.label),
-                      subtitle: const Text('학교 정보와 체류 기간으로 가입합니다.'),
+                      title: Text(StudentOrigin.exchange.labelFor(widget.role)),
+                      subtitle: Text(
+                        widget.role == UserRole.youth
+                            ? '외국인 청년은 ARC(외국인등록증) 정보가 필요합니다.'
+                            : '외국인 대학생은 학번으로 가입합니다.',
+                      ),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ],
                 ),
               ),
+            ],
+            if (widget.role == UserRole.student) ...[
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 key: ValueKey(_school),
@@ -298,6 +339,18 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                 validator: (v) => v == null || v.isEmpty ? '학교를 선택해 주세요' : null,
               ),
               if (_origin == StudentOrigin.exchange) ...[
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _studentIdController,
+                  decoration: const InputDecoration(
+                    labelText: '학번 *',
+                    prefixIcon: Icon(Icons.badge_outlined),
+                    hintText: '202412345',
+                    helperText: '외국인 대학생은 학번만 있으면 됩니다. (ARC 불필요)',
+                  ),
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? '학번을 입력해 주세요' : null,
+                ),
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12),
@@ -331,8 +384,28 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                 ),
               ],
             ],
-            if (widget.role != UserRole.student ||
-                _origin == StudentOrigin.korean) ...[
+            if (widget.role == UserRole.youth &&
+                _origin == StudentOrigin.exchange) ...[
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _arcController,
+                textCapitalization: TextCapitalization.characters,
+                decoration: const InputDecoration(
+                  labelText: 'ARC (외국인등록증) 번호 *',
+                  prefixIcon: Icon(Icons.credit_card_outlined),
+                  hintText: '000000-0000000',
+                  helperText: '외국인 청년은 ARC 정보 기입이 필수입니다.',
+                ),
+                validator: (v) {
+                  final value = v?.replaceAll(RegExp(r'[\s-]'), '') ?? '';
+                  if (value.length < 8) {
+                    return 'ARC 번호를 입력해 주세요';
+                  }
+                  return null;
+                },
+              ),
+            ],
+            if (_needsRrn) ...[
               const SizedBox(height: 12),
               TextFormField(
                 controller: _rrnLastDigitController,
@@ -367,6 +440,41 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
                     : null,
               ),
             ],
+            if (_isOrg) ...[
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _orgNameController,
+                decoration: const InputDecoration(
+                  labelText: '기관명 (상호명) *',
+                  prefixIcon: Icon(Icons.account_balance_outlined),
+                ),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? '기관명을 입력해 주세요' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _businessNumberController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: '사업자등록번호 (또는 고유번호) *',
+                  prefixIcon: Icon(Icons.business_outlined),
+                  hintText: '000-00-00000',
+                ),
+                validator: (v) => v == null || v.trim().length < 10
+                    ? '사업자등록번호 또는 고유번호를 입력해 주세요'
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(
+                  labelText: '기관 소재지 (주소) *',
+                  prefixIcon: Icon(Icons.location_on_outlined),
+                ),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? '기관 소재지를 입력해 주세요' : null,
+              ),
+            ],
             if (widget.role == UserRole.admin) ...[
               const SizedBox(height: 12),
               TextFormField(
@@ -382,13 +490,23 @@ class _SignupFormScreenState extends State<SignupFormScreen> {
             const SizedBox(height: 24),
             _SectionTitle(title: '선택 정보'),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _addressController,
-              decoration: const InputDecoration(
-                labelText: '주소',
-                prefixIcon: Icon(Icons.location_on_outlined),
+            if (_isOrg)
+              TextFormField(
+                controller: _businessTypeController,
+                decoration: const InputDecoration(
+                  labelText: '업태 및 종목',
+                  prefixIcon: Icon(Icons.work_outline),
+                  hintText: '예: 공공행정 / 식생활 지원',
+                ),
+              )
+            else
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(
+                  labelText: '주소',
+                  prefixIcon: Icon(Icons.location_on_outlined),
+                ),
               ),
-            ),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: auth.isLoading ? null : _handleSignup,

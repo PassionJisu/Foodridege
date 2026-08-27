@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/seed_data.dart';
+import '../../models/attached_photo.dart';
 import '../../providers/vending_provider.dart';
+import '../../widgets/photo_attach_field.dart';
 
 /// 기사 환승반찬 입고 — 지점 선택 없음, 전역 번호 1~120 순차 부여.
 class DriverStockingScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class _DriverStockingScreenState extends State<DriverStockingScreen> {
   String _dishName = SeedData.dishPresets.first.name;
   final _customName = TextEditingController();
   final _quantity = TextEditingController(text: '1');
+  AttachedPhoto? _photo;
 
   @override
   void dispose() {
@@ -76,6 +79,12 @@ class _DriverStockingScreenState extends State<DriverStockingScreen> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(labelText: '수량'),
           ),
+          const SizedBox(height: 8),
+          PhotoAttachField(
+            photo: _photo,
+            onChanged: (value) => setState(() => _photo = value),
+            label: '음식 사진 첨부',
+          ),
           const SizedBox(height: 12),
           ElevatedButton(
             onPressed: () {
@@ -83,6 +92,9 @@ class _DriverStockingScreenState extends State<DriverStockingScreen> {
               final result = vending.stockDishGlobal(
                 name: _dishName,
                 quantity: qty,
+                photoAsset: _photo?.assetPath,
+                photoPath: _photo?.filePath,
+                photoBytes: _photo?.bytes,
               );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

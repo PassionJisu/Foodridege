@@ -31,7 +31,7 @@ class _YouthShellState extends State<YouthShell> {
 
   Future<void> _onSelect(int value, UserRole role) async {
     if (value == 1 && !role.canAccessChingu) {
-      await showAccessDenied(context, '친구카세는 대학생·관리자만 이용할 수 있어요.');
+      await showAccessDenied(context, '친구카세는 대학생·청년·관리자만 이용할 수 있어요.');
       return;
     }
     if (value == 2 && !role.canAccessVending) {

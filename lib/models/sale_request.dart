@@ -30,6 +30,10 @@ class SaleRequest {
     required this.pricePerUnit,
     required this.status,
     required this.createdAt,
+    this.photoAsset,
+    this.photoPath,
+    this.photoBytes,
+    this.itemLabel,
   });
 
   final String id;
@@ -41,6 +45,10 @@ class SaleRequest {
   final int pricePerUnit;
   final SaleRequestStatus status;
   final DateTime createdAt;
+  final String? photoAsset;
+  final String? photoPath;
+  final Uint8List? photoBytes;
+  final String? itemLabel;
 
   int get totalPrice => quantity * pricePerUnit;
 
@@ -66,6 +74,9 @@ class SaleRequest {
         pricePerUnit: parseNum(data['pricePerUnit']),
         status: SaleRequestStatus.fromValue(data['status'] as String? ?? 'pending'),
         createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        photoAsset: data['photoAsset'] as String?,
+        photoPath: data['photoPath'] as String?,
+        itemLabel: data['itemLabel'] as String?,
       );
     } catch (e) {
       debugPrint('Error parsing sale request (ID: ${doc.id}): $e');
@@ -83,6 +94,9 @@ class SaleRequest {
       'pricePerUnit': pricePerUnit,
       'status': status.name,
       'createdAt': Timestamp.fromDate(createdAt),
+      if (photoAsset != null) 'photoAsset': photoAsset,
+      if (photoPath != null) 'photoPath': photoPath,
+      if (itemLabel != null) 'itemLabel': itemLabel,
     };
   }
 }

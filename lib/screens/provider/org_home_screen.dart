@@ -18,7 +18,7 @@ class OrgHomeScreen extends StatelessWidget {
 
     return HomeScaffold(
       title: '기관 홈',
-      userName: user.name,
+      userName: user.displayOrgName,
       roleLabel: '공공 · 지원 기관',
       accentColor: const Color(0xFF1565C0),
       onLogout: () => context.read<AuthProvider>().signOut(),

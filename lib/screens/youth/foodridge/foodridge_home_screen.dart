@@ -64,6 +64,7 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
     final shops = _filtered(provider.shops);
     final bookingCount =
         user == null ? 0 : provider.reservationsFor(user.uid).length;
+    final cartCount = user == null ? 0 : provider.cartCountFor(user.uid);
 
     return Scaffold(
       backgroundColor: AppColors.canvas,
@@ -85,7 +86,11 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
           ),
           IconButton(
             tooltip: 'Cart',
-            icon: const Icon(Icons.shopping_cart_outlined),
+            icon: Badge(
+              isLabelVisible: cartCount > 0,
+              label: Text('$cartCount'),
+              child: const Icon(Icons.shopping_cart_outlined),
+            ),
             onPressed: () {
               Navigator.push(
                 context,

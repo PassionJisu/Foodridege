@@ -64,6 +64,10 @@ class AuthProvider extends ChangeNotifier {
     StudentOrigin? studentOrigin,
     DateTime? stayStart,
     DateTime? stayEnd,
+    String? studentId,
+    String? arcNumber,
+    String? orgName,
+    String? businessType,
   }) async {
     _setLoading(true);
     _errorMessage = null;
@@ -83,6 +87,10 @@ class AuthProvider extends ChangeNotifier {
         studentOrigin: studentOrigin,
         stayStart: stayStart,
         stayEnd: stayEnd,
+        studentId: studentId?.trim(),
+        arcNumber: arcNumber?.trim(),
+        orgName: orgName?.trim(),
+        businessType: businessType?.trim(),
       );
       final error = DemoAuthStore.signUp(
         user: user,

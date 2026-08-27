@@ -20,6 +20,7 @@ class VendingProvider with ChangeNotifier {
         displayNumber: 1,
         name: '멸치볶음',
         quantity: 4,
+        photoAsset: 'assets/images/myeolchi.jpg',
         createdAt: DateTime.now(),
       ),
       VendingSlot(
@@ -28,6 +29,7 @@ class VendingProvider with ChangeNotifier {
         displayNumber: 2,
         name: '시금치나물',
         quantity: 3,
+        photoAsset: 'assets/images/sigumchi.jpg',
         createdAt: DateTime.now(),
       ),
       VendingSlot(
@@ -120,6 +122,8 @@ class VendingProvider with ChangeNotifier {
     required String name,
     required int quantity,
     String? photoAsset,
+    String? photoPath,
+    Uint8List? photoBytes,
   }) {
     if (quantity <= 0) {
       return const StockResult(error: '수량을 입력해 주세요.');
@@ -141,6 +145,8 @@ class VendingProvider with ChangeNotifier {
         name: name,
         quantity: quantity,
         photoAsset: photoAsset,
+        photoPath: photoPath,
+        photoBytes: photoBytes,
         createdAt: DateTime.now(),
       ),
     );

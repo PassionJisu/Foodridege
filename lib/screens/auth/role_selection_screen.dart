@@ -40,6 +40,13 @@ class RoleSelectionScreen extends StatelessWidget {
             description: '환승반찬, 친구카세, MealPick 맵',
             onTap: () => _goToSignup(context, UserRole.student),
           ),
+          const SizedBox(height: 12),
+          RoleCard(
+            role: UserRole.youth,
+            icon: Icons.volunteer_activism_outlined,
+            description: '환승반찬, 친구카세, MealPick 맵',
+            onTap: () => _goToSignup(context, UserRole.youth),
+          ),
           const SizedBox(height: 24),
           Text(
             '공급자 / 운영',

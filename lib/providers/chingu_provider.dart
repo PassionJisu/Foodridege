@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../data/seed_data.dart';
+import '../models/attached_photo.dart';
 import '../models/chingu.dart';
 
 class ChinguProvider with ChangeNotifier {
@@ -229,6 +230,7 @@ class ChinguProvider with ChangeNotifier {
     required int stars,
     required String comment,
     String? photoNote,
+    AttachedPhoto? photo,
   }) {
     if (stars < 0 || stars > 5) return '별점은 0~5점이어야 합니다.';
     if (comment.trim().isEmpty) return '리뷰 내용을 입력해 주세요.';
@@ -249,6 +251,7 @@ class ChinguProvider with ChangeNotifier {
         comment: comment.trim(),
         createdAt: DateTime.now(),
         photoNote: photoNote,
+        photo: photo,
       ),
     );
     final ticket = activeTicketFor(userId, matchId);

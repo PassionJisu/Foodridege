@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/attached_photo.dart';
+import '../../models/sale_request.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sale_provider.dart';
-import '../../models/sale_request.dart';
+import '../../widgets/attached_photo_view.dart';
 
 class SaleHistoryScreen extends StatefulWidget {
   const SaleHistoryScreen({super.key});
@@ -115,8 +117,30 @@ class _SaleRequestCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
+            if (AttachedPhoto.fromParts(
+                  assetPath: request.photoAsset,
+                  filePath: request.photoPath,
+                  bytes: request.photoBytes,
+                ) !=
+                null) ...[
+              SizedBox(
+                height: 140,
+                width: double.infinity,
+                child: AttachedPhotoView(
+                  photo: AttachedPhoto.fromParts(
+                    assetPath: request.photoAsset,
+                    filePath: request.photoPath,
+                    bytes: request.photoBytes,
+                  )!,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             Text(
-              '[${request.category.label}] ${request.quantity}개',
+              request.itemLabel == null
+                  ? '[${request.category.label}] ${request.quantity}개'
+                  : '${request.itemLabel} · ${request.quantity}개',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),

@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/vending_provider.dart';
 import '../../../theme/app_theme.dart';
+import '../../../models/attached_photo.dart';
+import '../../../widgets/attached_photo_view.dart';
 import '../../provider/org_supply_screen.dart';
 
 class VendingHomeScreen extends StatefulWidget {
@@ -191,7 +193,21 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
                           color: Color(SeedColor.forName(slot.name)),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.rice_bowl, color: Colors.white),
+                        clipBehavior: Clip.antiAlias,
+                        child: AttachedPhoto.fromParts(
+                                  assetPath: slot.photoAsset,
+                                  filePath: slot.photoPath,
+                                  bytes: slot.photoBytes,
+                                ) !=
+                                null
+                            ? AttachedPhotoView(
+                                photo: AttachedPhoto.fromParts(
+                                  assetPath: slot.photoAsset,
+                                  filePath: slot.photoPath,
+                                  bytes: slot.photoBytes,
+                                )!,
+                              )
+                            : const Icon(Icons.rice_bowl, color: Colors.white),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

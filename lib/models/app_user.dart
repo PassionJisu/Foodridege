@@ -3,12 +3,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_role.dart';
 
 enum StudentOrigin {
-  korean('korean', '일반 한국인 대학생'),
-  exchange('exchange', '외국인 (교환학생)');
+  korean('korean', '한국인'),
+  exchange('exchange', '외국인');
 
   const StudentOrigin(this.value, this.label);
   final String value;
   final String label;
+
+  String labelFor(UserRole role) {
+    if (role == UserRole.youth) {
+      return this == StudentOrigin.korean ? '한국인 청년' : '외국인 청년';
+    }
+    return this == StudentOrigin.korean ? '한국인 대학생' : '외국인 (교환학생)';
+  }
 
   static StudentOrigin fromValue(String? value) {
     return StudentOrigin.values.firstWhere(
@@ -47,6 +54,10 @@ class AppUser {
     this.studentOrigin,
     this.stayStart,
     this.stayEnd,
+    this.studentId,
+    this.arcNumber,
+    this.orgName,
+    this.businessType,
   });
 
   final String uid;
@@ -75,12 +86,26 @@ class AppUser {
   final int helpedYouthCount;
   /// 리뷰 작성 횟수 (5회마다 식권 리워드)
   final int reviewCount;
-  /// 대학생: 한국인 / 외국인(교환학생)
+  /// 대학생·청년: 한국인 / 외국인
   final StudentOrigin? studentOrigin;
   final DateTime? stayStart;
   final DateTime? stayEnd;
+  /// 외국인 대학생 학번
+  final String? studentId;
+  /// 외국인 청년 ARC (외국인등록증) 번호
+  final String? arcNumber;
+  /// 기관명 (상호명)
+  final String? orgName;
+  /// 업태 및 종목 (기관 선택)
+  final String? businessType;
 
-  bool get isExchangeStudent => studentOrigin == StudentOrigin.exchange;
+  String get displayOrgName =>
+      (orgName != null && orgName!.trim().isNotEmpty) ? orgName!.trim() : name;
+
+  bool get isForeignConsumer => studentOrigin == StudentOrigin.exchange;
+
+  bool get isExchangeStudent =>
+      role == UserRole.student && studentOrigin == StudentOrigin.exchange;
 
   /// 체류 종료일 다음날부터 자동 탈퇴 대상.
   bool get isStayExpired {
@@ -160,6 +185,10 @@ class AppUser {
       studentOrigin: studentOrigin,
       stayStart: stayStart,
       stayEnd: stayEnd,
+      studentId: studentId,
+      arcNumber: arcNumber,
+      orgName: orgName,
+      businessType: businessType,
     );
   }
 
@@ -195,6 +224,10 @@ class AppUser {
           : StudentOrigin.fromValue(data['studentOrigin'] as String?),
       stayStart: (data['stayStart'] as Timestamp?)?.toDate(),
       stayEnd: (data['stayEnd'] as Timestamp?)?.toDate(),
+      studentId: data['studentId'] as String?,
+      arcNumber: data['arcNumber'] as String?,
+      orgName: data['orgName'] as String?,
+      businessType: data['businessType'] as String?,
     );
   }
 
@@ -227,6 +260,11 @@ class AppUser {
       if (studentOrigin != null) 'studentOrigin': studentOrigin!.value,
       if (stayStart != null) 'stayStart': Timestamp.fromDate(stayStart!),
       if (stayEnd != null) 'stayEnd': Timestamp.fromDate(stayEnd!),
+      if (studentId != null && studentId!.isNotEmpty) 'studentId': studentId,
+      if (arcNumber != null && arcNumber!.isNotEmpty) 'arcNumber': arcNumber,
+      if (orgName != null && orgName!.isNotEmpty) 'orgName': orgName,
+      if (businessType != null && businessType!.isNotEmpty)
+        'businessType': businessType,
     };
   }
 }

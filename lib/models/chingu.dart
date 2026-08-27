@@ -1,3 +1,5 @@
+import 'attached_photo.dart';
+
 enum MatchStatus { live, scheduled, completed }
 
 enum TicketStatus { reserved, issued, cancelled }
@@ -123,6 +125,7 @@ class MatchReview {
     required this.comment,
     required this.createdAt,
     this.photoNote,
+    this.photo,
   });
 
   final String id;
@@ -133,4 +136,5 @@ class MatchReview {
   final String comment;
   final DateTime createdAt;
   final String? photoNote;
+  final AttachedPhoto? photo;
 }

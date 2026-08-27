@@ -1,3 +1,4 @@
+import '../models/attached_photo.dart';
 import '../models/chingu.dart';
 import '../models/foodridge_menu_item.dart';
 import '../models/foreign_shop.dart';
@@ -164,6 +165,7 @@ class SeedData {
       stars: 5,
       comment: '전남대 갈비탕이 든든하고 국물이 깊었어요.',
       createdAt: DateTime.now().subtract(const Duration(days: 5)),
+      photo: AttachedPhoto(assetPath: 'assets/images/shop_bibimbap.png'),
     ),
     MatchReview(
       id: 'r2',
@@ -173,6 +175,7 @@ class SeedData {
       stars: 5,
       comment: '갈비찜이 정말 일품이었습니다!',
       createdAt: DateTime.now().subtract(const Duration(days: 2, hours: 3)),
+      photo: AttachedPhoto(assetPath: 'assets/images/shop_biryani.png'),
     ),
     MatchReview(
       id: 'r3',
@@ -191,6 +194,7 @@ class SeedData {
       stars: 4,
       comment: '순천대 게장이 신선하고 밥이 잘 어울려요.',
       createdAt: DateTime.now().subtract(const Duration(days: 4)),
+      photo: AttachedPhoto(assetPath: 'assets/images/shop_nasi.png'),
     ),
     MatchReview(
       id: 'r5',
@@ -200,6 +204,7 @@ class SeedData {
       stars: 5,
       comment: '광주대 제육이 매콤달콤해서 밥 두 공기 가능!',
       createdAt: DateTime.now().subtract(const Duration(days: 6)),
+      photo: AttachedPhoto(assetPath: 'assets/images/shop_plov.png'),
     ),
     MatchReview(
       id: 'r6',
@@ -218,6 +223,7 @@ class SeedData {
       stars: 5,
       comment: '조선대 전복죽이 부드럽고 약과도 좋았습니다.',
       createdAt: DateTime.now().subtract(const Duration(days: 8)),
+      photo: AttachedPhoto(assetPath: 'assets/images/shop_chinese.png'),
     ),
     MatchReview(
       id: 'r8',
@@ -227,6 +233,7 @@ class SeedData {
       stars: 4,
       comment: '나물 무침이 정갈하고 전체적으로 만족!',
       createdAt: DateTime.now().subtract(const Duration(days: 5, hours: 2)),
+      photo: AttachedPhoto(assetPath: 'assets/images/shop_vegan.png'),
     ),
   ];
 
@@ -366,6 +373,7 @@ class SeedData {
       stars: 5,
       comment: 'Finally a clearly marked halal kitchen near campus. Biryani is generous.',
       createdAt: DateTime(2026, 8, 18),
+      photo: AttachedPhoto(assetPath: 'assets/images/shop_biryani.png'),
     ),
     ShopReview(
       id: 'sr2',

@@ -102,6 +102,25 @@ class _FoodridgeReservationsScreenState
                       ),
                       const SizedBox(height: 6),
                       Text(
+                        r.paid
+                            ? 'Paid in app · pickup remaining'
+                            : r.paymentMethod.label,
+                        style: const TextStyle(
+                          color: AppColors.sage,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        r.paymentMethod.pickupNote,
+                        style: const TextStyle(
+                          color: Color(0xFF8A7466),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
                         r.status.label,
                         style: TextStyle(
                           color: r.status == FoodridgeReservationStatus.arrived
@@ -157,7 +176,14 @@ class _FoodridgeReservationsScreenState
                         ),
                       if (r.status == FoodridgeReservationStatus.reserved)
                         TextButton(
-                          onPressed: () => provider.cancelReservation(r.id),
+                          onPressed: () {
+                            provider.cancelReservation(r.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Booking cancelled.'),
+                              ),
+                            );
+                          },
                           child: const Text(
                             'Cancel booking',
                             style: TextStyle(color: Colors.redAccent),

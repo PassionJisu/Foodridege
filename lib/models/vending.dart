@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 class VendingMachine {
   const VendingMachine({
     required this.id,
@@ -50,6 +52,8 @@ class VendingSlot {
     required this.name,
     required this.quantity,
     this.photoAsset,
+    this.photoPath,
+    this.photoBytes,
     this.createdAt,
   });
 
@@ -60,6 +64,8 @@ class VendingSlot {
   final String name;
   final int quantity;
   final String? photoAsset;
+  final String? photoPath;
+  final Uint8List? photoBytes;
   final DateTime? createdAt;
 
   int get slotUsage => quantity;

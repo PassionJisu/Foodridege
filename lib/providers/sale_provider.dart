@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../models/sale_request.dart';
+import '../models/attached_photo.dart';
 import '../models/product.dart';
+import '../models/sale_request.dart';
 
 /// 데모용 로컬 SaleProvider (DB 없음). 기관 입고 신청 → 신청 내역으로 연결.
 class SaleProvider with ChangeNotifier {
@@ -31,6 +32,8 @@ class SaleProvider with ChangeNotifier {
         pricePerUnit: 0,
         status: SaleRequestStatus.pending,
         createdAt: now.subtract(const Duration(hours: 5)),
+        photoAsset: 'assets/images/shop_bibimbap.png',
+        itemLabel: '시금치나물',
       ),
       SaleRequest(
         id: 'sr-demo-2',
@@ -101,6 +104,10 @@ class SaleProvider with ChangeNotifier {
       pricePerUnit: old.pricePerUnit,
       status: status,
       createdAt: old.createdAt,
+      photoAsset: old.photoAsset,
+      photoPath: old.photoPath,
+      photoBytes: old.photoBytes,
+      itemLabel: old.itemLabel,
     );
     notifyListeners();
     return true;
@@ -109,7 +116,8 @@ class SaleProvider with ChangeNotifier {
   Future<bool> submitOrgSupplyItems({
     required String orgId,
     required String orgName,
-    required List<({String name, int qty, String note})> items,
+    required List<({String name, int qty, String note, AttachedPhoto? photo})>
+        items,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -126,6 +134,10 @@ class SaleProvider with ChangeNotifier {
             pricePerUnit: 0,
             status: SaleRequestStatus.pending,
             createdAt: DateTime.now(),
+            photoAsset: item.photo?.assetPath,
+            photoPath: item.photo?.filePath,
+            photoBytes: item.photo?.bytes,
+            itemLabel: item.name,
           ),
         );
         await Future<void>.delayed(const Duration(milliseconds: 5));
