@@ -170,6 +170,23 @@ void main() {
       ),
       findsOneWidget,
     );
+    final vendingX = tester
+        .getTopLeft(
+          find.descendant(
+            of: find.byType(NavigationBar),
+            matching: find.text('환승반찬'),
+          ),
+        )
+        .dx;
+    final chinguX = tester
+        .getTopLeft(
+          find.descendant(
+            of: find.byType(NavigationBar),
+            matching: find.text('친구카세'),
+          ),
+        )
+        .dx;
+    expect(vendingX, lessThan(chinguX));
   });
 
   testWidgets('청년 외국인 가입은 ARC가 필수이고 학번은 없다', (tester) async {
@@ -441,6 +458,18 @@ void main() {
       filterMealPickShops(shops, filter: MealPickFilter.all).length,
       shops.length,
     );
+    for (final shop in shops) {
+      expect(shop.lat, inInclusiveRange(35.10, 35.20));
+      expect(shop.lng, inInclusiveRange(126.75, 126.95));
+    }
+  });
+
+  test('친구카세 참가팀은 광주 조리학과 6곳이다', () {
+    expect(
+      SeedData.teams.map((t) => t.schoolName).toList(),
+      ['광주대', '남부대', '호남대', '서영대', '조선이공대', '동강대'],
+    );
+    expect(SeedData.teams.every((t) => t.region == '광주'), isTrue);
   });
 
   testWidgets('MealPick 카테고리 칩은 All·Halal·Vegan·Veget·Chinese다', (tester) async {

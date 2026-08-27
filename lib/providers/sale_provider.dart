@@ -38,7 +38,7 @@ class SaleProvider with ChangeNotifier {
       SaleRequest(
         id: 'sr-demo-2',
         restaurantId: 'org-demo',
-        restaurantName: '전남 농식품유통센터',
+        restaurantName: '광주 농식품유통센터',
         branchName: '환승반찬 입고',
         category: ProductCategory.fresh,
         quantity: 8,

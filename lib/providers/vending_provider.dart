@@ -42,7 +42,7 @@ class VendingProvider with ChangeNotifier {
       ),
       VendingSlot(
         id: 'demo-scnu-1',
-        machineId: 'vm-scnu',
+        machineId: 'vm-nambu',
         displayNumber: 4,
         name: '깍두기',
         quantity: 5,

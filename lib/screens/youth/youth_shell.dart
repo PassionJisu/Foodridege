@@ -24,18 +24,18 @@ class _YouthShellState extends State<YouthShell> {
 
   static const _pages = [
     HomeScreen(),
-    ChinguPosterScreen(),
     VendingHomeScreen(),
+    ChinguPosterScreen(),
     FoodridgeHomeScreen(),
   ];
 
   Future<void> _onSelect(int value, UserRole role) async {
-    if (value == 1 && !role.canAccessChingu) {
-      await showAccessDenied(context, chinguStudentOnlyMessage);
+    if (value == 1 && !role.canAccessVending) {
+      await showAccessDenied(context, '자판기 메뉴에 대한 권한이 없습니다.');
       return;
     }
-    if (value == 2 && !role.canAccessVending) {
-      await showAccessDenied(context, '자판기 메뉴에 대한 권한이 없습니다.');
+    if (value == 2 && !role.canAccessChingu) {
+      await showAccessDenied(context, chinguStudentOnlyMessage);
       return;
     }
     if (value == 3 && !role.canAccessFoodridge) {
@@ -63,7 +63,7 @@ class _YouthShellState extends State<YouthShell> {
     }
 
     final role = user.role;
-    final isChingu = _index == 1;
+    final isChingu = _index == 2;
     final isFoodridge = _index == 3;
     final darkNav = isChingu;
 
@@ -103,20 +103,20 @@ class _YouthShellState extends State<YouthShell> {
               label: '홈',
             ),
             NavigationDestination(
-              icon: Icon(Icons.restaurant_menu, color: darkNav ? Colors.white54 : null),
-              selectedIcon: Icon(
-                Icons.restaurant_menu,
-                color: isChingu ? AppColors.gold : AppColors.primary,
-              ),
-              label: '친구카세',
-            ),
-            NavigationDestination(
               icon: Icon(Icons.kitchen_outlined, color: darkNav ? Colors.white54 : null),
               selectedIcon: Icon(
                 Icons.kitchen,
                 color: darkNav ? Colors.white : AppColors.primary,
               ),
               label: '환승반찬',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.restaurant_menu, color: darkNav ? Colors.white54 : null),
+              selectedIcon: Icon(
+                Icons.restaurant_menu,
+                color: isChingu ? AppColors.gold : AppColors.primary,
+              ),
+              label: '친구카세',
             ),
             NavigationDestination(
               icon: Icon(Icons.map_outlined, color: darkNav ? Colors.white54 : null),

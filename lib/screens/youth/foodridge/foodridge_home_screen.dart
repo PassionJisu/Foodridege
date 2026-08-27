@@ -47,11 +47,13 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
         backgroundColor: AppColors.canvas,
+        toolbarHeight: 72,
         title: const Text('MealPick'),
         actions: [
-          IconButton(
-            tooltip: 'Map',
-            icon: const Icon(Icons.map_outlined),
+          _MealPickBarButton(
+            icon: Icons.map_outlined,
+            label: 'Map',
+            ring: true,
             onPressed: () {
               Navigator.push(
                 context,
@@ -61,13 +63,11 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
               );
             },
           ),
-          IconButton(
-            tooltip: 'Cart',
-            icon: Badge(
-              isLabelVisible: cartCount > 0,
-              label: Text('$cartCount'),
-              child: const Icon(Icons.shopping_cart_outlined),
-            ),
+          const SizedBox(width: 14),
+          _MealPickBarButton(
+            icon: Icons.shopping_cart_outlined,
+            label: 'Cart',
+            badgeCount: cartCount,
             onPressed: () {
               Navigator.push(
                 context,
@@ -77,6 +77,7 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
               );
             },
           ),
+          const SizedBox(width: 12),
         ],
       ),
       body: ListView(
@@ -339,6 +340,68 @@ class _FoodridgeHomeScreenState extends State<FoodridgeHomeScreen> {
               );
             }),
         ],
+      ),
+    );
+  }
+}
+
+class _MealPickBarButton extends StatelessWidget {
+  const _MealPickBarButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.ring = false,
+    this.badgeCount = 0,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool ring;
+  final int badgeCount;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget glyph = Icon(icon, size: 28, color: AppColors.ink);
+    if (badgeCount > 0) {
+      glyph = Badge(
+        label: Text('$badgeCount'),
+        child: glyph,
+      );
+    }
+    if (ring) {
+      glyph = Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFFE53935), width: 2),
+        ),
+        child: glyph,
+      );
+    } else {
+      glyph = Padding(padding: const EdgeInsets.all(7), child: glyph);
+    }
+
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            glyph,
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.ink,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -53,16 +53,6 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 88),
           children: [
-            DropdownButtonFormField<String>(
-              key: ValueKey(selectedId),
-              initialValue: selectedId,
-              decoration: const InputDecoration(labelText: '지점 선택'),
-              items: machines
-                  .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
-                  .toList(),
-              onChanged: (value) => setState(() => _machineId = value),
-            ),
-            const SizedBox(height: 16),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: SizedBox(
@@ -118,6 +108,16 @@ class _VendingHomeScreenState extends State<VendingHomeScreen> {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              key: ValueKey(selectedId),
+              initialValue: selectedId,
+              decoration: const InputDecoration(labelText: '지점 선택'),
+              items: machines
+                  .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
+                  .toList(),
+              onChanged: (value) => setState(() => _machineId = value),
             ),
             const SizedBox(height: 22),
             Row(

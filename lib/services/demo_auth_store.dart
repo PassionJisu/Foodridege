@@ -9,10 +9,15 @@ class DemoAuthStore {
 
   static const universities = [
     '전남대학교',
+    '조선대학교',
+    '광주대학교',
+    '호남대학교',
+    '광주여자대학교',
     '광주교육대학교',
-    '국립목포대학교',
-    '국립목포해양대학교',
-    '국립순천대학교',
+    '남부대학교',
+    '서영대학교',
+    '조선이공대학교',
+    '동강대학교',
   ];
 
   static final List<_DemoCredential> _accounts = [

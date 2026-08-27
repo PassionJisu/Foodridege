@@ -176,7 +176,7 @@ class _ScheduleTicketTab extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.chinguCard,
         title: const Text(
-          '식권이 완료되었습니다!',
+          '식권 결제가 완료되었습니다.',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
         ),
         content: const Text(

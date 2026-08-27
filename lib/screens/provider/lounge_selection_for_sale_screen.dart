@@ -7,7 +7,7 @@ class LoungeSelectionForSaleScreen extends StatelessWidget {
   final List<String> lounges = const [
     '전남대 자판기',
     '광주여대 자판기',
-    '순천대 자판기',
+    '광주대 자판기',
   ];
 
   @override

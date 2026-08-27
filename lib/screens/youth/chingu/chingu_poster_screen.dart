@@ -57,7 +57,7 @@ class ChinguPosterScreen extends StatelessWidget {
                       border: Border.all(color: AppColors.gold),
                     ),
                     child: const Text(
-                      '2026  ·  지역 조리학과 외식 키친',
+                      '2026  ·  지역 조리학과 외식 대전',
                       style: TextStyle(
                         color: AppColors.gold,
                         fontSize: 12,
@@ -78,12 +78,12 @@ class ChinguPosterScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    '광주 ✕ 전남 조리학과',
+                    '광주 X 전남 조리학과',
                     style: TextStyle(color: Colors.white, fontSize: 15),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '우리 지역 조리학과 학생들이 펼치는 외식 키친',
+                    '우리 지역 조리학과 학생들이 펼치는 외식 대전',
                     style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                   const SizedBox(height: 28),
@@ -121,7 +121,7 @@ class ChinguPosterScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _PosterStat(value: '6', label: '참가팀'),
-                      _PosterStat(value: '2', label: '지역'),
+                      _PosterStat(value: '광주X전남', label: '지역'),
                       _PosterStat(value: '9–12월', label: '운영 기간'),
                       _PosterStat(value: '100장', label: '학교 당 식권'),
                     ],
