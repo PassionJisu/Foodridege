@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/images/home_background.png" width="300" alt="푸드릿지" />
+</p>
+
 # Foodridge
 
 광주·전남 대학가의 **식자재·잉여 식품 선순환**과 **청년 식비 부담 완화**를 한 앱에서 다루는 Flutter 프로젝트입니다.
