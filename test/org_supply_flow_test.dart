@@ -37,11 +37,26 @@ void main() {
 
   test('수거 신청 시 번호와 대학이 라운드로빈으로 배정된다', () {
     final vending = VendingProvider();
+    const expected = [
+      'vm-jnu',
+      'vm-gwu',
+      'vm-nambu',
+      'vm-gju',
+      'vm-honam',
+      'vm-chosun',
+    ];
+    for (var n = 1; n <= 12; n++) {
+      expect(vending.campusForNumber(n).id, expected[(n - 1) % 6]);
+    }
+
     final first = vending.reserveSlot()!;
     final second = vending.reserveSlot()!;
     expect(first.displayNumber, 12);
+    expect(first.machineId, 'vm-chosun');
+    expect(first.machineName, '조선대 환승반찬');
     expect(second.displayNumber, 13);
-    expect(first.machineId, isNot(second.machineId));
+    expect(second.machineId, 'vm-jnu');
+    expect(second.machineName, '전남대 환승반찬');
     expect(vending.slots.where((s) => s.displayNumber == 12), isEmpty);
 
     final stocked = vending.stockReserved(
@@ -96,7 +111,7 @@ void main() {
       quantity: collected.quantity,
     );
     expect(result.assignedNumber, 11);
-    expect(result.machineName, '남부대 환승반찬');
+    expect(result.machineName, '호남대 환승반찬');
   });
 
   test('SaleRequest 상태 변경 시 슬롯 배정이 유지된다', () {

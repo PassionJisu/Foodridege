@@ -38,7 +38,7 @@ class VendingProvider with ChangeNotifier {
       ),
       VendingSlot(
         id: 'demo-2',
-        machineId: 'vm-jnu',
+        machineId: 'vm-gwu',
         displayNumber: 2,
         name: '시금치나물',
         quantity: 3,
@@ -46,57 +46,57 @@ class VendingProvider with ChangeNotifier {
         createdAt: DateTime.now(),
       ),
       VendingSlot(
-        id: 'demo-gwu-1',
-        machineId: 'vm-gwu',
+        id: 'demo-nambu-1',
+        machineId: 'vm-nambu',
         displayNumber: 3,
         name: '콩자반',
         quantity: 4,
         createdAt: DateTime.now(),
       ),
       VendingSlot(
-        id: 'demo-scnu-1',
-        machineId: 'vm-nambu',
+        id: 'demo-gju-1',
+        machineId: 'vm-gju',
         displayNumber: 4,
         name: '깍두기',
         quantity: 5,
         createdAt: DateTime.now(),
       ),
       VendingSlot(
-        id: 'demo-gju-1',
-        machineId: 'vm-gju',
+        id: 'demo-honam-1',
+        machineId: 'vm-honam',
         displayNumber: 5,
         name: '제육볶음',
         quantity: 5,
         createdAt: DateTime.now(),
       ),
       VendingSlot(
-        id: 'demo-honam-1',
-        machineId: 'vm-honam',
+        id: 'demo-chosun-1',
+        machineId: 'vm-chosun',
         displayNumber: 6,
         name: '계란말이',
         quantity: 4,
         createdAt: DateTime.now(),
       ),
       VendingSlot(
-        id: 'demo-chosun-1',
-        machineId: 'vm-chosun',
+        id: 'demo-jnu-2',
+        machineId: 'vm-jnu',
         displayNumber: 7,
         name: '잡채',
         quantity: 3,
         createdAt: DateTime.now(),
       ),
       VendingSlot(
-        id: 'demo-chosun-2',
-        machineId: 'vm-chosun',
+        id: 'demo-gwu-2',
+        machineId: 'vm-gwu',
         displayNumber: 8,
         name: '고등어조림',
         quantity: 2,
         createdAt: DateTime.now(),
       ),
     ]);
-    // 시드 재고 1~8 + 데모 수거 신청 예약 번호 9~11 (SaleProvider 시드와 맞춤).
+    // 시드 재고 1~8 + 데모 수거 신청 예약 번호 9~11.
+    // 대학은 번호 기준: 전남대 → 광주여대 → 남부대 → 광주대 → 호남대 → 조선대 반복.
     _nextGlobalNumber = 12;
-    _roundRobin = 3;
   }
 
   static const int maxGlobalNumbers = 120;
@@ -104,7 +104,12 @@ class VendingProvider with ChangeNotifier {
   late List<VendingMachine> _machines;
   final List<VendingSlot> _slots = [];
   int _nextGlobalNumber = 1;
-  int _roundRobin = 0;
+
+  /// 1 전남대 → 2 광주여대 → 3 남부대 → 4 광주대 → 5 호남대 → 6 조선대 → 7 전남대 …
+  VendingMachine campusForNumber(int displayNumber) {
+    final index = (displayNumber - 1) % _machines.length;
+    return _machines[index];
+  }
 
   List<VendingMachine> get machines => List.unmodifiable(_machines);
   List<VendingSlot> get slots => List.unmodifiable(_slots);
@@ -135,9 +140,8 @@ class VendingProvider with ChangeNotifier {
   /// 기관 수거 신청 시 호출. 번호·대학을 즉시 확정하고 재고 슬롯은 만들지 않음.
   SlotAssignment? reserveSlot() {
     if (_nextGlobalNumber > maxGlobalNumbers) return null;
-    final machine = _machines[_roundRobin % _machines.length];
-    _roundRobin += 1;
     final displayNumber = _nextGlobalNumber;
+    final machine = campusForNumber(displayNumber);
     _nextGlobalNumber += 1;
     notifyListeners();
     return SlotAssignment(
@@ -231,7 +235,6 @@ class VendingProvider with ChangeNotifier {
   void disposeAllInventory() {
     _slots.clear();
     _nextGlobalNumber = 1;
-    _roundRobin = 0;
     for (var i = 0; i < _machines.length; i++) {
       _machines[i] = _machines[i].copyWith(
         disposedAt: DateTime.now(),

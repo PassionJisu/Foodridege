@@ -236,6 +236,7 @@ class SeedData {
     ),
   ];
 
+  /// 라운드로빈 순서: 전남대 → 광주여대 → 남부대 → 광주대 → 호남대 → 조선대.
   static const machines = [
     VendingMachine(
       id: 'vm-jnu',
