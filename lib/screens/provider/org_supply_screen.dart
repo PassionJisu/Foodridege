@@ -125,7 +125,7 @@ class _OrgSupplyScreenState extends State<OrgSupplyScreen> {
     final nextNumber = context.watch<VendingProvider>().nextGlobalNumber;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('잔반 수거 신청')),
+      appBar: AppBar(title: const Text('자판기 입고 신청')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

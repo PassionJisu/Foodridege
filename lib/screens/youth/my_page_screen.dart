@@ -111,7 +111,7 @@ class MyPageScreen extends StatelessWidget {
           if (role.canSubmitSupply) ...[
             _MenuTile(
               icon: Icons.inventory_2_outlined,
-              title: '잔반 수거 신청',
+              title: '자판기 입고 신청',
               onTap: () => _push(context, const OrgSupplyScreen()),
             ),
             _MenuTile(
