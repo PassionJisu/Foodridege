@@ -116,7 +116,7 @@ class MyPageScreen extends StatelessWidget {
             ),
             _MenuTile(
               icon: Icons.history_rounded,
-              title: '매매 신청 내역',
+              title: '수거 신청 내역',
               onTap: () => _push(context, const SaleHistoryScreen()),
             ),
           ],

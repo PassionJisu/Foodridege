@@ -175,6 +175,11 @@ class _ScheduleTicketTab extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.chinguCard,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.chinguBorder),
+        ),
         title: const Text(
           '식권 결제가 완료되었습니다.',
           style: TextStyle(
@@ -192,6 +197,7 @@ class _ScheduleTicketTab extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.goldBright,
               foregroundColor: Colors.black,
+              shape: const StadiumBorder(),
             ),
             onPressed: () => Navigator.pop(context),
             child: const Text('확인'),

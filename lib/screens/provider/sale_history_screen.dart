@@ -31,7 +31,7 @@ class _SaleHistoryScreenState extends State<SaleHistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('매매 신청 내역'),
+        title: const Text('수거 신청 내역'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

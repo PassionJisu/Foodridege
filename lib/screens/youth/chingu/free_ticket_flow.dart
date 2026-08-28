@@ -19,16 +19,31 @@ Future<void> promptUseHeldFreeTickets(BuildContext context) async {
   final use = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('무료 식권'),
+      backgroundColor: AppColors.chinguCard,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.chinguBorder),
+      ),
+      title: const Text(
+        '무료 식권',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+      ),
       content: Text(
         '무료로 사용할 수 있는 식권 $count개를 가지고 계세요!\n식권을 사용하겠습니까?',
+        style: const TextStyle(color: Colors.white70, height: 1.5),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('나중에'),
+          child: const Text('나중에', style: TextStyle(color: Colors.white54)),
         ),
         FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.goldBright,
+            foregroundColor: Colors.black,
+            shape: const StadiumBorder(),
+          ),
           onPressed: () => Navigator.pop(context, true),
           child: const Text('사용하기'),
         ),
@@ -49,17 +64,31 @@ Future<bool?> askApplyFreeTicketOnPay(BuildContext context, int count) {
   return showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('무료 식권 사용'),
+      backgroundColor: AppColors.chinguCard,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.chinguBorder),
+      ),
+      title: const Text(
+        '무료 식권 사용',
+        style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w800),
+      ),
       content: Text(
         '무료 식권 $count장이 있습니다.\n이번 결제에 사용하시겠습니까?',
+        style: const TextStyle(color: Colors.white70, height: 1.5),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('1,000원 결제'),
+          child: const Text('1,000원 결제', style: TextStyle(color: Colors.white54)),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(backgroundColor: AppColors.sage),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.goldBright,
+            foregroundColor: Colors.black,
+            shape: const StadiumBorder(),
+          ),
           onPressed: () => Navigator.pop(context, true),
           child: const Text('무료 식권 사용'),
         ),

@@ -58,59 +58,84 @@ class _TicketDepositPaymentScreenState extends State<TicketDepositPaymentScreen>
     final coupons =
         context.watch<AuthProvider>().appUser?.displayCouponCount ?? 0;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('식권 결제')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: switch (_stage) {
-            _Stage.confirm => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    widget.matchTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.canvasDeep,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      coupons > 0
-                          ? '식권 금액 ${widget.amount}원.\n'
-                              '무료 식권 $coupons장을 가지고 있습니다. '
-                              '결제할 때 사용할지 선택할 수 있습니다.'
-                          : '식권 금액 ${widget.amount}원을 결제합니다.',
-                      style: const TextStyle(height: 1.45),
-                    ),
-                  ),
-                  const Spacer(),
-                  FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: AppColors.sage),
-                    onPressed: _pay,
-                    child: Text(
-                      coupons > 0 ? '결제하기' : '${widget.amount}원 결제하기',
-                    ),
-                  ),
-                ],
-              ),
-            _Stage.processing => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+    return Theme(
+      data: AppTheme.chinguDark,
+      child: Scaffold(
+        backgroundColor: AppColors.chinguBlack,
+        appBar: AppBar(
+          title: const Text('식권 결제'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: switch (_stage) {
+              _Stage.confirm => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const CircularProgressIndicator(),
+                    Text(
+                      widget.matchTitle,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                      ),
+                    ),
                     const SizedBox(height: 16),
-                    Text(_processingLabel),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF161616),
+                        border: Border.all(color: AppColors.chinguBorder),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        coupons > 0
+                            ? '식권 금액 ${widget.amount}원.\n'
+                                '무료 식권 $coupons장을 가지고 있습니다. '
+                                '결제할 때 사용할지 선택할 수 있습니다.'
+                            : '식권 금액 ${widget.amount}원을 결제합니다.',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.goldBright,
+                        foregroundColor: Colors.black,
+                        minimumSize: const Size.fromHeight(54),
+                        shape: const StadiumBorder(),
+                      ),
+                      onPressed: _pay,
+                      child: Text(
+                        coupons > 0 ? '결제하기' : '${widget.amount}원 결제하기',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-          },
+              _Stage.processing => Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(color: AppColors.gold),
+                      const SizedBox(height: 24),
+                      Text(
+                        _processingLabel,
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+            },
+          ),
         ),
       ),
     );
