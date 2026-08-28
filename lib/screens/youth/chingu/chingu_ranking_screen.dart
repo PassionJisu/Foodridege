@@ -105,11 +105,15 @@ class _CheerRankingBoardState extends State<CheerRankingBoard> {
 
   void _cheer(CulinaryTeam team) {
     final chingu = context.read<ChinguProvider>();
+    if (!chingu.canCheerToday(team.id)) {
+      _showOncePerDayDialog();
+      return;
+    }
     _snapshotRanks(chingu);
     final from = _prevRank[team.id] ?? 0;
     final err = chingu.cheer(team.id);
     if (err != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
+      _showOncePerDayDialog();
       return;
     }
     HapticFeedback.mediumImpact();
@@ -121,6 +125,43 @@ class _CheerRankingBoardState extends State<CheerRankingBoard> {
           ? '${team.name}  $from위 → $to위'
           : '${team.name}에 응원 +1';
     });
+  }
+
+  void _showOncePerDayDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.chinguCard,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.chinguBorder),
+        ),
+        title: const Text(
+          '하루에 1곳만 응원할 수 있어요!',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
+        ),
+        content: const Text(
+          '응원은 하루에 한 요리팀만 가능합니다. 내일 다시 참여해 주세요.',
+          style: TextStyle(color: Colors.white70, height: 1.4),
+        ),
+        actions: [
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.goldBright,
+              foregroundColor: Colors.black,
+              shape: const StadiumBorder(),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -185,7 +226,6 @@ class _CheerRankingBoardState extends State<CheerRankingBoard> {
                         delta: _delta[team.id] ?? 0,
                         flashing: _flashTeamId == team.id,
                         cheered: chingu.alreadyCheeredToday(team.id),
-                        canCheer: chingu.canCheerToday(team.id),
                         onCheer: () => _cheer(team),
                       ),
                     ),
@@ -265,7 +305,6 @@ class _RankRow extends StatelessWidget {
     required this.delta,
     required this.flashing,
     required this.cheered,
-    required this.canCheer,
     required this.onCheer,
   });
 
@@ -275,7 +314,6 @@ class _RankRow extends StatelessWidget {
   final int delta;
   final bool flashing;
   final bool cheered;
-  final bool canCheer;
   final VoidCallback onCheer;
 
   Color get _rankColor {
@@ -373,7 +411,7 @@ class _RankRow extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             TextButton(
-              onPressed: cheered || !canCheer ? null : onCheer,
+              onPressed: cheered ? null : onCheer,
               child: Text(
                 cheered ? '완료' : '응원',
                 style: TextStyle(

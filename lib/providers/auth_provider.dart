@@ -183,6 +183,16 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 신고 보상·패널티 등 스토어 변경을 현재 세션에 반영.
+  void reloadFromStore() {
+    final user = _appUser;
+    if (user == null) return;
+    final latest = DemoAuthStore.userById(user.uid);
+    if (latest == null) return;
+    _appUser = latest;
+    notifyListeners();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

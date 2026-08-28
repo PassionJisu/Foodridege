@@ -155,7 +155,9 @@ class AppUser {
     int? totalUsageCount,
     int? helpedYouthCount,
     int? reviewCount,
+    int? penaltyPoints,
     DateTime? createdAt,
+    DateTime? suspendedUntil,
   }) {
     return AppUser(
       uid: uid,
@@ -172,8 +174,8 @@ class AppUser {
       streakCount: streakCount,
       lastOrderDate: lastOrderDate,
       freeMealCount: freeMealCount ?? this.freeMealCount,
-      penaltyPoints: penaltyPoints,
-      suspendedUntil: suspendedUntil,
+      penaltyPoints: penaltyPoints ?? this.penaltyPoints,
+      suspendedUntil: suspendedUntil ?? this.suspendedUntil,
       purchaseDayCount: purchaseDayCount,
       totalUsageCount: totalUsageCount ?? this.totalUsageCount,
       vendingUsageCount: vendingUsageCount ?? this.vendingUsageCount,

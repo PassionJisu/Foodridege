@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../providers/report_provider.dart';
+
 import '../../models/report.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/report_provider.dart';
 
 class AdminReportManageScreen extends StatefulWidget {
   const AdminReportManageScreen({super.key});
@@ -22,8 +25,6 @@ class _AdminReportManageScreenState extends State<AdminReportManageScreen> {
   @override
   Widget build(BuildContext context) {
     final reportProvider = context.watch<ReportProvider>();
-    final pendingReports = reportProvider.allReports.where((r) => r.status == ReportStatus.pending).toList();
-    final completedReports = reportProvider.allReports.where((r) => r.status != ReportStatus.pending).toList();
 
     return DefaultTabController(
       length: 2,
@@ -39,8 +40,8 @@ class _AdminReportManageScreenState extends State<AdminReportManageScreen> {
         ),
         body: TabBarView(
           children: [
-            _buildReportList(pendingReports, reportProvider.isLoading),
-            _buildReportList(completedReports, reportProvider.isLoading),
+            _buildReportList(reportProvider.pendingReports, reportProvider.isLoading),
+            _buildReportList(reportProvider.completedReports, reportProvider.isLoading),
           ],
         ),
       ),
@@ -59,15 +60,16 @@ class _AdminReportManageScreenState extends State<AdminReportManageScreen> {
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
+            isThreeLine: true,
             title: Text('[${report.type.label}] ${report.userName}님'),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-                Text(report.content),
+                Text(report.content, maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Text(
-                  '접수: ${report.createdAt.toString().split('.')[0]}',
+                  '접수: ${DateFormat('yyyy.MM.dd HH:mm').format(report.createdAt)}',
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
@@ -85,6 +87,7 @@ class _AdminReportManageScreenState extends State<AdminReportManageScreen> {
     if (status == ReportStatus.accepted) color = Colors.green;
     if (status == ReportStatus.rejected) color = Colors.red;
     if (status == ReportStatus.pending) color = Colors.orange;
+    if (status == ReportStatus.withdrawn) color = Colors.blueGrey;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -102,34 +105,47 @@ class _AdminReportManageScreenState extends State<AdminReportManageScreen> {
   void _showProcessDialog(Report report) {
     final commentController = TextEditingController(text: report.adminComment);
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('신고 처리'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('작성자: ${report.userName}', style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('내용: ${report.content}'),
-            const Divider(height: 24),
-            const Text('관리자 메모 (사유)', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            TextField(
-              controller: commentController,
-              decoration: const InputDecoration(hintText: '처리 사유를 입력하세요'),
-              maxLines: 2,
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('작성자: ${report.userName}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text('[${report.type.label}]'),
+              const SizedBox(height: 8),
+              Text('내용: ${report.content}'),
+              const Divider(height: 24),
+              const Text('관리자 메모 (사유)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              TextField(
+                controller: commentController,
+                decoration: const InputDecoration(hintText: '처리 사유를 입력하세요'),
+                maxLines: 2,
+                enabled: report.status == ReportStatus.pending,
+              ),
+            ],
+          ),
         ),
         actions: [
           if (report.status == ReportStatus.pending) ...[
             TextButton(
-              onPressed: () => _handleProcess(report.id, ReportStatus.rejected, commentController.text),
+              onPressed: () => _handleProcess(
+                report.id,
+                ReportStatus.rejected,
+                commentController.text,
+              ),
               child: const Text('거절', style: TextStyle(color: Colors.red)),
             ),
             ElevatedButton(
-              onPressed: () => _handleProcess(report.id, ReportStatus.accepted, commentController.text),
+              onPressed: () => _handleProcess(
+                report.id,
+                ReportStatus.accepted,
+                commentController.text,
+              ),
               child: const Text('수용 (보상 지급)'),
             ),
           ] else
@@ -139,12 +155,23 @@ class _AdminReportManageScreenState extends State<AdminReportManageScreen> {
     );
   }
 
-  void _handleProcess(String reportId, ReportStatus status, String comment) async {
-    await context.read<ReportProvider>().processReport(reportId, status, adminComment: comment);
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('처리가 완료되었습니다.')));
-      context.read<ReportProvider>().fetchAllReports();
+  Future<void> _handleProcess(
+    String reportId,
+    ReportStatus status,
+    String comment,
+  ) async {
+    final ok = await context.read<ReportProvider>().processReport(
+          reportId,
+          status,
+          adminComment: comment,
+        );
+    if (!mounted) return;
+    Navigator.pop(context);
+    if (ok) {
+      context.read<AuthProvider>().reloadFromStore();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('처리가 완료되었습니다.')),
+      );
     }
   }
 }

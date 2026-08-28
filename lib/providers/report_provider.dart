@@ -1,60 +1,115 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import '../models/report.dart';
+import '../services/demo_auth_store.dart';
 
+/// 데모용 로컬 신고 Provider (Firestore 없음). 접수·철회·관리자 처리.
 class ReportProvider with ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Report> _myReports = [];
-  List<Report> _allReports = [];
-  bool _isLoading = false;
-
-  List<Report> get myReports => _myReports;
-  List<Report> get allReports => _allReports;
-  bool get isLoading => _isLoading;
-
-  Future<void> fetchMyReports(String userId) async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      // 인덱스 문제 확인을 위해 우선 orderBy를 제거하거나, 
-      // 에러 메시지에 포함된 URL을 통해 인덱스를 생성해야 합니다.
-      final snapshot = await _firestore
-          .collection('reports')
-          .where('userId', isEqualTo: userId)
-          .get(); // 일단 정렬 없이 가져오기 시도
-      
-      _myReports = snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
-      
-      // 정렬은 클라이언트 사이드에서 수행 (인덱스 없이도 가능)
-      _myReports.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      
-      debugPrint('Fetched ${_myReports.length} reports for user: $userId');
-    } catch (e) {
-      debugPrint('Error fetching reports: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+  ReportProvider() {
+    _seedDemo();
   }
 
-  /// [Admin 전용] 모든 신고 내역 가져오기
+  final List<Report> _reports = [];
+  String? _myUserId;
+  bool _isLoading = false;
+
+  bool get isLoading => _isLoading;
+
+  List<Report> get allReports {
+    final list = List<Report>.of(_reports);
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  List<Report> get myReports {
+    final uid = _myUserId;
+    if (uid == null) return const [];
+    return allReports.where((r) => r.userId == uid).toList();
+  }
+
+  List<Report> get pendingReports =>
+      allReports.where((r) => r.status == ReportStatus.pending).toList();
+
+  List<Report> get completedReports =>
+      allReports.where((r) => r.status != ReportStatus.pending).toList();
+
+  void _seedDemo() {
+    final now = DateTime.now();
+    _reports.addAll([
+      Report(
+        id: 'rp-1',
+        userId: 'demo-student',
+        userName: '김대학',
+        type: ReportType.cleanliness,
+        content: '전남대 환승반찬 자판기 안쪽에 국물이 말라 붙어 있고 냄새가 납니다.',
+        createdAt: now.subtract(const Duration(hours: 2)),
+      ),
+      Report(
+        id: 'rp-2',
+        userId: 'demo-youth',
+        userName: '이청년',
+        type: ReportType.damage,
+        content: '광주여대 자판기 문이 잘 닫히지 않아 찬 공기가 샙니다.',
+        createdAt: now.subtract(const Duration(hours: 5)),
+      ),
+      Report(
+        id: 'rp-3',
+        userId: 'demo-guest-1',
+        userName: '박유학',
+        type: ReportType.inconvenience,
+        content: 'MealPick 픽업 안내 시간과 가게 실제 마감이 달라 대기했습니다.',
+        createdAt: now.subtract(const Duration(days: 1)),
+      ),
+      Report(
+        id: 'rp-4',
+        userId: 'demo-student',
+        userName: '김대학',
+        type: ReportType.cleanliness,
+        content: '호남대 자판기 바닥에 국물이 흘러 있었습니다.',
+        createdAt: now.subtract(const Duration(days: 3)),
+        status: ReportStatus.accepted,
+        adminComment: '현장 확인 후 청소 완료. 유효 신고로 무료 식권 1장을 지급했습니다.',
+        processedAt: now.subtract(const Duration(days: 2)),
+      ),
+      Report(
+        id: 'rp-5',
+        userId: 'demo-youth',
+        userName: '이청년',
+        type: ReportType.other,
+        content: '친구카세 메뉴가 너무 적어서 신고합니다.',
+        createdAt: now.subtract(const Duration(days: 4)),
+        status: ReportStatus.rejected,
+        adminComment: '메뉴 구성은 신고 대상이 아닙니다. 일정별 메뉴는 앱 안내를 확인해 주세요.',
+        processedAt: now.subtract(const Duration(days: 3)),
+      ),
+      Report(
+        id: 'rp-6',
+        userId: 'demo-guest-2',
+        userName: '정민수',
+        type: ReportType.inconvenience,
+        content: '조선대 자판기 번호가 안내와 다르게 붙어 있었습니다.',
+        createdAt: now.subtract(const Duration(days: 6)),
+        status: ReportStatus.withdrawn,
+        processedAt: now.subtract(const Duration(days: 5)),
+      ),
+    ]);
+  }
+
+  Future<void> fetchMyReports(String userId) async {
+    _myUserId = userId;
+    _isLoading = true;
+    notifyListeners();
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> fetchAllReports() async {
     _isLoading = true;
     notifyListeners();
-    try {
-      final snapshot = await _firestore.collection('reports').get();
-      _allReports = snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
-      
-      // 최신순 정렬
-      _allReports.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      
-      debugPrint('Fetched ${_allReports.length} total reports for admin.');
-    } catch (e) {
-      debugPrint('Error fetching all reports: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<bool> submitReport({
@@ -64,83 +119,63 @@ class ReportProvider with ChangeNotifier {
     required String content,
     String? offenderId,
   }) async {
-    try {
-      await _firestore.collection('reports').add({
-        'userId': userId,
-        'userName': userName,
-        'type': type.name,
-        'content': content,
-        'status': ReportStatus.pending.name,
-        'createdAt': FieldValue.serverTimestamp(),
-        'offenderId': ?offenderId,
-      });
-      await fetchMyReports(userId);
-      return true;
-    } catch (e) {
-      debugPrint('Error submitting report: $e');
-      return false;
-    }
+    final text = content.trim();
+    if (text.isEmpty) return false;
+    _reports.add(
+      Report(
+        id: 'rp-${DateTime.now().millisecondsSinceEpoch}',
+        userId: userId,
+        userName: userName,
+        type: type,
+        content: text,
+        createdAt: DateTime.now(),
+        offenderId: offenderId,
+      ),
+    );
+    _myUserId = userId;
+    notifyListeners();
+    return true;
   }
 
   Future<bool> withdrawReport(String reportId, String userId) async {
-    try {
-      final ref = _firestore.collection('reports').doc(reportId);
-      final doc = await ref.get();
-      if (!doc.exists) return false;
-      
-      final report = Report.fromFirestore(doc);
-      if (!report.canWithdraw) return false;
-
-      await ref.delete();
-      await fetchMyReports(userId);
-      return true;
-    } catch (e) {
-      debugPrint('Error withdrawing report: $e');
-      return false;
-    }
+    final i = _reports.indexWhere((r) => r.id == reportId);
+    if (i < 0) return false;
+    final report = _reports[i];
+    if (report.userId != userId || !report.canWithdraw) return false;
+    _reports[i] = report.copyWith(
+      status: ReportStatus.withdrawn,
+      processedAt: DateTime.now(),
+    );
+    notifyListeners();
+    return true;
   }
 
-  /// [Admin 전용] 신고 처리
-  Future<void> processReport(String reportId, ReportStatus status, {String? adminComment}) async {
-    try {
-      await _firestore.runTransaction((transaction) async {
-        final reportRef = _firestore.collection('reports').doc(reportId);
-        final reportDoc = await transaction.get(reportRef);
-        final report = Report.fromFirestore(reportDoc);
+  Future<bool> processReport(
+    String reportId,
+    ReportStatus status, {
+    String? adminComment,
+  }) async {
+    if (status == ReportStatus.pending) return false;
+    final i = _reports.indexWhere((r) => r.id == reportId);
+    if (i < 0) return false;
+    final report = _reports[i];
+    if (!report.isPending) return false;
 
-        transaction.update(reportRef, {
-          'status': status.name,
-          'adminComment': adminComment,
-          'processedAt': FieldValue.serverTimestamp(),
-        });
+    _reports[i] = report.copyWith(
+      status: status,
+      adminComment: adminComment?.trim().isEmpty == true
+          ? null
+          : adminComment?.trim(),
+      processedAt: DateTime.now(),
+    );
 
-        if (status == ReportStatus.accepted) {
-          // 1. 신고자에게 무료 쿠폰 지급
-          final reporterRef = _firestore.collection('users').doc(report.userId);
-          transaction.update(reporterRef, {
-            'freeMealCount': FieldValue.increment(1),
-          });
-
-          // 2. 피신고자에게 패널티 부여 (있을 경우)
-          if (report.offenderId != null) {
-            final offenderRef = _firestore.collection('users').doc(report.offenderId!);
-            final offenderDoc = await transaction.get(offenderRef);
-            final penaltyPoints = (offenderDoc.data()?['penaltyPoints'] as int? ?? 0) + 1;
-            
-            Map<String, dynamic> updateData = {'penaltyPoints': penaltyPoints};
-            
-            // 2점 초과 시 6개월 정지
-            if (penaltyPoints > 2) {
-              final suspendedUntil = DateTime.now().add(const Duration(days: 180));
-              updateData['suspendedUntil'] = Timestamp.fromDate(suspendedUntil);
-            }
-            
-            transaction.update(offenderRef, updateData);
-          }
-        }
-      });
-    } catch (e) {
-      debugPrint('Error processing report: $e');
+    if (status == ReportStatus.accepted) {
+      DemoAuthStore.grantMealCoupon(report.userId);
+      if (report.offenderId != null) {
+        DemoAuthStore.addPenalty(report.offenderId!);
+      }
     }
+    notifyListeners();
+    return true;
   }
 }

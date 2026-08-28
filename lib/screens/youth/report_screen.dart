@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
 import '../../models/app_user.dart';
 import '../../models/report.dart';
 import '../../providers/auth_provider.dart';
@@ -15,6 +17,7 @@ class ReportScreen extends StatefulWidget {
 class _ReportScreenState extends State<ReportScreen> {
   final _contentController = TextEditingController();
   ReportType _selectedType = ReportType.inconvenience;
+  bool _submitting = false;
 
   @override
   void initState() {
@@ -37,7 +40,10 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     final reportProvider = context.watch<ReportProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final user = authProvider.appUser!;
+    final user = authProvider.appUser;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return DefaultTabController(
       length: 2,
@@ -53,7 +59,6 @@ class _ReportScreenState extends State<ReportScreen> {
         ),
         body: TabBarView(
           children: [
-            // 신고하기 탭
             ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -87,8 +92,14 @@ class _ReportScreenState extends State<ReportScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () => _handleSubmit(user),
-                    child: const Text('신고 제출하기'),
+                    onPressed: _submitting ? null : () => _handleSubmit(user),
+                    child: _submitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('신고 제출하기'),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -98,7 +109,6 @@ class _ReportScreenState extends State<ReportScreen> {
                 ),
               ],
             ),
-            // 나의 신고 내역 탭
             reportProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : reportProvider.myReports.isEmpty
@@ -112,7 +122,11 @@ class _ReportScreenState extends State<ReportScreen> {
                             margin: const EdgeInsets.only(bottom: 12),
                             child: ExpansionTile(
                               title: Text('[${report.type.label}] ${report.status.label}'),
-                              subtitle: Text(report.content, maxLines: 1, overflow: TextOverflow.ellipsis),
+                              subtitle: Text(
+                                report.content,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.all(16.0),
@@ -121,15 +135,28 @@ class _ReportScreenState extends State<ReportScreen> {
                                     children: [
                                       Text('신고 내용: ${report.content}'),
                                       const SizedBox(height: 8),
-                                      if (report.adminComment != null)
-                                        Text('관리자 답변: ${report.adminComment}', style: const TextStyle(color: Colors.blue)),
+                                      Text(
+                                        '접수: ${DateFormat('yyyy.MM.dd HH:mm').format(report.createdAt)}',
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                      if (report.adminComment != null) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          '관리자 답변: ${report.adminComment}',
+                                          style: const TextStyle(color: Colors.blue),
+                                        ),
+                                      ],
                                       const SizedBox(height: 12),
                                       if (report.canWithdraw)
                                         Align(
                                           alignment: Alignment.centerRight,
                                           child: TextButton(
-                                            onPressed: () => _handleWithdraw(report.id, user.uid),
-                                            child: const Text('신고 철회하기', style: TextStyle(color: Colors.red)),
+                                            onPressed: () =>
+                                                _handleWithdraw(report.id, user.uid),
+                                            child: const Text(
+                                              '신고 철회하기',
+                                              style: TextStyle(color: Colors.red),
+                                            ),
                                           ),
                                         ),
                                     ],
@@ -146,27 +173,40 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  void _handleSubmit(AppUser user) async {
-    if (_contentController.text.trim().isEmpty) return;
+  Future<void> _handleSubmit(AppUser user) async {
+    if (_contentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('신고 내용을 입력해 주세요.')),
+      );
+      return;
+    }
 
+    setState(() => _submitting = true);
     final success = await context.read<ReportProvider>().submitReport(
           userId: user.uid,
           userName: user.name,
           type: _selectedType,
           content: _contentController.text,
         );
+    if (!mounted) return;
+    setState(() => _submitting = false);
 
-    if (success && mounted) {
+    if (success) {
       _contentController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('신고가 접수되었습니다.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('신고가 접수되었습니다.')),
+      );
       DefaultTabController.of(context).animateTo(1);
     }
   }
 
-  void _handleWithdraw(String reportId, String userId) async {
-    final success = await context.read<ReportProvider>().withdrawReport(reportId, userId);
+  Future<void> _handleWithdraw(String reportId, String userId) async {
+    final success =
+        await context.read<ReportProvider>().withdrawReport(reportId, userId);
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('신고가 철회되었습니다.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('신고가 철회되었습니다.')),
+      );
     }
   }
 }

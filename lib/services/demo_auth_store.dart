@@ -161,6 +161,13 @@ class DemoAuthStore {
     return null;
   }
 
+  static AppUser? userById(String uid) {
+    for (final account in _accounts) {
+      if (account.user.uid == uid) return account.user;
+    }
+    return null;
+  }
+
   static void replaceUser(AppUser user) {
     final index = _accounts.indexWhere((account) => account.user.uid == user.uid);
     if (index >= 0) {
@@ -170,6 +177,28 @@ class DemoAuthStore {
         user: user,
       );
     }
+  }
+
+  /// 유효 신고 수용 시 무료 식권 1장.
+  static void grantMealCoupon(String uid) {
+    final user = userById(uid);
+    if (user == null) return;
+    replaceUser(user.copyWith(mealCouponCount: user.mealCouponCount + 1));
+  }
+
+  /// 허위·가해 신고 수용 시 패널티. 3점부터 6개월 정지.
+  static void addPenalty(String uid) {
+    final user = userById(uid);
+    if (user == null) return;
+    final points = user.penaltyPoints + 1;
+    replaceUser(
+      user.copyWith(
+        penaltyPoints: points,
+        suspendedUntil: points > 2
+            ? DateTime.now().add(const Duration(days: 180))
+            : user.suspendedUntil,
+      ),
+    );
   }
 
   static void deleteUser(String uid) {

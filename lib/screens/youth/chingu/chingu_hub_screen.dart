@@ -220,7 +220,7 @@ class _ScheduleTicketTab extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       children: [
         const Text(
-          '10월 키친 일정 · 시간은 모두 14:00입니다.',
+          '10월 키친 일정(평일) · 시간은 모두 14:00입니다.',
           style: TextStyle(color: Colors.white70, fontSize: 13),
         ),
         if (user.displayCouponCount > 0) ...[

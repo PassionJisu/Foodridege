@@ -57,7 +57,7 @@ class SeedData {
     ),
   ];
 
-  /// 2026년 10월 1일(목)~4일(일) 예약 일정. 리뷰는 9월 완료 일정.
+  /// 2026년 10월 1일(목)·2일(금)·5일(월)·6일(화) 예약 일정(평일만). 리뷰는 9월 완료 일정.
   static List<CulinaryMatch> get matches {
     DateTime at(int month, int day) =>
         DateTime(2026, month, day, 14, 0);
@@ -82,20 +82,20 @@ class SeedData {
       ),
       CulinaryMatch(
         id: 'ev-2',
-        roundLabel: '10월 3일 (토)',
+        roundLabel: '10월 5일 (월)',
         teamId: 'honam',
         menu: '퓨전 코스 — 한우 타르타르, 된장 리조토, 팥 마카롱',
         venue: '조선대 학생식당',
-        date: at(10, 3),
+        date: at(10, 5),
         status: MatchStatus.scheduled,
       ),
       CulinaryMatch(
         id: 'ev-3',
-        roundLabel: '10월 4일 (일)',
+        roundLabel: '10월 6일 (화)',
         teamId: 'seoyeong',
         menu: '전통 한식 — 삼합, 전복죽, 약과 아이스크림',
         venue: '전남대 학생식당',
-        date: at(10, 4),
+        date: at(10, 6),
         status: MatchStatus.scheduled,
       ),
       CulinaryMatch(

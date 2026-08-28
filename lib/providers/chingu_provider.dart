@@ -268,7 +268,7 @@ class ChinguProvider with ChangeNotifier {
   String? cheer(String teamId) {
     _resetCheerIfNewDay();
     if (_cheeredTeamIdToday != null) {
-      return '오늘은 이미 응원했습니다. 내일 다시 참여해 주세요.';
+      return '하루에 1곳만 응원할 수 있어요!';
     }
     final index = _teams.indexWhere((t) => t.id == teamId);
     if (index < 0) return '팀을 찾을 수 없습니다.';
